@@ -23,7 +23,7 @@ import {
 import Image from 'next/image';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area'; // Added import
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike } = useAuth();
@@ -170,15 +170,13 @@ export default function FavoritesPage() {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader className="p-6 border-b">
-              <DialogTitle className="text-xl font-semibold text-foreground">
+              <DialogTitle className="text-xl font-semibold text-primary">
                  Artículos: {selectedFavorite.title}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
               </DialogDescription>
-               <DialogClose asChild className="absolute right-4 top-4">
-                <Button variant="ghost" size="icon"><X className="h-4 w-4"/></Button>
-              </DialogClose>
+              {/* El botón X de cierre explícito ha sido eliminado. DialogContent lo provee por defecto. */}
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -189,6 +187,7 @@ export default function FavoritesPage() {
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-contain rounded-md"
+                  data-ai-hint="redesigned room item search"
                 />
               </div>
 
@@ -236,7 +235,9 @@ export default function FavoritesPage() {
               </div>
             </div>
             <DialogFooter className="p-4 border-t mt-auto bg-background sm:justify-start">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
+                <DialogClose asChild>
+                    <Button variant="outline">Cerrar</Button>
+                </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -247,3 +248,4 @@ export default function FavoritesPage() {
     
 
       
+
