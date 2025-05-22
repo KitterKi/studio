@@ -199,29 +199,29 @@ export default function FavoritesPage() {
                   </Alert>
                 )}
                 {!isLoadingSimilarItems && similarItems.map((item, index) => (
-                  <div key={index} className="p-4 border rounded-lg bg-card shadow-md space-y-3">
+                  <div key={index} className="p-4 border rounded-lg bg-card shadow-lg space-y-3">
                     <h3 className="font-semibold text-lg text-card-foreground flex items-center gap-2">
                       <Search className="h-5 w-5 text-primary"/>
                       {item.itemName}
                     </h3>
-                    <p className="text-sm text-muted-foreground">{item.itemDescription}</p>
-                    <div className="pt-2">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        asChild
-                        className="w-full text-primary-foreground bg-primary hover:bg-primary/90"
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {item.itemDescription}
+                    </p>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      asChild
+                      className="w-full text-primary-foreground bg-primary hover:bg-primary/90"
+                    >
+                      <a
+                        href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2"
                       >
-                        <a
-                          href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2"
-                        >
-                          Buscar en Google Shopping <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
+                        Buscar en Google Shopping <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
                   </div>
                 ))}
               </div>
