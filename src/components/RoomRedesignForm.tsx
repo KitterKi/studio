@@ -66,12 +66,13 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
       return;
     }
     
-    if (isSubmitDisabled) { 
-      console.log('[RoomRedesignForm] Submission blocked by isSubmitDisabled prop (e.g., daily limit). Toasting and returning.');
+    // isSubmitDisabled already covers isLoading and daily limit, but explicit check is fine
+    if (isSubmitDisabled || isLoading) { 
+      console.log('[RoomRedesignForm] Submission blocked by isSubmitDisabled or isLoading prop. Toasting and returning.');
        toast({
         variant: "destructive",
         title: "Acción no permitida",
-        description: "Has alcanzado tu límite diario de rediseños o la acción no está permitida actualmente.",
+        description: "No puedes rediseñar ahora mismo. Revisa tu límite diario o espera a que termine la carga actual.",
       });
       return;
     }
@@ -82,20 +83,22 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
   };
 
   let buttonText = 'Generar Rediseño';
-  let finalButtonDisabled = isLoading || !photoPreview || !photoFile || !selectedStyle;
+  // The main isSubmitDisabled prop is determined by parent based on user login, daily limits, etc.
+  // We also add isLoading, !photoPreview, etc., for local form validation.
+  const finalButtonDisabled = isSubmitDisabled || isLoading || !photoPreview || !photoFile || !selectedStyle;
 
   if (isLoading) {
     buttonText = 'Generando...';
-  } else if (isSubmitDisabled) { 
+  } else if (isSubmitDisabled && !isLoading) { // If disabled due to parent logic (e.g. limit)
     buttonText = 'Límite Diario Alcanzado';
-    finalButtonDisabled = true;
   }
 
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <div>
-        <h2 className="text-xl font-semibold mb-3 text-primary flex items-center">
-            <UploadCloud className="mr-3 h-6 w-6" />
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-primary flex items-center">
+            <UploadCloud className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
             1. Sube tu Foto
         </h2>
         <Input
@@ -103,19 +106,19 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
           type="file"
           accept="image/png, image/jpeg, image/webp"
           onChange={handleFileChange}
-          className="file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors h-12 text-base cursor-pointer focus-visible:ring-primary"
+          className="file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors h-11 sm:h-12 text-sm sm:text-base cursor-pointer focus-visible:ring-primary"
           aria-label="Subir foto de la habitación"
           disabled={isLoading}
         />
         {photoPreview && (
-          <div className="mt-4 p-2 border border-border rounded-lg bg-background/50">
-            <p className="text-xs font-medium mb-2 text-center text-muted-foreground">Vista previa:</p>
+          <div className="mt-3 sm:mt-4 p-1.5 sm:p-2 border border-border rounded-lg bg-background/50">
+            <p className="text-xs font-medium mb-1.5 sm:mb-2 text-center text-muted-foreground">Vista previa:</p>
             <Image
               src={photoPreview}
               alt="Vista previa de la habitación"
               width={400}
               height={300}
-              className="rounded-md object-contain mx-auto max-h-[150px] sm:max-h-[200px] w-auto"
+              className="rounded-md object-contain mx-auto max-h-[120px] sm:max-h-[150px] md:max-h-[180px] w-auto"
               data-ai-hint="room preview"
             />
           </div>
@@ -123,8 +126,8 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-3 text-primary flex items-center">
-            <Palette className="mr-3 h-6 w-6" />
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-primary flex items-center">
+            <Palette className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
             2. Elige un Estilo
         </h2>
         <Select value={selectedStyle} onValueChange={setSelectedStyle} disabled={isLoading || !photoPreview}>
@@ -132,13 +135,13 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
             id="design-style" 
             aria-label="Seleccionar estilo de diseño" 
             disabled={isLoading || !photoPreview} 
-            className="h-12 text-base focus:ring-primary"
+            className="h-11 sm:h-12 text-sm sm:text-base focus:ring-primary"
           >
             <SelectValue placeholder="Selecciona un estilo..." />
           </SelectTrigger>
           <SelectContent className="bg-popover text-popover-foreground">
             {DESIGN_STYLES.map((style) => (
-              <SelectItem key={style} value={style} className="text-base py-2.5 focus:bg-accent focus:text-accent-foreground">
+              <SelectItem key={style} value={style} className="text-sm sm:text-base py-2 sm:py-2.5 focus:bg-accent focus:text-accent-foreground">
                 {style}
               </SelectItem>
             ))}
@@ -146,11 +149,11 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
         </Select>
       </div>
       
-      <div className="pt-4">
+      <div className="pt-2 sm:pt-4">
         <form onSubmit={handleSubmit}>
             <Button 
             type="submit" 
-            className="w-full text-lg py-6" 
+            className="w-full text-base sm:text-lg py-5 sm:py-6" 
             disabled={finalButtonDisabled}
             size="lg"
             >
