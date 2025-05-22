@@ -6,7 +6,7 @@ import type { FavoriteItem } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import DesignCard from '@/components/DesignCard';
 import { Button } from '@/components/ui/button';
-import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2 } from 'lucide-react'; // Added Wand2
+import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2, X } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import Image from 'next/image';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
+import { cn } from '@/lib/utils';
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike } = useAuth();
@@ -156,7 +157,7 @@ export default function FavoritesPage() {
             <p className="text-muted-foreground mb-6">Comienza a rediseñar y guarda tus mejores creaciones.</p>
             <Link href="/" passHref legacyBehavior>
               <Button size="lg">
-                <Wand2 className="mr-2 h-4 w-4" /> {/* Added Wand2 Icon */}
+                <Wand2 className="mr-2 h-4 w-4" />
                 Rediseñar una Habitación
               </Button>
             </Link>
@@ -166,19 +167,21 @@ export default function FavoritesPage() {
 
       {selectedFavorite && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0">
+          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader className="p-6 border-b">
-              <DialogTitle className="text-2xl font-bold text-foreground">
-                Encontrar Artículos para "{selectedFavorite.title}"
+              <DialogTitle className="text-xl font-semibold text-foreground">
+                Artículos: {selectedFavorite.title}
               </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-1">
-                Artículos identificados por la IA. Haz clic para buscar en Google Shopping (abrirá en nueva pestaña).
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
+                Toca un objeto para buscarlo online.
               </DialogDescription>
-               <DialogClose />
+               <DialogClose asChild className="absolute right-4 top-4">
+                <Button variant="ghost" size="icon"><X className="h-4 w-4"/></Button>
+              </DialogClose>
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="relative aspect-square w-full md:aspect-auto md:h-full p-4 md:border-r flex items-center justify-center">
+              <div className="relative w-full md:h-full p-4 md:border-r flex items-center justify-center bg-muted/30 order-first md:order-none">
                 <Image
                   src={selectedFavorite.redesignedImage}
                   alt={`Habitación rediseñada: ${selectedFavorite.title}`}
@@ -188,45 +191,50 @@ export default function FavoritesPage() {
                 />
               </div>
 
-              <div className="flex flex-col min-h-0 p-4">
+              <div className="flex flex-col min-h-0 order-last md:order-none">
                 {isLoadingSimilarItems && (
-                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow">
+                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6">
                     <LoadingSpinner text="La IA está identificando artículos..." size={10}/>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length === 0 && (
-                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow">
-                    <Alert className="max-w-sm">
-                      <Info className="h-4 w-4" />
+                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6 text-center">
+                    <Alert variant="default" className="max-w-sm bg-card border-border">
+                      <Info className="h-5 w-5" />
                       <AlertTitle>No se Encontró Nada</AlertTitle>
-                      <AlertDescription>
-                        La IA no pudo identificar artículos distintos. Prueba con otra imagen.
+                      <AlertDescription className="text-xs">
+                        La IA no pudo identificar artículos distintos en esta imagen. Prueba con otra.
                       </AlertDescription>
                     </Alert>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length > 0 && (
-                  <div className="space-y-1 overflow-y-auto flex-grow pr-2"> 
-                    {similarItems.map((item, index) => (
-                      <a
-                        key={index}
-                        href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/30 transition-colors group"
-                        aria-label={`Buscar "${item.itemName}" en Google Shopping`}
-                      >
-                        <span className="font-semibold text-foreground group-hover:text-primary truncate pr-2" title={item.itemName}>
-                          {item.itemName}
-                        </span>
-                        <ExternalLink className="h-5 w-5 text-muted-foreground group-hover:text-primary shrink-0" />
-                      </a>
-                    ))}
-                  </div>
+                  <ScrollArea className="flex-grow p-4 min-h-0">
+                    <div className="space-y-2"> 
+                      {similarItems.map((item, index) => (
+                        <a
+                          key={index}
+                          href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            "flex items-center justify-between p-3 rounded-md transition-colors group",
+                            "bg-card hover:bg-accent/50 border border-border hover:border-primary/50"
+                          )}
+                          aria-label={`Buscar "${item.itemName}" en Google Shopping`}
+                        >
+                          <span className="font-medium text-sm text-card-foreground group-hover:text-primary truncate pr-2" title={item.itemName}>
+                            {item.itemName}
+                          </span>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0" />
+                        </a>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 )}
               </div>
             </div>
-            <DialogFooter className="p-4 border-t mt-auto bg-background">
+            <DialogFooter className="p-4 border-t mt-auto bg-background sm:justify-start">
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
             </DialogFooter>
           </DialogContent>
