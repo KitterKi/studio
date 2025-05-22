@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Heart, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { APP_NAME } from '@/lib/constants'; // Importado APP_NAME
 
 export default function StyleMyRoomPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);

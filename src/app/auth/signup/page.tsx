@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { APP_NAME } from '@/lib/constants'; // Importado APP_NAME
 
 
 export default function SignUpPage() {
@@ -104,5 +105,4 @@ export default function SignUpPage() {
     </>
   );
 }
-// Need to ensure APP_NAME is available or hardcode it
-const APP_NAME = "StyleMyRoom";
+// Removed local const APP_NAME = "StyleMyRoom";
