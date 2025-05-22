@@ -4,20 +4,21 @@
 import { useAuth } from '@/hooks/useAuth';
 import DesignCard from '@/components/DesignCard';
 import { Button } from '@/components/ui/button';
-import { Heart, Trash2 } from 'lucide-react';
+import { Heart, Trash2, Share2 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite, user, isLoading } = useAuth();
+  const { toast } = useToast();
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading favorites..." size={16} /></div>;
   }
 
   if (!user) {
-    // This page should be protected by the layout, but as a fallback:
     return (
        <div className="text-center py-12">
         <Alert variant="destructive" className="max-w-md mx-auto">
@@ -30,6 +31,21 @@ export default function FavoritesPage() {
       </div>
     );
   }
+
+  const handleShareFavorite = (imageUrl: string, title: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(`Check out this room redesign: ${title}! Image: ${imageUrl}`)
+        .then(() => {
+          toast({ title: "Link Copied!", description: "Redesign info copied to clipboard." });
+        })
+        .catch(err => {
+          console.error('Failed to copy: ', err);
+          toast({ variant: "destructive", title: "Copy Failed", description: "Could not copy to clipboard." });
+        });
+    } else {
+      toast({ variant: "destructive", title: "Clipboard Error", description: "Clipboard access not available." });
+    }
+  };
   
   return (
     <div className="space-y-8">
@@ -48,24 +64,32 @@ export default function FavoritesPage() {
             <div key={fav.id} className="relative group">
               <DesignCard
                 id={fav.id}
-                // For DesignCard, imageUrl is the redesigned one. Original could be shown in a modal or detail view.
                 imageUrl={fav.redesignedImage} 
                 title={fav.title || `Redesign in ${fav.style}`}
-                userName={user.name || user.email || "You"} // Or don't show user for personal favorites
-                // likes and comments might not be applicable here or could be 0
+                userName={user.name || user.email || "You"}
                 likes={0} 
                 comments={0}
                 dataAiHint="redesigned room"
               />
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                onClick={() => removeFavorite(fav.id)}
-                aria-label="Remove from favorites"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2">
+                <Button
+                  variant="default"
+                  size="icon"
+                  onClick={() => handleShareFavorite(fav.redesignedImage, fav.title || `Redesign in ${fav.style}`)}
+                  aria-label="Share design"
+                  className="bg-primary/80 hover:bg-primary text-primary-foreground"
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => removeFavorite(fav.id)}
+                  aria-label="Remove from favorites"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>

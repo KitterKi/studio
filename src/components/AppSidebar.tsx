@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter as NextUseRouter } from 'next/navigation'; // Corrected import and aliased
+import { usePathname, useRouter as NextUseRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarHeader,
@@ -16,21 +16,20 @@ import { LogoIcon } from '@/components/icons/LogoIcon';
 import { APP_NAME, SIDEBAR_NAV_ITEMS_AUTHENTICATED, SIDEBAR_NAV_ITEMS_UNAUTHENTICATED } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { LogOut, UserCircle } from 'lucide-react'; // Removed unused Settings
+import { LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const { user, logout, isLoading } = useAuth();
-  const router = NextUseRouter(); // Instantiate the router correctly
+  const router = NextUseRouter();
 
   const navItems = user ? SIDEBAR_NAV_ITEMS_AUTHENTICATED : SIDEBAR_NAV_ITEMS_UNAUTHENTICATED;
 
   if (isLoading) {
-    // You might want a proper skeleton loader here for the sidebar
     return (
-       <Sidebar collapsible="icon">
+       <Sidebar collapsible="icon" variant="sidebar" side="left">
         <SidebarHeader className="flex items-center justify-center p-2 group-data-[collapsible=icon]:justify-center">
            <div className="group-data-[collapsible=icon]:hidden flex items-center gap-2">
             <LogoIcon />
@@ -49,7 +48,7 @@ export default function AppSidebar() {
 
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar" side="left" defaultOpen={true}>
+    <Sidebar collapsible="icon" variant="sidebar" side="left">
       <SidebarHeader className="p-4 flex items-center justify-between group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2">
         <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:hidden" aria-label={`${APP_NAME} home page`}>
           <LogoIcon />
@@ -58,7 +57,6 @@ export default function AppSidebar() {
          <Link href="/" className="hidden items-center gap-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center" aria-label={`${APP_NAME} home page`}>
           <LogoIcon />
         </Link>
-        {/* SidebarTrigger is usually placed in the AppHeader or main layout, not inside the sidebar itself if it controls this sidebar */}
       </SidebarHeader>
 
       <SidebarContent className="flex-grow p-2">
@@ -104,7 +102,7 @@ export default function AppSidebar() {
             </Button>
           </div>
            <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center space-y-2 p-2">
-             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Profile"> {/* Use router.push here */}
+             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Profile">
                 <UserCircle className="h-5 w-5" />
              </Button>
              <Button variant="ghost" size="icon" onClick={logout} title="Logout">
@@ -116,5 +114,3 @@ export default function AppSidebar() {
     </Sidebar>
   );
 }
-
-// Removed the custom useRouter helper function
