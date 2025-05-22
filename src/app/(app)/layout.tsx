@@ -44,36 +44,33 @@ export default function AppGroupLayout({
     return <InitialLoadingScreen />;
   }
   
-  if (!user) {
-    // For unauthenticated users, render a simpler layout without sidebar
-    // but still show AppHeader and the children (e.g., community page, main redesign page if public)
-    // The AppHeader will show Login/SignUp buttons.
-    // Individual pages like /favorites will redirect if this layout is reached without a user.
-    return (
+  // SidebarProvider now wraps both authenticated and unauthenticated layout structures
+  return (
+    <SidebarProvider>
+      {!user ? (
+        // For unauthenticated users, render a simpler layout
+        // AppHeader is now inside SidebarProvider
         <div className="flex flex-col min-h-screen">
           <AppHeader />
           <main className="flex-grow px-4 py-8">
             {children}
           </main>
         </div>
-    );
-  }
-  
-  // If user is logged in, render the full app layout with sidebar
-  return (
-    <SidebarProvider>
-      <div className="flex flex-col min-h-screen">
-        <AppHeader />
-        <div className="flex flex-grow">
-          <AppSidebar />
-          <SidebarInset>
-            {/* Removed container and mx-auto from here, let pages handle their own max-width */}
-            <main className="flex-grow px-4 py-8">
-              {children}
-            </main>
-          </SidebarInset>
+      ) : (
+        // If user is logged in, render the full app layout with sidebar
+        // AppHeader is also inside SidebarProvider here
+        <div className="flex flex-col min-h-screen">
+          <AppHeader />
+          <div className="flex flex-grow">
+            <AppSidebar />
+            <SidebarInset>
+              <main className="flex-grow px-4 py-8">
+                {children}
+              </main>
+            </SidebarInset>
+          </div>
         </div>
-      </div>
+      )}
     </SidebarProvider>
   );
 }
