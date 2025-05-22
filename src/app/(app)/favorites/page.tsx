@@ -84,13 +84,19 @@ export default function FavoritesPage() {
       }
     } catch (error) {
       console.error("Error encontrando artículos similares:", error);
+      let errorTitle = "Error de IA";
       let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
-        errorMessage = error.message;
+        if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
+          errorTitle = "Servicio de IA Ocupado";
+          errorMessage = "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+        } else {
+          errorMessage = error.message;
+        }
       }
       toast({
         variant: "destructive",
-        title: "Error de IA",
+        title: errorTitle,
         description: errorMessage,
       });
     } finally {
@@ -179,9 +185,7 @@ export default function FavoritesPage() {
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              {/* Image Column Wrapper - provides background, padding (matting), and centering */}
               <div className="w-full p-6 md:border-r flex items-center justify-center bg-muted/20 order-first md:order-none">
-                {/* Aspect Ratio Enforcer & Image Container */}
                 <div className="relative w-full max-w-md aspect-[4/3] bg-background rounded-lg shadow-xl overflow-hidden border">
                   <Image
                     src={selectedFavorite.redesignedImage}

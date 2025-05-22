@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useRouter } from 'next/navigation'; // Added useRouter
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
   const { user, isLoading, logout, favorites, followingCount, removeFavorite, toggleUserLike } = useAuth();
@@ -42,8 +42,8 @@ export default function ProfilePage() {
 
   const handleOpenFindItemsModalFromDetail = async (favorite: FavoriteItem) => {
     setFavoriteForSimilarItems(favorite);
-    setIsDetailModalOpen(false);
-    setIsFindItemsModalOpen(true);
+    setIsDetailModalOpen(false); // Close detail modal
+    setIsFindItemsModalOpen(true); // Open find items modal
     setIsLoadingSimilarItems(true);
     setSimilarItems([]);
 
@@ -58,13 +58,19 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error("Error encontrando artículos similares:", error);
+      let errorTitle = "Error de IA";
       let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
-        errorMessage = error.message;
+         if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
+          errorTitle = "Servicio de IA Ocupado";
+          errorMessage = "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+        } else {
+          errorMessage = error.message;
+        }
       }
       toast({
         variant: "destructive",
-        title: "Error de IA",
+        title: errorTitle,
         description: errorMessage,
       });
     } finally {
@@ -139,10 +145,7 @@ export default function ProfilePage() {
                 <Button variant="outline" size="sm" onClick={() => router.push('/profile/edit')}>
                   <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil
                 </Button>
-                <Button variant="ghost" size="icon" className="sm:hidden" onClick={logout} title="Cerrar Sesión">
-                  <LogOut className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => router.push('/settings')} title="Configuración">
+                 <Button variant="ghost" size="icon" onClick={() => router.push('/settings')} title="Configuración">
                   <Settings className="h-5 w-5" />
                 </Button>
               </div>
@@ -166,7 +169,7 @@ export default function ProfilePage() {
             <p className="text-sm text-foreground pt-1 text-center sm:text-left max-w-md">
               Bienvenido a tu espacio en {APP_NAME}. ¡Aquí puedes ver tus creaciones favoritas y compartirlas con el mundo!
             </p>
-            <Button variant="outline" size="sm" onClick={logout} className="w-full sm:w-auto hidden sm:flex">
+            <Button variant="outline" size="sm" onClick={logout} className="w-full sm:w-auto">
               <LogOut className="mr-2 h-4 w-4" /> Cerrar Sesión
             </Button>
           </div>
@@ -225,7 +228,6 @@ export default function ProfilePage() {
         </section>
       </div>
 
-      {/* Detail Modal for a Favorite Item */}
       {selectedFavoriteForDetail && (
         <Dialog open={isDetailModalOpen} onOpenChange={(isOpen) => {
           if (!isOpen) setSelectedFavoriteForDetail(null);
@@ -237,6 +239,7 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground">
                 Estilo: {selectedFavoriteForDetail.style}
               </DialogDescription>
+             
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -304,7 +307,6 @@ export default function ProfilePage() {
         </Dialog>
       )}
 
-      {/* "Find Similar Items" modal - Full implementation */}
       {favoriteForSimilarItems && (
          <Dialog open={isFindItemsModalOpen} onOpenChange={(isOpen) => {
           if (!isOpen) {
@@ -320,7 +322,6 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
               </DialogDescription>
-
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -391,3 +392,4 @@ export default function ProfilePage() {
     </>
   );
 }
+
