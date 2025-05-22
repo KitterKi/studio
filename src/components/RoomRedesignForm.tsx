@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { ChangeEvent } from 'react';
@@ -15,9 +16,10 @@ import { useToast } from '@/hooks/use-toast';
 interface RoomRedesignFormProps {
   onSubmit: (photoDataUri: string, style: string) => Promise<void>;
   isLoading: boolean;
+  isSubmitDisabled?: boolean; // New prop to control submission button
 }
 
-export default function RoomRedesignForm({ onSubmit, isLoading }: RoomRedesignFormProps) {
+export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled }: RoomRedesignFormProps) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>('');
@@ -59,8 +61,15 @@ export default function RoomRedesignForm({ onSubmit, isLoading }: RoomRedesignFo
       });
       return;
     }
+    if (isSubmitDisabled) { // Check this explicit prop
+       toast({
+        variant: "destructive",
+        title: "Cannot Redesign",
+        description: "You may have reached your daily limit or another restriction applies.",
+      });
+      return;
+    }
     
-    // The photoPreview is already a data URI
     await onSubmit(photoPreview, selectedStyle);
   };
 
@@ -123,9 +132,13 @@ export default function RoomRedesignForm({ onSubmit, isLoading }: RoomRedesignFo
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" className="w-full" disabled={isLoading || !photoPreview || !selectedStyle}>
-            {isLoading ? 'Redesigning...' : 'Redesign My Room'}
-            {!isLoading && <Wand2 className="ml-2 h-4 w-4" />}
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading || !photoPreview || !selectedStyle || isSubmitDisabled}
+          >
+            {isLoading ? 'Redesigning...' : (isSubmitDisabled && !isLoading ? 'Limit Reached' : 'Redesign My Room')}
+            {!isLoading && !(isSubmitDisabled && !isLoading) && <Wand2 className="ml-2 h-4 w-4" />}
           </Button>
         </CardFooter>
       </form>

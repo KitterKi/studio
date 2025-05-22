@@ -2,7 +2,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface User {
@@ -29,9 +29,15 @@ interface AuthContextType {
   favorites: FavoriteItem[];
   addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt'>) => void;
   removeFavorite: (id: string) => void;
+  canUserRedesign: () => boolean;
+  recordRedesignAttempt: () => void;
+  remainingRedesignsToday: number;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const MAX_REDESIGNS_PER_DAY = 5;
+const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -39,39 +45,91 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const router = useRouter();
 
+  const [dailyRedesignCount, setDailyRedesignCount] = useState(0);
+  const [lastRedesignTrackDate, setLastRedesignTrackDate] = useState<string | null>(null);
+
   useEffect(() => {
-    // Simulate checking auth status
     setIsLoading(true);
     try {
       const storedUser = localStorage.getItem('authUser');
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        // Load redesign counts for this user
+        const today = getTodayDateString();
+        const storedCount = localStorage.getItem(`redesignCount_${parsedUser.id}`);
+        const storedDate = localStorage.getItem(`lastRedesignDate_${parsedUser.id}`);
+
+        if (storedDate === today && storedCount) {
+          setDailyRedesignCount(parseInt(storedCount, 10));
+          setLastRedesignTrackDate(today);
+        } else {
+          setDailyRedesignCount(0);
+          setLastRedesignTrackDate(today);
+          localStorage.setItem(`redesignCount_${parsedUser.id}`, '0');
+          localStorage.setItem(`lastRedesignDate_${parsedUser.id}`, today);
+        }
       }
-      const storedFavorites = localStorage.getItem('userFavorites');
+      const storedFavorites = localStorage.getItem('userFavorites'); // Favorites are currently global
       if (storedFavorites) {
         setFavorites(JSON.parse(storedFavorites).map((fav: FavoriteItem) => ({
           ...fav,
-          createdAt: new Date(fav.createdAt) // Ensure createdAt is a Date object
+          createdAt: new Date(fav.createdAt)
         })));
       }
     } catch (error) {
       console.error("Error loading from localStorage", error);
       localStorage.removeItem('authUser');
       localStorage.removeItem('userFavorites');
+      // Clear redesign counts if auth load fails
+      if (user) {
+        localStorage.removeItem(`redesignCount_${user.id}`);
+        localStorage.removeItem(`lastRedesignDate_${user.id}`);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, []); // Initial load
+
+  // Effect to update redesign counts when user changes (e.g., logs in)
+  useEffect(() => {
+    if (user) {
+      const today = getTodayDateString();
+      const storedCount = localStorage.getItem(`redesignCount_${user.id}`);
+      const storedDate = localStorage.getItem(`lastRedesignDate_${user.id}`);
+
+      if (storedDate === today && storedCount) {
+        setDailyRedesignCount(parseInt(storedCount, 10));
+        setLastRedesignTrackDate(today);
+      } else {
+        // New day or new user, reset count
+        setDailyRedesignCount(0);
+        setLastRedesignTrackDate(today);
+        localStorage.setItem(`redesignCount_${user.id}`, '0');
+        localStorage.setItem(`lastRedesignDate_${user.id}`, today);
+      }
+    } else {
+      // No user, reset local state
+      setDailyRedesignCount(0);
+      setLastRedesignTrackDate(null);
+    }
+  }, [user]);
+
 
   const login = useCallback(async (email: string, _pass: string) => {
     setIsLoading(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
-    const mockUser: User = { id: 'mock-user-id-' + Date.now(), email, name: email.split('@')[0] };
+    const mockUser: User = { id: 'mock-user-id-' + email, email, name: email.split('@')[0] }; // Use email in ID for consistency
     setUser(mockUser);
     localStorage.setItem('authUser', JSON.stringify(mockUser));
-    // Load favorites for this mock user (or clear if implementing per-user storage)
-    // For simplicity, current favorites are global or tied to the single localStorage item
+    
+    // Initialize/reset redesign counts for the new user
+    const today = getTodayDateString();
+    setDailyRedesignCount(0);
+    setLastRedesignTrackDate(today);
+    localStorage.setItem(`redesignCount_${mockUser.id}`, '0');
+    localStorage.setItem(`lastRedesignDate_${mockUser.id}`, today);
+
     setIsLoading(false);
     router.push('/');
   }, [router]);
@@ -79,23 +137,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signup = useCallback(async (email: string, _pass: string, name?: string) => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
-    const mockUser: User = { id: 'mock-user-id-' + Date.now(), email, name: name || email.split('@')[0] };
+    const mockUser: User = { id: 'mock-user-id-' + email, email, name: name || email.split('@')[0] };
     setUser(mockUser);
     localStorage.setItem('authUser', JSON.stringify(mockUser));
-    setFavorites([]); // Clear favorites for new user
+    setFavorites([]); 
     localStorage.setItem('userFavorites', JSON.stringify([]));
+
+    // Initialize/reset redesign counts for the new user
+    const today = getTodayDateString();
+    setDailyRedesignCount(0);
+    setLastRedesignTrackDate(today);
+    localStorage.setItem(`redesignCount_${mockUser.id}`, '0');
+    localStorage.setItem(`lastRedesignDate_${mockUser.id}`, today);
+
     setIsLoading(false);
     router.push('/');
   }, [router]);
 
   const logout = useCallback(() => {
+    if (user) { // Clear user-specific data before clearing user object
+      localStorage.removeItem(`redesignCount_${user.id}`);
+      localStorage.removeItem(`lastRedesignDate_${user.id}`);
+    }
     setUser(null);
     localStorage.removeItem('authUser');
-    // Optionally clear favorites on logout or handle them per-user
+    // Optionally clear global favorites: 
     // setFavorites([]); 
     // localStorage.removeItem('userFavorites');
     router.push('/auth/signin');
-  }, [router]);
+  }, [user, router]);
 
   const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt'>) => {
     setFavorites(prevFavorites => {
@@ -118,9 +188,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const canUserRedesign = useCallback(() => {
+    if (!user) return false;
+    const today = getTodayDateString();
+    if (lastRedesignTrackDate !== today) {
+      // If date changed, user has full quota, effectively resetting count for the new day logic in record.
+      return true; 
+    }
+    return dailyRedesignCount < MAX_REDESIGNS_PER_DAY;
+  }, [user, dailyRedesignCount, lastRedesignTrackDate]);
+
+  const recordRedesignAttempt = useCallback(() => {
+    if (!user) return;
+    const today = getTodayDateString();
+    let newCount = dailyRedesignCount;
+
+    if (lastRedesignTrackDate !== today) {
+      newCount = 1; // First redesign of the new day
+      setLastRedesignTrackDate(today); // Update track date
+      localStorage.setItem(`lastRedesignDate_${user.id}`, today);
+    } else {
+      newCount = dailyRedesignCount + 1;
+    }
+    
+    setDailyRedesignCount(newCount);
+    localStorage.setItem(`redesignCount_${user.id}`, newCount.toString());
+
+  }, [user, dailyRedesignCount, lastRedesignTrackDate]);
+
+  const remainingRedesignsToday = useMemo(() => {
+    if (!user) return 0;
+    const today = getTodayDateString();
+    if (lastRedesignTrackDate !== today) {
+      return MAX_REDESIGNS_PER_DAY; // Full quota if date is different
+    }
+    const remaining = MAX_REDESIGNS_PER_DAY - dailyRedesignCount;
+    return remaining < 0 ? 0 : remaining;
+  }, [user, dailyRedesignCount, lastRedesignTrackDate]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, favorites, addFavorite, removeFavorite }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoading, 
+      login, 
+      signup, 
+      logout, 
+      favorites, 
+      addFavorite, 
+      removeFavorite,
+      canUserRedesign,
+      recordRedesignAttempt,
+      remainingRedesignsToday
+    }}>
       {children}
     </AuthContext.Provider>
   );
