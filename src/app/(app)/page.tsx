@@ -4,11 +4,11 @@
 import { useState, useEffect } from 'react';
 import RoomRedesignForm from '@/components/RoomRedesignForm';
 import RedesignPreview from '@/components/RedesignPreview';
-import { redesignRoom } from '@/ai/flows/redesign-room'; // AI call re-enabled
+// import { redesignRoom } from '@/ai/flows/redesign-room'; // Re-enable if using actual AI
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Heart, Info } from 'lucide-react';
+import { Heart, Info, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { APP_NAME } from '@/lib/constants';
 
@@ -38,8 +38,11 @@ export default function StyleMyRoomPage() {
     }
   }, [user, canUserRedesign, remainingRedesignsToday]);
 
-
   const handleRedesignSubmit = async (photoDataUri: string, style: string) => {
+    console.log('[StyleMyRoomPage] handleRedesignSubmit called');
+    console.log('[StyleMyRoomPage] User:', user ? user.email : 'No user');
+    console.log('[StyleMyRoomPage] Allow Redesign Check:', canUserRedesign());
+
     if (!user) {
       toast({ variant: "destructive", title: "No Has Iniciado Sesión", description: "Por favor, inicia sesión para rediseñar habitaciones." });
       return;
@@ -59,6 +62,23 @@ export default function StyleMyRoomPage() {
     setRedesignedImage(null);
     setCurrentStyle(style);
 
+    // SIMULATED AI CALL
+    console.log('[StyleMyRoomPage] Simulating AI redesign call...');
+    await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate AI processing time
+
+    const mockRedesignedImageUrl = `https://placehold.co/800x600.png?text=Rediseño+${encodeURIComponent(style)}`;
+    setRedesignedImage(mockRedesignedImageUrl);
+    recordRedesignAttempt();
+    const canStillRedesign = canUserRedesign();
+    setAllowRedesign(canStillRedesign);
+    toast({
+      title: "¡Rediseño Simulado Completo!",
+      description: `Tu habitación ha sido rediseñada (simulación) en estilo ${style}.`,
+    });
+    setIsLoadingRedesign(false);
+
+    // ACTUAL AI CALL (Keep commented out for Spark plan)
+    /*
     try {
       console.log('[StyleMyRoomPage] Calling ACTUAL redesignRoom AI flow...');
       const result = await redesignRoom({ photoDataUri, style });
@@ -66,7 +86,7 @@ export default function StyleMyRoomPage() {
 
       if (result.redesignedPhotoDataUri) {
         setRedesignedImage(result.redesignedPhotoDataUri);
-        recordRedesignAttempt(); 
+        recordRedesignAttempt();
         const canStillRedesign = canUserRedesign();
         setAllowRedesign(canStillRedesign);
         toast({
@@ -80,7 +100,7 @@ export default function StyleMyRoomPage() {
           title: "Falló el Rediseño",
           description: "La IA no devolvió una imagen. Esto puede ocurrir si el contenido fue bloqueado por filtros de seguridad o si hubo un error inesperado.",
         });
-        setRedesignedImage(null); 
+        setRedesignedImage(null);
       }
     } catch (error) {
       console.error("[StyleMyRoomPage] Error during redesignRoom call or subsequent logic:", error);
@@ -106,12 +126,13 @@ export default function StyleMyRoomPage() {
     } finally {
       setIsLoadingRedesign(false);
     }
+    */
   };
 
   const handleSaveFavorite = () => {
     if (originalImage && redesignedImage && currentStyle && user) {
       addFavorite({
-        redesignedImage,
+        redesignedImage, // originalImage is not crucial for favorites, so we pass redesignedImage
         style: currentStyle,
       });
       toast({
@@ -130,21 +151,22 @@ export default function StyleMyRoomPage() {
   const isAlreadyFavorite = redesignedImage && favorites.some(fav => fav.redesignedImage === redesignedImage);
 
   return (
-    <div className="space-y-10">
-      <div className="text-center space-y-3">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
-          Diseñador IA {APP_NAME}
+    <div className="space-y-10 py-8">
+      <div className="text-center space-y-3 px-4">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground flex items-center justify-center gap-2">
+          <Sparkles className="h-8 w-8 text-primary" />
+          {APP_NAME}
         </h1>
-        <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-          Transforma tu espacio: sube una foto, elige un estilo ¡y deja que la IA haga su magia!
+        <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
+          Transforma tu espacio al instante. Sube una foto, elige tu estilo preferido y observa cómo la IA (actualmente simulada) reimagina tu habitación.
         </p>
       </div>
 
       {user && (
-        <Alert className="max-w-lg mx-auto bg-accent/30 border-accent/50 shadow-sm">
-          <Info className="h-5 w-5 text-accent-foreground" />
-          <AlertTitle className="font-semibold text-accent-foreground text-sm">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
-          <AlertDescription className="text-accent-foreground/80 text-xs">
+        <Alert className="max-w-md mx-auto bg-primary/10 border-primary/20 shadow-sm text-primary-foreground">
+          <Info className="h-5 w-5 text-primary" />
+          <AlertTitle className="font-semibold text-primary text-sm">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
+          <AlertDescription className="text-primary/80 text-xs">
             {remainingRedesignsToday > 0
               ? `Puedes rediseñar ${remainingRedesignsToday} habitación${remainingRedesignsToday === 1 ? '' : 'es'} más hoy.`
               : "¡Has alcanzado tu límite diario de rediseños!"}
@@ -152,15 +174,15 @@ export default function StyleMyRoomPage() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start max-w-6xl mx-auto">
-        <div className="md:sticky md:top-24 bg-card p-6 sm:p-8 rounded-xl shadow-xl">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-12 items-start max-w-7xl mx-auto px-4">
+        <div className="md:col-span-2 md:sticky md:top-24 bg-card/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-xl border border-border/50">
           <RoomRedesignForm
             onSubmit={handleRedesignSubmit}
             isLoading={isLoadingRedesign}
             isSubmitDisabled={!allowRedesign || isLoadingRedesign}
           />
         </div>
-        <div className="space-y-8">
+        <div className="md:col-span-3 space-y-8">
           <RedesignPreview
             originalImageSrc={originalImage}
             redesignedImageSrc={redesignedImage}
@@ -172,7 +194,7 @@ export default function StyleMyRoomPage() {
                 onClick={handleSaveFavorite}
                 disabled={isAlreadyFavorite}
                 size="lg"
-                className="w-full max-w-sm mx-auto shadow-lg hover:shadow-xl transition-shadow"
+                className="w-full max-w-xs mx-auto shadow-lg hover:shadow-xl transition-shadow bg-accent text-accent-foreground hover:bg-accent/90"
               >
                 <Heart className={`mr-2 h-5 w-5 ${isAlreadyFavorite ? 'fill-destructive text-destructive' : ''}`} />
                 {isAlreadyFavorite ? 'Guardado en Favoritos' : 'Guardar en Favoritos'}

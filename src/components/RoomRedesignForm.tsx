@@ -6,10 +6,10 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/label'; // Label is not explicitly used, but good to keep if needed
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DESIGN_STYLES } from '@/lib/constants';
-import { UploadCloud, Palette, Wand2, Info } from 'lucide-react';
+import { UploadCloud, Palette, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RoomRedesignFormProps {
@@ -55,7 +55,7 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
     console.log('[RoomRedesignForm] handleSubmit triggered');
     console.log('[RoomRedesignForm] photoPreview:', !!photoPreview, 'selectedStyle:', selectedStyle, 'photoFile:', !!photoFile);
     console.log('[RoomRedesignForm] isLoading (prop):', isLoading, 'isSubmitDisabled (prop):', isSubmitDisabled);
-
+    
     if (!photoPreview || !selectedStyle || !photoFile) {
       console.log('[RoomRedesignForm] Validation failed: Missing photo, style, or file. Toasting and returning.');
       toast({
@@ -66,8 +66,6 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
       return;
     }
     
-    // isSubmitDisabled is a prop passed from the parent page, 
-    // usually reflecting daily limits or other parent-level conditions.
     if (isSubmitDisabled) { 
       console.log('[RoomRedesignForm] Submission blocked by isSubmitDisabled prop (e.g., daily limit). Toasting and returning.');
        toast({
@@ -83,25 +81,21 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
     console.log('[RoomRedesignForm] onSubmit prop finished.');
   };
 
-  // Determine button text and disabled state more explicitly
   let buttonText = 'Generar Rediseño';
-  let buttonDisabled = isLoading || !photoPreview || !photoFile || !selectedStyle;
+  let finalButtonDisabled = isLoading || !photoPreview || !photoFile || !selectedStyle;
 
   if (isLoading) {
     buttonText = 'Generando...';
   } else if (isSubmitDisabled) { 
-    // This isSubmitDisabled comes from the parent (e.g. page.tsx)
-    // and usually means daily limit reached if isLoading is false.
     buttonText = 'Límite Diario Alcanzado';
-    buttonDisabled = true; // Explicitly disable if parent says so (e.g. daily limit)
+    finalButtonDisabled = true;
   }
 
-
   return (
-    <div className="space-y-6 bg-card p-6 sm:p-8 rounded-xl shadow-xl">
+    <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-semibold mb-3 text-foreground flex items-center">
-            <UploadCloud className="mr-2 h-5 w-5 text-primary" />
+        <h2 className="text-xl font-semibold mb-3 text-primary flex items-center">
+            <UploadCloud className="mr-3 h-6 w-6" />
             1. Sube tu Foto
         </h2>
         <Input
@@ -109,13 +103,13 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
           type="file"
           accept="image/png, image/jpeg, image/webp"
           onChange={handleFileChange}
-          className="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors h-12 text-base"
+          className="file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors h-12 text-base cursor-pointer focus-visible:ring-primary"
           aria-label="Subir foto de la habitación"
           disabled={isLoading}
         />
         {photoPreview && (
-          <div className="mt-4 p-2 border rounded-lg bg-muted/50">
-            <p className="text-xs font-medium mb-1 text-center text-muted-foreground">Vista previa:</p>
+          <div className="mt-4 p-2 border border-border rounded-lg bg-background/50">
+            <p className="text-xs font-medium mb-2 text-center text-muted-foreground">Vista previa:</p>
             <Image
               src={photoPreview}
               alt="Vista previa de la habitación"
@@ -129,17 +123,22 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-3 text-foreground flex items-center">
-            <Palette className="mr-2 h-5 w-5 text-primary" />
+        <h2 className="text-xl font-semibold mb-3 text-primary flex items-center">
+            <Palette className="mr-3 h-6 w-6" />
             2. Elige un Estilo
         </h2>
         <Select value={selectedStyle} onValueChange={setSelectedStyle} disabled={isLoading || !photoPreview}>
-          <SelectTrigger id="design-style" aria-label="Seleccionar estilo de diseño" disabled={isLoading || !photoPreview} className="h-12 text-base">
+          <SelectTrigger 
+            id="design-style" 
+            aria-label="Seleccionar estilo de diseño" 
+            disabled={isLoading || !photoPreview} 
+            className="h-12 text-base focus:ring-primary"
+          >
             <SelectValue placeholder="Selecciona un estilo..." />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover text-popover-foreground">
             {DESIGN_STYLES.map((style) => (
-              <SelectItem key={style} value={style} className="text-base py-2">
+              <SelectItem key={style} value={style} className="text-base py-2.5 focus:bg-accent focus:text-accent-foreground">
                 {style}
               </SelectItem>
             ))}
@@ -147,17 +146,17 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
         </Select>
       </div>
       
-      <div className="pt-2">
+      <div className="pt-4">
         <form onSubmit={handleSubmit}>
             <Button 
             type="submit" 
-            className="w-full" 
-            disabled={buttonDisabled}
+            className="w-full text-lg py-6" 
+            disabled={finalButtonDisabled}
             size="lg"
             >
             {buttonText}
-            {isLoading && <Wand2 className="ml-2 h-4 w-4 animate-pulse" />}
-            {!isLoading && !buttonDisabled && <Wand2 className="ml-2 h-4 w-4" />}
+            {isLoading && <Wand2 className="ml-2 h-5 w-5 animate-pulse" />}
+            {!isLoading && !finalButtonDisabled && <Wand2 className="ml-2 h-5 w-5" />}
             </Button>
         </form>
       </div>
