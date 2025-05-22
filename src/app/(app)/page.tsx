@@ -18,20 +18,20 @@ export default function StyleMyRoomPage() {
   const [currentStyle, setCurrentStyle] = useState<string>('');
   const [isLoadingRedesign, setIsLoadingRedesign] = useState(false);
   const { toast } = useToast();
-  const { 
-    user, 
-    addFavorite, 
-    favorites, 
-    canUserRedesign, 
-    recordRedesignAttempt, 
-    remainingRedesignsToday 
+  const {
+    user,
+    addFavorite,
+    favorites,
+    canUserRedesign,
+    recordRedesignAttempt,
+    remainingRedesignsToday
   } = useAuth();
 
   const [allowRedesign, setAllowRedesign] = useState(false);
 
   useEffect(() => {
     console.log('[StyleMyRoomPage] useEffect for allowRedesign triggered.');
-    if(user){ 
+    if(user){
         const can = canUserRedesign();
         console.log('[StyleMyRoomPage] User exists. canUserRedesign():', can, 'Remaining today:', remainingRedesignsToday);
         setAllowRedesign(can);
@@ -79,11 +79,11 @@ export default function StyleMyRoomPage() {
       if (result.redesignedPhotoDataUri) {
         console.log('[StyleMyRoomPage] Redesign successful. Updating UI and recording attempt.');
         setRedesignedImage(result.redesignedPhotoDataUri);
-        recordRedesignAttempt(); 
+        recordRedesignAttempt();
         // After recording, immediately re-evaluate and set allowRedesign for the current page's state
         const canStillRedesign = canUserRedesign();
         console.log('[StyleMyRoomPage] After recording attempt, canUserRedesign():', canStillRedesign);
-        setAllowRedesign(canStillRedesign); 
+        setAllowRedesign(canStillRedesign);
         toast({
           title: "¡Rediseño Completo!",
           description: "Tu habitación ha sido rediseñada exitosamente.",
@@ -110,7 +110,7 @@ export default function StyleMyRoomPage() {
         title: "Falló el Rediseño",
         description: errorMessage,
       });
-      setRedesignedImage(null); 
+      setRedesignedImage(null);
     } finally {
       console.log('[StyleMyRoomPage] In finally block, setting isLoadingRedesign to false.');
       setIsLoadingRedesign(false);
@@ -138,7 +138,7 @@ export default function StyleMyRoomPage() {
       });
     }
   };
-  
+
   const isAlreadyFavorite = redesignedImage && favorites.some(fav => fav.redesignedImage === redesignedImage);
 
   return (
@@ -157,18 +157,18 @@ export default function StyleMyRoomPage() {
           <Info className="h-5 w-5 text-accent-foreground" />
           <AlertTitle className="font-semibold text-accent-foreground text-sm">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
           <AlertDescription className="text-accent-foreground/80 text-xs">
-            {remainingRedesignsToday > 0 
+            {remainingRedesignsToday > 0
               ? `Puedes rediseñar ${remainingRedesignsToday} habitación${remainingRedesignsToday === 1 ? '' : 'es'} más hoy.`
               : "¡Has alcanzado tu límite diario de rediseños!"}
           </AlertDescription>
         </Alert>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start max-w-6xl mx-auto">
         <div className="md:sticky md:top-24">
-          <RoomRedesignForm 
-            onSubmit={handleRedesignSubmit} 
-            isLoading={isLoadingRedesign} 
+          <RoomRedesignForm
+            onSubmit={handleRedesignSubmit}
+            isLoading={isLoadingRedesign}
             // isSubmitDisabled is based on page's allowRedesign state and isLoadingRedesign
             // This is for the immediate button text and disabled state in the form.
             // The handleRedesignSubmit function will re-verify with canUserRedesign() from context.
@@ -183,8 +183,8 @@ export default function StyleMyRoomPage() {
           />
           {user && redesignedImage && !isLoadingRedesign && (
             <div className="text-center pt-2">
-              <Button 
-                onClick={handleSaveFavorite} 
+              <Button
+                onClick={handleSaveFavorite}
                 disabled={isAlreadyFavorite}
                 size="lg"
                 className="w-full max-w-sm mx-auto shadow-lg hover:shadow-xl transition-shadow"

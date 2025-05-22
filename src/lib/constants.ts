@@ -2,7 +2,7 @@
 import { Wand2, Users, Heart, UserCircle, LogIn, Home, Settings } from 'lucide-react'; // Added Settings
 
 export const DESIGN_STYLES = [
-  "Modern", 
+  "Modern",
   "Rustic",
   "Minimalist",
   "Bohemian",
@@ -16,7 +16,7 @@ export const DESIGN_STYLES = [
   "Maximalist"
 ];
 
-export const APP_NAME = "StyleMyRoom"; 
+export const APP_NAME = "RoomStyle";
 
 export const AUTH_SIGNIN_PATH = "/auth/signin";
 export const AUTH_SIGNUP_PATH = "/auth/signup";

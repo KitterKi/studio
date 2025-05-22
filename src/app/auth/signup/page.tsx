@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { APP_NAME } from '@/lib/constants'; // Importado APP_NAME
+import { APP_NAME } from '@/lib/constants';
 
 
 export default function SignUpPage() {
@@ -105,4 +105,3 @@ export default function SignUpPage() {
     </>
   );
 }
-// Removed local const APP_NAME = "StyleMyRoom";

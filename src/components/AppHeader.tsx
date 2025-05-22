@@ -12,13 +12,13 @@ import { LogIn, UserPlus } from 'lucide-react';
 
 export default function AppHeader() {
   const { user, isLoading } = useAuth();
-  const { openMobile, setOpenMobile } = useSidebar(); 
+  const { openMobile, setOpenMobile } = useSidebar();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
-          {user && ( 
+          {user && (
             <SidebarTrigger className="md:hidden" />
           )}
           <Link href="/" className="flex items-center gap-2" aria-label={`${APP_NAME} página de inicio`}>
@@ -26,10 +26,10 @@ export default function AppHeader() {
             <span className="font-semibold text-xl">{APP_NAME}</span>
           </Link>
         </div>
-        
+
         <nav className="flex items-center gap-2">
           {isLoading ? (
-            <div className="h-9 w-20 animate-pulse bg-muted rounded-md"></div> 
+            <div className="h-9 w-20 animate-pulse bg-muted rounded-md"></div>
           ) : user ? (
             <UserNav />
           ) : (

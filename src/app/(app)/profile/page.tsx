@@ -33,19 +33,19 @@ export default function ProfilePage() {
   const [selectedFavoriteForDetail, setSelectedFavoriteForDetail] = useState<FavoriteItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const { toast } = useToast();
-  const router = useRouter(); // Initialized useRouter
+  const router = useRouter();
 
   const [isFindItemsModalOpen, setIsFindItemsModalOpen] = useState(false);
   const [favoriteForSimilarItems, setFavoriteForSimilarItems] = useState<FavoriteItem | null>(null);
   const [isLoadingSimilarItems, setIsLoadingSimilarItems] = useState(false);
   const [similarItems, setSimilarItems] = useState<IdentifiedItem[]>([]);
-  
+
   const handleOpenFindItemsModalFromDetail = async (favorite: FavoriteItem) => {
     setFavoriteForSimilarItems(favorite);
-    setIsDetailModalOpen(false); 
+    setIsDetailModalOpen(false);
     setIsFindItemsModalOpen(true);
     setIsLoadingSimilarItems(true);
-    setSimilarItems([]); 
+    setSimilarItems([]);
 
     try {
       const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage });
@@ -90,7 +90,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-  
+
   const getInitials = (name?: string, email?: string) => {
     if (name) return name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
     if (email) return email.substring(0,2).toUpperCase();
@@ -125,10 +125,10 @@ export default function ProfilePage() {
       <div className="max-w-5xl mx-auto p-4 space-y-8">
         <header className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10 border-b pb-8">
           <Avatar className="h-32 w-32 sm:h-40 sm:w-40 ring-4 ring-primary/30 ring-offset-background ring-offset-2 shrink-0">
-            <AvatarImage 
-              src={`https://placehold.co/160x160.png?text=${getInitials(user.name, user.email)}`} 
+            <AvatarImage
+              src={`https://placehold.co/160x160.png?text=${getInitials(user.name, user.email)}`}
               alt={user.name || user.email || 'Avatar de usuario'}
-              data-ai-hint="profile large" 
+              data-ai-hint="profile large"
             />
             <AvatarFallback className="text-5xl">{getInitials(user.name, user.email)}</AvatarFallback>
           </Avatar>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <p className="text-muted-foreground text-center sm:text-left">{user.email}</p>
-            
+
             <div className="flex gap-4 sm:gap-6 pt-2 text-center sm:text-left">
               <div>
                 <span className="font-semibold text-lg">{favorites.length}</span>
@@ -159,7 +159,7 @@ export default function ProfilePage() {
                 <span className="text-muted-foreground ml-1">seguidores</span>
               </div>
               <div>
-                <span className="font-semibold text-lg">{followingCount.toLocaleString()}</span> 
+                <span className="font-semibold text-lg">{followingCount.toLocaleString()}</span>
                 <span className="text-muted-foreground ml-1">siguiendo</span>
               </div>
             </div>
@@ -186,9 +186,9 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-4 mt-6">
               {favorites.map((fav) => (
                 <button
-                  key={fav.id} 
+                  key={fav.id}
                   onClick={() => openFavoriteDetail(fav)}
-                  className="group relative aspect-square overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm" 
+                  className="group relative aspect-square overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
                   title={`Ver detalles de "${fav.title || 'Diseño'}"`}
                   aria-label={`Ver detalles de "${fav.title || 'Diseño'}"`}
                 >
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                 Estilo: {selectedFavoriteForDetail.style}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
               <div className="relative w-full aspect-[4/3] bg-muted/30 md:aspect-auto md:h-full flex items-center justify-center p-4 order-first md:order-none">
                 <Image
@@ -254,9 +254,9 @@ export default function ProfilePage() {
               <div className="flex flex-col order-last md:order-none max-h-full p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Button 
-                      variant={selectedFavoriteForDetail.userHasLiked ? "destructive" : "outline"} 
-                      size="sm" 
+                    <Button
+                      variant={selectedFavoriteForDetail.userHasLiked ? "destructive" : "outline"}
+                      size="sm"
                       onClick={() => toggleUserLike(selectedFavoriteForDetail.id)}
                     >
                       <Heart className="mr-2 h-4 w-4" /> {selectedFavoriteForDetail.userHasLiked ? 'Te gusta' : 'Me gusta'} ({selectedFavoriteForDetail.likes})
@@ -266,16 +266,16 @@ export default function ProfilePage() {
                         <span>{selectedFavoriteForDetail.comments} comentarios</span>
                      </div>
                   </div>
-                   <Button 
-                    variant="ghost" 
-                    size="icon" 
+                   <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => handleShareFavoriteFromDetail(selectedFavoriteForDetail.redesignedImage, selectedFavoriteForDetail.title)}
                     title="Compartir diseño"
                   >
                     <Share2 className="h-5 w-5" />
                   </Button>
                 </div>
-                
+
                 <p className="text-sm text-muted-foreground">
                   Creado: {new Date(selectedFavoriteForDetail.createdAt).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
@@ -291,8 +291,8 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-                
-                <Button 
+
+                <Button
                   onClick={() => handleOpenFindItemsModalFromDetail(selectedFavoriteForDetail)}
                   className="w-full mt-auto"
                 >
@@ -308,7 +308,7 @@ export default function ProfilePage() {
       {favoriteForSimilarItems && (
          <Dialog open={isFindItemsModalOpen} onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setFavoriteForSimilarItems(null); 
+            setFavoriteForSimilarItems(null);
           }
           setIsFindItemsModalOpen(isOpen);
         }}>
@@ -320,8 +320,9 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
               </DialogDescription>
+
             </DialogHeader>
-            
+
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
               <div className="w-full p-6 md:border-r flex items-center justify-center bg-muted/20 order-first md:order-none">
                 <div className="relative w-full max-w-md aspect-[4/3] bg-background rounded-lg shadow-xl overflow-hidden border">
@@ -330,7 +331,7 @@ export default function ProfilePage() {
                     alt={`Habitación rediseñada: ${favoriteForSimilarItems.title}`}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 448px"
-                    className="object-contain" 
+                    className="object-contain"
                     data-ai-hint="redesigned room item search"
                   />
                 </div>
@@ -355,7 +356,7 @@ export default function ProfilePage() {
                 )}
                 {!isLoadingSimilarItems && similarItems.length > 0 && (
                   <ScrollArea className="flex-grow p-4 min-h-0">
-                    <div className="space-y-2"> 
+                    <div className="space-y-2">
                       {similarItems.map((item, index) => (
                         <a
                           key={index}
@@ -390,11 +391,3 @@ export default function ProfilePage() {
     </>
   );
 }
-    
-
-    
-
-    
-
-    
-
