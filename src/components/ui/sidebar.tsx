@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -279,7 +280,7 @@ const SidebarTrigger = React.forwardRef<
       {...props}
     >
       <PanelLeft />
-      <span className="sr-only">Toggle Sidebar</span>
+      <span className="sr-only">No pasa nada al apretar acá</span>
     </Button>
   )
 })
