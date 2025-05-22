@@ -23,6 +23,7 @@ import {
 import Image from 'next/image';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area'; // Added import
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike } = useAuth();
@@ -170,7 +171,7 @@ export default function FavoritesPage() {
           <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader className="p-6 border-b">
               <DialogTitle className="text-xl font-semibold text-foreground">
-                Artículos: {selectedFavorite.title}
+                 Artículos: {selectedFavorite.title}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
