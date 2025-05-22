@@ -1,17 +1,18 @@
+
 'use server';
 /**
  * @fileOverview Identifies furniture and decor items in an image and suggests search queries.
  *
  * - findSimilarItems - A function that identifies items in an image.
- * - FindSimilarItemsInputSchema - The input type for the findSimilarItems function.
- * - FindSimilarItemsOutputSchema - The return type for the findSimilarItems function.
- * - IdentifiedItemSchema - The schema for an individual identified item.
+ * - FindSimilarItemsInput - The input type for the findSimilarItems function.
+ * - FindSimilarItemsOutput - The return type for the findSimilarItems function.
+ * - IdentifiedItem - The schema for an individual identified item.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const FindSimilarItemsInputSchema = z.object({
+const FindSimilarItemsInputSchema = z.object({
   imageDataUri: z
     .string()
     .describe(
@@ -20,7 +21,7 @@ export const FindSimilarItemsInputSchema = z.object({
 });
 export type FindSimilarItemsInput = z.infer<typeof FindSimilarItemsInputSchema>;
 
-export const IdentifiedItemSchema = z.object({
+const IdentifiedItemSchema = z.object({
   itemName: z.string().describe('The common name of the identified item (e.g., "Sofa", "Floor Lamp", "Coffee Table"). Keep it concise, 1-3 words.'),
   itemDescription: z.string().describe('A brief description of the item, highlighting its key visual characteristics relevant for searching (e.g., "Blue velvet 3-seater sofa with gold legs", "Modern arc floor lamp with marble base"). Aim for 5-15 words.'),
   suggestedSearchQuery: z.string().describe('A concise search query for finding this item online, using keywords from the description (e.g., "blue velvet sofa gold legs", "modern arc floor lamp marble base").')
@@ -28,7 +29,7 @@ export const IdentifiedItemSchema = z.object({
 export type IdentifiedItem = z.infer<typeof IdentifiedItemSchema>;
 
 
-export const FindSimilarItemsOutputSchema = z.object({
+const FindSimilarItemsOutputSchema = z.object({
   items: z.array(IdentifiedItemSchema).describe('A list of up to 3-5 prominent furniture or decor items identified in the image.')
 });
 export type FindSimilarItemsOutput = z.infer<typeof FindSimilarItemsOutputSchema>;
@@ -67,3 +68,4 @@ const findSimilarItemsFlow = ai.defineFlow(
     return output;
   }
 );
+
