@@ -23,23 +23,10 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
-// import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; // AI call commented out
+import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; // AI call re-enabled
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter } from 'next/navigation';
-
-// Temporary mock type for IdentifiedItem if the import is removed
-export interface IdentifiedItem {
-  itemName: string;
-  itemDescription?: string; // Made optional as it's not displayed and AI won't generate it
-  suggestedSearchQuery: string;
-}
-
-const MOCK_SIMILAR_ITEMS_PROFILE: IdentifiedItem[] = [
-  { itemName: 'Silla de Escritorio (Simulada)', suggestedSearchQuery: 'silla de escritorio ergonómica negra' },
-  { itemName: 'Monitor Curvo (Simulado)', suggestedSearchQuery: 'monitor curvo 27 pulgadas gaming' },
-  { itemName: 'Teclado Mecánico (Simulado)', suggestedSearchQuery: 'teclado mecánico RGB retroiluminado' },
-];
 
 
 export default function ProfilePage() {
@@ -62,26 +49,28 @@ export default function ProfilePage() {
     setSimilarItems([]);
 
     try {
-      // Simulate AI call for similar items
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-      // const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage }); // Actual AI call commented out
-      const result = { items: MOCK_SIMILAR_ITEMS_PROFILE }; // Use mock items
+      console.log('[ProfilePage] Calling ACTUAL findSimilarItems AI flow...');
+      const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage });
+      console.log('[ProfilePage] ACTUAL findSimilarItems AI flow result:', result);
 
       setSimilarItems(result.items);
       if (result.items.length === 0) {
         toast({
-          title: "No se Encontraron Artículos (Simulación)",
-          description: "La simulación de IA no pudo identificar artículos distintos para buscar en esta imagen.",
+          title: "No se Encontraron Artículos",
+          description: "La IA no identificó artículos distintos para buscar en esta imagen.",
         });
       }
     } catch (error) {
-      console.error("Error simulando búsqueda de artículos:", error);
-      let errorTitle = "Error de Simulación";
-      let errorMessage = "Falló la búsqueda simulada de artículos. Por favor, inténtalo de nuevo.";
+      console.error("Error buscando artículos similares:", error);
+      let errorTitle = "Error al Buscar Artículos";
+      let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
          if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
-          errorTitle = "Servicio Simulado Ocupado";
-          errorMessage = "El servicio simulado de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+          errorTitle = "Servicio de IA Ocupado";
+          errorMessage = "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+        } else if (error.message.toLowerCase().includes("safety filter") || error.message.toLowerCase().includes("blocked")) {
+          errorTitle = "Contenido Bloqueado";
+          errorMessage = "La búsqueda no se pudo completar porque el contenido fue bloqueado por filtros de seguridad de la IA.";
         } else {
           errorMessage = error.message;
         }
@@ -257,7 +246,6 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground">
                 Estilo: {selectedFavoriteForDetail.style}
               </DialogDescription>
-               {/* Removed explicit DialogClose X button */}
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -316,7 +304,7 @@ export default function ProfilePage() {
                   onClick={() => handleOpenFindItemsModalFromDetail(selectedFavoriteForDetail)}
                   className="w-full mt-auto"
                 >
-                  <Search className="mr-2 h-4 w-4" /> Encontrar Artículos Similares (Simulación)
+                  <Search className="mr-2 h-4 w-4" /> Encontrar Artículos Similares
                 </Button>
               </div>
             </div>
@@ -337,9 +325,8 @@ export default function ProfilePage() {
                  Artículos: {favoriteForSimilarItems.title}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-1">
-                Toca un objeto para buscarlo online (simulación).
+                Toca un objeto para buscarlo online.
               </DialogDescription>
-              {/* Removed explicit DialogClose X button */}
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -359,16 +346,16 @@ export default function ProfilePage() {
               <div className="flex flex-col min-h-0 order-last md:order-none">
                 {isLoadingSimilarItems && (
                   <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6">
-                    <LoadingSpinner text="La IA (simulada) está identificando artículos..." size={10}/>
+                    <LoadingSpinner text="La IA está identificando artículos..." size={10}/>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6 text-center">
                     <Alert variant="default" className="max-w-sm bg-card border-border">
                       <Info className="h-5 w-5" />
-                      <AlertTitle>No se Encontró Nada (Simulación)</AlertTitle>
+                      <AlertTitle>No se Encontró Nada</AlertTitle>
                       <AlertDescription className="text-xs">
-                        La simulación de IA no pudo identificar artículos distintos en esta imagen.
+                        La IA no pudo identificar artículos distintos en esta imagen.
                       </AlertDescription>
                     </Alert>
                   </div>

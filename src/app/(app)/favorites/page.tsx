@@ -21,22 +21,9 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import Image from 'next/image';
-// import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; // AI call commented out
+import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; // AI call re-enabled
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-// Temporary mock type for IdentifiedItem if the import is removed
-export interface IdentifiedItem {
-  itemName: string;
-  itemDescription?: string; // Made optional as it's not displayed and AI won't generate it
-  suggestedSearchQuery: string;
-}
-
-const MOCK_SIMILAR_ITEMS: IdentifiedItem[] = [
-  { itemName: 'Lámpara de Mesa (Simulada)', suggestedSearchQuery: 'lámpara de mesa moderna cerámica blanca' },
-  { itemName: 'Sofá Gris (Simulado)', suggestedSearchQuery: 'sofá escandinavo 3 cuerpos tela gris' },
-  { itemName: 'Alfombra de Yute (Simulada)', suggestedSearchQuery: 'alfombra yute redonda 150cm' },
-];
 
 
 export default function FavoritesPage() {
@@ -96,26 +83,28 @@ export default function FavoritesPage() {
     setSimilarItems([]);
 
     try {
-      // Simulate AI call for similar items
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-      // const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage }); // Actual AI call commented out
-      const result = { items: MOCK_SIMILAR_ITEMS }; // Use mock items
+      console.log('[FavoritesPage] Calling ACTUAL findSimilarItems AI flow...');
+      const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage });
+      console.log('[FavoritesPage] ACTUAL findSimilarItems AI flow result:', result);
 
       setSimilarItems(result.items);
       if (result.items.length === 0) {
         toast({
-          title: "No se Encontraron Artículos (Simulación)",
-          description: "La simulación de IA no identificó artículos.",
+          title: "No se Encontraron Artículos",
+          description: "La IA no identificó artículos distintos en esta imagen o no pudo generar sugerencias de búsqueda.",
         });
       }
     } catch (error) {
-      console.error("Error simulando búsqueda de artículos:", error);
-      let errorTitle = "Error de Simulación";
-      let errorMessage = "Falló la búsqueda simulada de artículos. Por favor, inténtalo de nuevo.";
+      console.error("Error buscando artículos similares:", error);
+      let errorTitle = "Error al Buscar Artículos";
+      let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
        if (error instanceof Error) {
         if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
-          errorTitle = "Servicio Simulado Ocupado";
-          errorMessage = "El servicio simulado de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+          errorTitle = "Servicio de IA Ocupado";
+          errorMessage = "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+        } else if (error.message.toLowerCase().includes("safety filter") || error.message.toLowerCase().includes("blocked")) {
+          errorTitle = "Contenido Bloqueado";
+          errorMessage = "La búsqueda no se pudo completar porque el contenido fue bloqueado por filtros de seguridad de la IA.";
         } else {
           errorMessage = error.message;
         }
@@ -131,28 +120,22 @@ export default function FavoritesPage() {
   };
   
   const handleStartEdit = (favorite: FavoriteItem) => {
-    // console.log("[FavoritesPage] handleStartEdit called for favorite:", favorite.id);
     setEditingFavoriteId(favorite.id);
     setCurrentEditTitle(favorite.title);
   };
 
   const handleSaveEdit = () => {
-    // console.log("[FavoritesPage] handleSaveEdit called. Editing ID:", editingFavoriteId, "Current Title:", currentEditTitle);
     if (editingFavoriteId && currentEditTitle.trim() !== "") {
       updateFavoriteTitle(editingFavoriteId, currentEditTitle.trim());
       toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${currentEditTitle.trim()}".` });
     } else if (editingFavoriteId) { 
-      // console.log("[FavoritesPage] New title is an empty string.");
       toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío. La edición fue cancelada."});
-       // Do not exit edit mode, let user correct or cancel.
-      // return; // Kept return to ensure it doesn't proceed to reset editing state on invalid save.
     }
     setEditingFavoriteId(null);
     setCurrentEditTitle('');
   };
 
   const handleCancelEdit = () => {
-    // console.log("[FavoritesPage] handleCancelEdit called.");
     toast({title: "Edición Cancelada", description: "No se realizaron cambios en el nombre.", variant: "default"});
     setEditingFavoriteId(null);
     setCurrentEditTitle('');
@@ -163,11 +146,11 @@ export default function FavoritesPage() {
     <>
       <div className="space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl flex items-center justify-center gap-3">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight flex items-center justify-center gap-3">
             <Heart className="h-10 w-10 text-primary" /> Mis Rediseños Favoritos
           </h1>
-          <p className="mt-3 text-base text-muted-foreground sm:text-lg sm:mt-5 xl:text-xl">
-            Tu colección personal de transformaciones de habitaciones inspiradoras. ¡Haz clic en una imagen para encontrar artículos similares (simulación)!
+          <p className="mt-3 text-base sm:text-lg xl:text-xl text-muted-foreground">
+            Tu colección personal de transformaciones de habitaciones inspiradoras. ¡Haz clic en una imagen para encontrar artículos similares!
           </p>
         </div>
 
@@ -279,9 +262,8 @@ export default function FavoritesPage() {
                  Artículos: {selectedFavorite.title}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-1">
-                Toca un objeto para buscarlo online (simulación).
+                Toca un objeto para buscarlo online.
               </DialogDescription>
-               {/* Removed explicit DialogClose X button from header */}
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -301,16 +283,16 @@ export default function FavoritesPage() {
               <div className="flex flex-col min-h-0 order-last md:order-none">
                 {isLoadingSimilarItems && (
                   <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6">
-                    <LoadingSpinner text="La IA (simulada) está identificando artículos..." size={10}/>
+                    <LoadingSpinner text="La IA está identificando artículos..." size={10}/>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6 text-center">
                     <Alert variant="default" className="max-w-sm bg-card border-border">
                       <Info className="h-5 w-5" />
-                      <AlertTitle>No se Encontró Nada (Simulación)</AlertTitle>
+                      <AlertTitle>No se Encontró Nada</AlertTitle>
                       <AlertDescription className="text-xs">
-                        La simulación de IA no pudo identificar artículos distintos en esta imagen.
+                        La IA no pudo identificar artículos distintos en esta imagen.
                       </AlertDescription>
                     </Alert>
                   </div>
