@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import RoomRedesignForm from '@/components/RoomRedesignForm';
 import RedesignPreview from '@/components/RedesignPreview';
-import { redesignRoom } from '@/ai/flows/redesign-room'; // AI CALL RE-ENABLED
+import { redesignRoom } from '@/ai/flows/redesign-room'; 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -12,17 +12,6 @@ import { Heart, Info, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { APP_NAME } from '@/lib/constants';
 
-// MOCK AI CALL - This will be removed/commented out
-/*
-const mockRedesignRoom = async (photoDataUri: string, style: string): Promise<{ redesignedPhotoDataUri: string | null }> => {
-  console.log('[StyleMyRoomPage] Simulating AI redesign call for MOCK...');
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  const mockRedesignedImageUrl = `https://placehold.co/800x600.png?text=Rediseño+${encodeURIComponent(style)}`;
-  console.log('[StyleMyRoomPage] Mock AI call simulated SUCCESS.');
-  return { redesignedPhotoDataUri: mockRedesignedImageUrl };
-};
-*/
-// END MOCK AI CALL
 
 export default function StyleMyRoomPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -48,7 +37,7 @@ export default function StyleMyRoomPage() {
         setAllowRedesign(can);
     } else {
       console.log('[RoomStylePage] useEffect user is null, setting allowRedesign to false');
-      setAllowRedesign(false);
+      setAllowRedesign(false); // If no user, cannot redesign
     }
   }, [user, canUserRedesign, remainingRedesignsToday]);
 
@@ -58,7 +47,7 @@ export default function StyleMyRoomPage() {
     
 
     if (!user) {
-      toast({ variant: "destructive", title: "No Has Iniciado Sesión", description: "Por favor, inicia sesión para rediseñar habitaciones." });
+      toast({ variant: "destructive", title: "Inicio de Sesión Requerido", description: "Por favor, inicia sesión para rediseñar habitaciones." });
       console.log('[RoomStylePage] Blocked: User not logged in.');
       return;
     }
@@ -84,13 +73,13 @@ export default function StyleMyRoomPage() {
     
     try {
       console.log('[RoomStylePage] Calling ACTUAL redesignRoom AI flow...');
-      const result = await redesignRoom({ photoDataUri, style }); // ACTUAL AI CALL
+      const result = await redesignRoom({ photoDataUri, style }); 
       
       if (result.redesignedPhotoDataUri) {
         console.log('[RoomStylePage] ACTUAL redesignRoom AI flow SUCCESS. Image URL:', result.redesignedPhotoDataUri);
         setRedesignedImage(result.redesignedPhotoDataUri);
         recordRedesignAttempt();
-        const updatedRemaining = remainingRedesignsToday -1; // Calculate remaining after successful attempt
+        const updatedRemaining = remainingRedesignsToday -1; 
         toast({
           title: "¡Rediseño Completo!",
           description: `Tu habitación ha sido rediseñada en estilo ${style}. Quedan ${updatedRemaining < 0 ? 0 : updatedRemaining} rediseños hoy.`,
@@ -133,6 +122,7 @@ export default function StyleMyRoomPage() {
   const handleSaveFavorite = () => {
     if (originalImage && redesignedImage && currentStyle && user) {
       addFavorite({
+        // originalImage: originalImage, // No longer saving original image to localStorage to save space
         redesignedImage, 
         style: currentStyle,
       });
@@ -177,6 +167,16 @@ export default function StyleMyRoomPage() {
           </AlertDescription>
         </Alert>
       )}
+      {!user && (
+         <Alert variant="destructive" className="max-w-md mx-auto">
+          <Info className="h-4 w-4" />
+          <AlertTitle className="font-semibold text-destructive-foreground">Inicio de Sesión Requerido</AlertTitle>
+          <AlertDescription className="text-destructive-foreground/90">
+            Por favor, <a href="/auth/signin" className="font-bold underline hover:text-destructive-foreground">inicia sesión</a> para generar rediseños.
+          </AlertDescription>
+        </Alert>
+      )}
+
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 items-start max-w-7xl mx-auto px-2 sm:px-4">
         <div className="md:col-span-2 md:sticky md:top-24 bg-card/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl shadow-xl border border-border/50">

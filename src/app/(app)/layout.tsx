@@ -25,11 +25,14 @@ export default function AppGroupLayout({
       return;
     }
 
-    const protectedPaths = ['/favorites', '/profile', '/settings', '/profile/edit'];
-    const isProtectedPath = protectedPaths.some(p => pathname.startsWith(p));
+    // Define protected paths that require authentication
+    // The main page "/" is now protected.
+    const protectedPaths = ['/', '/favorites', '/profile', '/settings', '/profile/edit']; 
+    const isProtectedPath = protectedPaths.some(p => pathname === p || pathname.startsWith(p + '/'));
 
     if (!user && isProtectedPath) {
       if (!isRedirecting) {
+        console.log(`[AppGroupLayout] User not authenticated, trying to access protected path: ${pathname}. Redirecting to signin.`);
         setIsRedirecting(true);
         router.replace('/auth/signin');
       }
@@ -44,12 +47,10 @@ export default function AppGroupLayout({
     return <InitialLoadingScreen />;
   }
   
-  // SidebarProvider now wraps both authenticated and unauthenticated layout structures
   return (
     <SidebarProvider>
       {!user ? (
-        // For unauthenticated users, render a simpler layout
-        // AppHeader is now inside SidebarProvider
+        // For unauthenticated users, render a simpler layout for non-protected pages (e.g. /community)
         <div className="flex flex-col min-h-screen">
           <AppHeader />
           <main className="flex-grow px-4 py-8">
@@ -58,7 +59,6 @@ export default function AppGroupLayout({
         </div>
       ) : (
         // If user is logged in, render the full app layout with sidebar
-        // AppHeader is also inside SidebarProvider here
         <div className="flex flex-col min-h-screen">
           <AppHeader />
           <div className="flex flex-grow">
