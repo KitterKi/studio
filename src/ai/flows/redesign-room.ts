@@ -38,17 +38,15 @@ const redesignRoomPrompt = ai.definePrompt({
   name: 'redesignRoomPrompt',
   input: {schema: RedesignRoomInputSchema},
   output: {schema: RedesignRoomOutputSchema},
-  prompt: `You are an AI that specializes in interior design.
+  prompt: `You are a special interior decorator. Your task is to redesign the provided room image in the '{{{style}}}' style.
+You MUST maintain the original camera perspective and the overall dimensions of the room.
+Completely reimagine the space. This means you should NOT try to keep any of the existing furniture or decor from the original image.
+Instead, furnish and decorate the room entirely with NEW items that are quintessential to the '{{{style}}}' aesthetic. This includes selecting appropriate furniture, wall treatments, flooring, lighting, and accessories.
+The final image should be a beautiful, professionally designed room that clearly represents the '{{{style}}}' style.
+Output ONLY the redesigned photo as a data URI.
 
-You will take a photo of a room and redesign it based on the user's selected style.
-
-Maintain the original camera perspective and the overall dimensions of the room. The redesign should focus on applying the new style to the walls, floor, ceiling, and overall ambiance. Do not attempt to preserve any existing furniture or objects; instead, envision the room anew in the chosen style.
-
-Output ONLY the redesigned photo as a data URI, and nothing else.
-
-Selected style: {{{style}}}
-
-Original photo: {{media url=photoDataUri}}`,
+Original photo: {{media url=photoDataUri}}
+Selected style: {{{style}}}`,
 });
 
 const redesignRoomFlow = ai.defineFlow(
@@ -62,13 +60,20 @@ const redesignRoomFlow = ai.defineFlow(
       model: 'googleai/gemini-2.0-flash-exp',
       prompt: [
         {media: {url: input.photoDataUri}},
-        {text: `Redesign this room in a ${input.style} style. IMPORTANT: Maintain the original camera perspective and the overall dimensions of the room. Focus on applying the new style to the walls, floor, ceiling, and overall ambiance. Do not attempt to preserve any existing furniture or objects; instead, envision the room anew in the chosen style.`},
+        {text: `You are a special interior decorator. Your task is to redesign the provided room image in the '${input.style}' style.
+You MUST maintain the original camera perspective and the overall dimensions of the room.
+Completely reimagine the space. This means you should NOT try to keep any of the existing furniture or decor from the original image.
+Instead, furnish and decorate the room entirely with NEW items that are quintessential to the '${input.style}' aesthetic. This includes selecting appropriate furniture, wall treatments, flooring, lighting, and accessories.
+The final image should be a beautiful, professionally designed room that clearly represents the '${input.style}' style.`},
       ],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
     });
-    return {redesignedPhotoDataUri: media.url!} ;
+    if (!media?.url) {
+      throw new Error('AI did not return an image. The redesign might have been blocked by safety filters or failed for another reason.');
+    }
+    return {redesignedPhotoDataUri: media.url} ;
   }
 );
 
