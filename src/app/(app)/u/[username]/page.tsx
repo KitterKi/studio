@@ -36,13 +36,17 @@ export default function UserProfilePage() {
   const [displayFollowersCount, setDisplayFollowersCount] = useState(0);
 
   useEffect(() => {
-    if (loggedInUser && userProfileData) {
-      setIsCurrentlyFollowing(isFollowing(userProfileData.username));
-    }
+    // This effect initializes the displayFollowersCount from the mock data
+    // and sets the initial follow state for the logged-in user.
     if (userProfileData) {
       setDisplayFollowersCount(userProfileData.followersCount);
+      if (loggedInUser) {
+        setIsCurrentlyFollowing(isFollowing(userProfileData.username));
+      } else {
+        setIsCurrentlyFollowing(false); // If no loggedInUser, cannot be following
+      }
     }
-  }, [loggedInUser, userProfileData, isFollowing]);
+  }, [userProfileData, loggedInUser, isFollowing]);
 
   if (!userProfileData) {
     return <ProfileNotFound />;
@@ -51,12 +55,13 @@ export default function UserProfilePage() {
   const { username, avatarUrl, postsCount, followingCount, bio, posts } = userProfileData;
 
   const handleToggleFollow = () => {
-    if (!loggedInUser) return; 
+    if (!loggedInUser || !userProfileData) return;
 
-    toggleFollow(username); 
+    toggleFollow(userProfileData.username); // This updates AuthContext and localStorage
     
     const newFollowingState = !isCurrentlyFollowing;
     setIsCurrentlyFollowing(newFollowingState);
+    // Locally adjust the displayed follower count for this specific profile
     setDisplayFollowersCount(prevCount => newFollowingState ? prevCount + 1 : prevCount -1);
   };
 
@@ -69,21 +74,6 @@ export default function UserProfilePage() {
     }
     return name.substring(0, 2).toUpperCase();
   };
-
-  useEffect(() => {
-    if (userProfileData) {
-        let initialCount = userProfileData.followersCount;
-        if (loggedInUser && isFollowing(userProfileData.username) && !isCurrentlyFollowing) {
-            // This case implies the user followed then refreshed, adjust initial display if needed
-        } else if (loggedInUser && !isFollowing(userProfileData.username) && isCurrentlyFollowing) {
-            // User unfollowed then refreshed
-        }
-         setDisplayFollowersCount(initialCount + (isFollowing(userProfileData.username) && loggedInUser && loggedInUser.name !== usernameParam ? 1 : 0) - (!isFollowing(userProfileData.username) && loggedInUser && loggedInUser.name !== usernameParam && displayFollowersCount > userProfileData.followersCount ? 1 : 0) );
-
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps 
-  }, [userProfileData?.username, loggedInUser?.id]);
-
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-8">
@@ -99,13 +89,13 @@ export default function UserProfilePage() {
         <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
             <h1 className="text-3xl font-light text-foreground truncate">{username}</h1>
-            {loggedInUser && loggedInUser.name !== username && ( // Ensure loggedInUser.name exists if checking against username
+            {loggedInUser && loggedInUser.name !== username && ( 
               <div className="flex gap-2">
                 <Button
                   variant={isCurrentlyFollowing ? "secondary" : "default"}
                   size="sm"
                   onClick={handleToggleFollow}
-                  disabled={!loggedInUser}
+                  disabled={!loggedInUser} // Button should be enabled if loggedInUser exists
                 >
                   {isCurrentlyFollowing ? <Check className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
                   {isCurrentlyFollowing ? "Siguiendo" : "Seguir"}
@@ -158,9 +148,9 @@ export default function UserProfilePage() {
         {posts.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-4 mt-6">
             {posts.map((post) => (
-              <Link 
+              <Link
                 href={`/community?openDesignId=${post.id}`}
-                key={post.id} 
+                key={post.id}
                 className="group relative aspect-square overflow-hidden"
                 title={`Ver detalles de la publicación de ${username}`}
               >
