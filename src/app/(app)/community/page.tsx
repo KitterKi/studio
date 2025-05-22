@@ -4,13 +4,16 @@
 import DesignCard, { type DesignCardProps } from '@/components/DesignCard';
 import { useAuth } from '@/hooks/useAuth'; 
 
-const MOCK_DESIGNS: DesignCardProps[] = [
-  { id: '1', imageUrl: 'https://placehold.co/600x450.png', title: 'Transformación Moderna de Sala', userName: 'Alicia Maravillas', userAvatarUrl: 'https://placehold.co/40x40.png?text=AM', likes: 120, comments: 15, dataAiHint: "sala moderna" },
-  { id: '2', imageUrl: 'https://placehold.co/600x450.png', title: 'Oasis Rústico de Dormitorio', userName: 'Bob Constructor', userAvatarUrl: 'https://placehold.co/40x40.png?text=BC', likes: 95, comments: 8, dataAiHint: "dormitorio rustico" },
-  { id: '3', imageUrl: 'https://placehold.co/600x450.png', title: 'Concepto de Cocina Minimalista', userName: 'Carolina Danvers', userAvatarUrl: 'https://placehold.co/40x40.png?text=CD', likes: 210, comments: 22, dataAiHint: "cocina minimalista" },
-  { id: '4', imageUrl: 'https://placehold.co/600x450.png', title: 'Retiro Bohemio en Balcón', userName: 'David Copperfield', userAvatarUrl: 'https://placehold.co/40x40.png?text=DC', likes: 78, comments: 5, dataAiHint: "balcon bohemio" },
-  { id: '5', imageUrl: 'https://placehold.co/600x450.png', title: 'Oficina en Casa Industrial', userName: 'Eva Harrington', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', likes: 150, comments: 12, dataAiHint: "oficina industrial" },
-  { id: '6', imageUrl: 'https://placehold.co/600x450.png', title: 'Baño Inspirado en la Costa', userName: 'Frankenstein', userAvatarUrl: 'https://placehold.co/40x40.png?text=F', likes: 60, comments: 3, dataAiHint: "baño costero" },
+// Adjusted MOCK_DESIGNS: removed likes, comments as they are not shown in communityFeed variant. Title kept for now as default variant might use it.
+const MOCK_DESIGNS: Omit<DesignCardProps, 'variant' | 'likes' | 'comments' | 'id' | 'onImageClick' | 'isImageClickable'>[] = [
+  { imageUrl: 'https://placehold.co/600x800.png', title: 'Transformación Moderna de Sala', userName: 'Alicia M.', userAvatarUrl: 'https://placehold.co/40x40.png?text=AM', dataAiHint: "sala moderna" },
+  { imageUrl: 'https://placehold.co/600x450.png', title: 'Oasis Rústico de Dormitorio', userName: 'Bob C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=BC', dataAiHint: "dormitorio rustico" },
+  { imageUrl: 'https://placehold.co/600x700.png', title: 'Concepto de Cocina Minimalista', userName: 'Carolina D.', userAvatarUrl: 'https://placehold.co/40x40.png?text=CD', dataAiHint: "cocina minimalista" },
+  { imageUrl: 'https://placehold.co/600x500.png', title: 'Retiro Bohemio en Balcón', userName: 'David C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=DC', dataAiHint: "balcon bohemio" },
+  { imageUrl: 'https://placehold.co/600x750.png', title: 'Oficina en Casa Industrial', userName: 'Eva H.', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', dataAiHint: "oficina industrial" },
+  { imageUrl: 'https://placehold.co/600x400.png', title: 'Baño Inspirado en la Costa', userName: 'Frank G.', userAvatarUrl: 'https://placehold.co/40x40.png?text=FG', dataAiHint: "baño costero" },
+  { imageUrl: 'https://placehold.co/600x600.png', title: 'Comedor Escandinavo', userName: 'Gloria P.', userAvatarUrl: 'https://placehold.co/40x40.png?text=GP', dataAiHint: "comedor escandinavo" },
+  { imageUrl: 'https://placehold.co/600x850.png', title: 'Terraza Japandi', userName: 'Hector L.', userAvatarUrl: 'https://placehold.co/40x40.png?text=HL', dataAiHint: "terraza japandi" },
 ];
 
 
@@ -29,9 +32,21 @@ export default function CommunityPage() {
       </div>
 
       {MOCK_DESIGNS.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"> 
-          {MOCK_DESIGNS.map((design) => (
-            <DesignCard key={design.id} {...design} />
+        <div className="gap-4 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 space-y-4 pb-4"> 
+          {MOCK_DESIGNS.map((design, index) => (
+            <div key={`design-${index}`} className="break-inside-avoid">
+              <DesignCard
+                id={`design-${index}`}
+                imageUrl={design.imageUrl}
+                title={design.title}
+                userName={design.userName}
+                userAvatarUrl={design.userAvatarUrl}
+                likes={0} // Not displayed in communityFeed variant
+                comments={0} // Not displayed in communityFeed variant
+                dataAiHint={design.dataAiHint}
+                variant="communityFeed"
+              />
+            </div>
           ))}
         </div>
       ) : (
