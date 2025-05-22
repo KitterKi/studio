@@ -116,8 +116,8 @@ export default function FavoritesPage() {
                   imageUrl={fav.redesignedImage} 
                   title={fav.title || `Rediseño en ${fav.style}`}
                   userName={user.name || user.email || "Tú"}
-                  likes={0} 
-                  comments={0}
+                  likes={fav.likes || 0} 
+                  comments={fav.comments || 0}
                   dataAiHint="habitación rediseñada"
                   onImageClick={() => handleOpenFindItemsModal(fav)}
                   isImageClickable={true}

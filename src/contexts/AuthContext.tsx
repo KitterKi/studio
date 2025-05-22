@@ -13,11 +13,13 @@ export interface User {
 
 export interface FavoriteItem {
   id: string;
-  originalImage: string; // This will be an empty string in localStorage for favorites
+  originalImage: string; 
   redesignedImage: string;
   title: string;
   style: string;
   createdAt: Date;
+  likes?: number; // Nuevo campo para "Me gusta"
+  comments?: number; // Nuevo campo para "Comentarios"
 }
 
 interface AuthContextType {
@@ -27,7 +29,7 @@ interface AuthContextType {
   signup: (email: string, pass: string, name?:string) => Promise<void>;
   logout: () => void;
   favorites: FavoriteItem[];
-  addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt'>) => void;
+  addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments'>) => void;
   removeFavorite: (id: string) => void;
   canUserRedesign: () => boolean;
   recordRedesignAttempt: () => void;
@@ -55,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        // Load redesign counts for this user
+        
         const today = getTodayDateString();
         const storedCount = localStorage.getItem(`redesignCount_${parsedUser.id}`);
         const storedDate = localStorage.getItem(`lastRedesignDate_${parsedUser.id}`);
@@ -72,10 +74,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       const storedFavorites = localStorage.getItem('userFavorites');
       if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites).map((fav: FavoriteItem) => ({
+        setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({ // Usar 'any' temporalmente para la migración
           ...fav,
-          originalImage: fav.originalImage || '', // Ensure originalImage is at least an empty string
-          createdAt: new Date(fav.createdAt)
+          originalImage: fav.originalImage || '', 
+          createdAt: new Date(fav.createdAt),
+          likes: fav.likes || Math.floor(Math.random() * 150) + 5, // Valor por defecto para favs antiguos
+          comments: fav.comments || Math.floor(Math.random() * 30) + 2, // Valor por defecto
         })));
       }
     } catch (error) {
@@ -126,6 +130,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(`redesignCount_${mockUser.id}`, '0');
     localStorage.setItem(`lastRedesignDate_${mockUser.id}`, today);
 
+    // Cargar favoritos para el nuevo usuario o limpiar si es necesario
+    const storedFavorites = localStorage.getItem('userFavorites');
+      if (storedFavorites) {
+         setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
+          ...fav,
+          originalImage: fav.originalImage || '',
+          createdAt: new Date(fav.createdAt),
+          likes: fav.likes || Math.floor(Math.random() * 150) + 5,
+          comments: fav.comments || Math.floor(Math.random() * 30) + 2,
+        })));
+      } else {
+        setFavorites([]);
+      }
+
     setIsLoading(false);
     router.push('/');
   }, [router]);
@@ -156,37 +174,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setUser(null);
     localStorage.removeItem('authUser');
+    // No borramos 'userFavorites' al hacer logout para que persistan entre sesiones
+    // o si el mismo usuario vuelve a loguearse.
+    // Si quisiéramos una separación estricta por usuario, la lógica de favoritos
+    // debería ser más compleja (ej. user_id + favorites).
     router.push('/auth/signin');
   }, [user, router]);
 
-  const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt'>) => {
+  const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments'>) => {
     setFavorites(prevFavorites => {
       const newFavorite: FavoriteItem = {
-        originalImage: '', // Don't store full original image data URI
+        originalImage: '', 
         redesignedImage: item.redesignedImage,
         title: item.title,
         style: item.style,
         id: `fav-${Date.now()}`,
         createdAt: new Date(),
+        likes: Math.floor(Math.random() * 200) + 10, // "Me gusta" aleatorios
+        comments: Math.floor(Math.random() * 50) + 5, // Comentarios aleatorios
       };
       const updatedFavorites = [newFavorite, ...prevFavorites];
       try {
         localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
       } catch (e) {
-        console.error("Error guardando favoritos en localStorage (posiblemente cuota excedida aún):", e);
-        // Potentially notify user or implement a more robust queue/trimming strategy here
-        // For now, we'll just log the error. If this still happens, redesignedImage is too big.
-        if (updatedFavorites.length > 1) { // Attempt to save without the newest if it failed
+        console.error("Error guardando favoritos en localStorage:", e);
+        if (updatedFavorites.length > 1) { 
             const trimmedFavorites = updatedFavorites.slice(1);
              try {
                 localStorage.setItem('userFavorites', JSON.stringify(trimmedFavorites));
-                // TODO: Consider notifying user that the save failed due to space
-                return trimmedFavorites; // Return the state without the problematic item
+                return trimmedFavorites; 
              } catch (e2) {
                 console.error("Error guardando favoritos recortados:", e2);
              }
         }
-        return prevFavorites; // Return previous state if all fails
+        return prevFavorites; 
       }
       return updatedFavorites;
     });
