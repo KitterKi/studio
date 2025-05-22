@@ -11,6 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar, // Import useSidebar
 } from '@/components/ui/sidebar';
 import { LogoIcon } from '@/components/icons/LogoIcon';
 import { APP_NAME, SIDEBAR_NAV_ITEMS_AUTHENTICATED, SIDEBAR_NAV_ITEMS_UNAUTHENTICATED } from '@/lib/constants';
@@ -24,8 +25,15 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const { user, logout, isLoading } = useAuth();
   const router = NextUseRouter();
+  const { isMobile, setOpenMobile } = useSidebar(); // Get isMobile and setOpenMobile
 
   const navItems = user ? SIDEBAR_NAV_ITEMS_AUTHENTICATED : SIDEBAR_NAV_ITEMS_UNAUTHENTICATED;
+
+  const handleNavigationClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -73,6 +81,7 @@ export default function AppSidebar() {
                     "w-full justify-start",
                     {'bg-sidebar-accent text-sidebar-accent-foreground': pathname === item.href}
                   )}
+                  onClick={handleNavigationClick} // Close sidebar on click
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
@@ -96,16 +105,16 @@ export default function AppSidebar() {
                   <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                 </div>
              </div>
-            <Button variant="ghost" onClick={logout} className="w-full justify-start">
+            <Button variant="ghost" onClick={() => { logout(); handleNavigationClick(); }} className="w-full justify-start">
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar Sesión
             </Button>
           </div>
            <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center space-y-2 p-2">
-             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Perfil">
+             <Button variant="ghost" size="icon" onClick={() => { router.push('/profile'); handleNavigationClick(); }} title="Perfil">
                 <UserCircle className="h-5 w-5" />
              </Button>
-             <Button variant="ghost" size="icon" onClick={logout} title="Cerrar Sesión">
+             <Button variant="ghost" size="icon" onClick={() => { logout(); handleNavigationClick(); }} title="Cerrar Sesión">
                 <LogOut className="h-5 w-5" />
              </Button>
            </div>
@@ -114,3 +123,4 @@ export default function AppSidebar() {
     </Sidebar>
   );
 }
+
