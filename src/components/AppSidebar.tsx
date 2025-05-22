@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'; // Corrected import
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -35,13 +35,13 @@ export default function AppSidebar() {
     }
   };
 
-  const getInitials = (displayName?: string | null, email?: string | null) => {
-    if (displayName) {
-      const names = displayName.split(' ');
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name) {
+      const names = name.split(' ');
       if (names.length > 1) {
         return (names[0][0] + (names[names.length - 1][0] || '')).toUpperCase();
       }
-      return displayName.substring(0, 2).toUpperCase();
+      return name.substring(0, 2).toUpperCase();
     }
     if (email) return email.substring(0, 2).toUpperCase();
     return 'U';
@@ -109,11 +109,12 @@ export default function AppSidebar() {
            <div className="group-data-[collapsible=icon]:hidden p-2 space-y-2">
              <div className="flex items-center gap-2">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName, user.email)}`} alt={user.displayName || "Avatar"} data-ai-hint="profile avatar"/>
-                  <AvatarFallback>{getInitials(user.displayName, user.email)}</AvatarFallback>
+                  {/* For mock auth, no photoURL */}
+                  <AvatarImage src={`https://placehold.co/40x40.png?text=${getInitials(user.name, user.email)}`} alt={user.name || "Avatar"} data-ai-hint="profile avatar"/>
+                  <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium leading-none">{user.displayName || 'Usuario'}</p>
+                  <p className="text-sm font-medium leading-none">{user.name || 'Usuario'}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                 </div>
              </div>

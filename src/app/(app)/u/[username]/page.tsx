@@ -59,11 +59,10 @@ export default function UserProfilePage() {
       return;
     }
 
+    const wasFollowing = isCurrentlyFollowing;
     toggleFollow(userProfileData.username); 
-
-    const newFollowingState = !isCurrentlyFollowing;
-    setIsCurrentlyFollowing(newFollowingState);
-    setDisplayFollowersCount(prevCount => newFollowingState ? prevCount + 1 : prevCount -1);
+    setIsCurrentlyFollowing(!wasFollowing);
+    setDisplayFollowersCount(prevCount => !wasFollowing ? prevCount + 1 : prevCount -1);
   };
 
 
@@ -90,7 +89,10 @@ export default function UserProfilePage() {
         <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
             <h1 className="text-3xl font-light text-foreground truncate">{username}</h1>
-            {loggedInUser && loggedInUser.displayName !== username && (
+            {/* Check if the logged-in user is viewing their own public profile stub. If so, don't show follow button.
+                This assumes loggedInUser.name might match a mock profile username.
+            */}
+            {loggedInUser && loggedInUser.name !== username && (
               <div className="flex gap-2">
                 <Button
                   variant={isCurrentlyFollowing ? "secondary" : "default"}

@@ -4,26 +4,17 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { auth } from '@/lib/firebase'; // Import auth from your Firebase config
-import { 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  onAuthStateChanged, 
-  signOut,
-  type User as FirebaseUser // Rename to avoid conflict
-} from "firebase/auth";
 import { useToast } from '@/hooks/use-toast';
 
-export interface User { // This will now store Firebase User info
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL?: string | null; // Optional: if you want to use Google profile picture
+// Simplified User interface for mock auth
+export interface User {
+  id: string;
+  name?: string; // Optional name
+  email: string;
 }
 
 export interface FavoriteItem {
   id: string;
-  // originalImage: string; // No longer saving original image
   redesignedImage: string;
   title: string;
   style: string;
@@ -36,7 +27,8 @@ export interface FavoriteItem {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  login: (email: string, pass: string) => Promise<void>; // Mock login
+  signup: (name: string, email: string, pass: string) => Promise<void>; // Mock signup
   logout: () => void;
   favorites: FavoriteItem[];
   addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked' | 'title'>) => void;
@@ -59,7 +51,7 @@ const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Start as true
+  const [isLoading, setIsLoading] = useState(true);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const router = useRouter();
   const pathname = usePathname();
@@ -70,93 +62,113 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [followedUsernames, setFollowedUsernames] = useState<string[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-      setIsLoading(true); // Set loading true while processing auth state
-      if (firebaseUser) {
-        const appUser: User = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-        };
-        setUser(appUser);
-        
-        // Load user-specific data from localStorage
-        const today = getTodayDateString();
-        const storedCount = localStorage.getItem(`redesignCount_${appUser.uid}`);
-        const storedDate = localStorage.getItem(`lastRedesignDate_${appUser.uid}`);
-
-        if (storedDate === today && storedCount) {
-          setDailyRedesignCount(parseInt(storedCount, 10));
-          setLastRedesignTrackDate(today);
-        } else {
-          setDailyRedesignCount(0);
-          setLastRedesignTrackDate(today);
-          localStorage.setItem(`redesignCount_${appUser.uid}`, '0');
-          localStorage.setItem(`lastRedesignDate_${appUser.uid}`, today);
-        }
-
-        const storedFavorites = localStorage.getItem(`userFavorites_${appUser.uid}`);
-        if (storedFavorites) {
-          setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
-            ...fav,
-            createdAt: new Date(fav.createdAt),
-          })));
-        } else {
-          setFavorites([]);
-        }
-
-        const storedFollowedUsernames = localStorage.getItem(`followedUsernames_${appUser.uid}`);
-        if (storedFollowedUsernames) {
-          setFollowedUsernames(JSON.parse(storedFollowedUsernames));
-        } else {
-          setFollowedUsernames([]);
-        }
-
-      } else {
-        setUser(null);
-        setFavorites([]);
-        setFollowedUsernames([]);
-        setDailyRedesignCount(0);
-        setLastRedesignTrackDate(null);
-      }
-      setIsLoading(false); // Set loading false after processing
-    });
-
-    return () => unsubscribe();
+    // Simulate checking auth status
+    setIsLoading(true);
+    const storedUser = localStorage.getItem('mockUser');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser) as User;
+      setUser(parsedUser);
+      loadUserData(parsedUser.id); // Use a generic ID or email for mock user data
+    } else {
+      setUser(null);
+      clearUserData();
+    }
+    setIsLoading(false);
   }, []);
 
+  const loadUserData = (userId: string) => { // userId is now more generic for mock
+    const today = getTodayDateString();
+    const storedCount = localStorage.getItem(`redesignCount_${userId}`);
+    const storedDate = localStorage.getItem(`lastRedesignDate_${userId}`);
 
-  const signInWithGoogle = async () => {
-    setIsLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      // onAuthStateChanged will handle setting user and redirecting
-      toast({ title: "¡Bienvenido!", description: "Has iniciado sesión con Google."});
-      // Redirect after successful sign-in if on auth pages
-      if (pathname.startsWith('/auth')) {
-        router.push('/');
-      }
-    } catch (error: any) {
-      console.error("Error al iniciar sesión con Google:", error);
-      toast({ variant: "destructive", title: "Error de Inicio de Sesión", description: error.message || "No se pudo iniciar sesión con Google." });
-      setIsLoading(false);
+    if (storedDate === today && storedCount) {
+      setDailyRedesignCount(parseInt(storedCount, 10));
+      setLastRedesignTrackDate(today);
+    } else {
+      setDailyRedesignCount(0);
+      setLastRedesignTrackDate(today);
+      localStorage.setItem(`redesignCount_${userId}`, '0');
+      localStorage.setItem(`lastRedesignDate_${userId}`, today);
+    }
+
+    const storedFavorites = localStorage.getItem(`userFavorites_${userId}`);
+    if (storedFavorites) {
+      setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
+        ...fav,
+        createdAt: new Date(fav.createdAt),
+      })));
+    } else {
+      setFavorites([]);
+    }
+
+    const storedFollowedUsernames = localStorage.getItem(`followedUsernames_${userId}`);
+    if (storedFollowedUsernames) {
+      setFollowedUsernames(JSON.parse(storedFollowedUsernames));
+    } else {
+      setFollowedUsernames([]);
     }
   };
 
-  const logout = async () => {
+  const clearUserData = () => {
+    setFavorites([]);
+    setFollowedUsernames([]);
+    setDailyRedesignCount(0);
+    setLastRedesignTrackDate(null);
+  };
+
+  const login = async (email: string, pass: string) => {
     setIsLoading(true);
-    try {
-      await signOut(auth);
-      // onAuthStateChanged will set user to null
-      toast({ title: "Sesión Cerrada", description: "Has cerrado sesión correctamente."});
-      router.push('/auth/signin'); // Redirect to sign-in after logout
-    } catch (error: any) {
-      console.error("Error al cerrar sesión:", error);
-      toast({ variant: "destructive", title: "Error al Cerrar Sesión", description: error.message });
-      setIsLoading(false);
+    // Mock login: any email/pass works, "1234" for the specific password
+    if (pass === "1234" && email) {
+      const mockUser: User = { id: email, email, name: email.split('@')[0] }; // Use email as ID for mock
+      localStorage.setItem('mockUser', JSON.stringify(mockUser));
+      setUser(mockUser);
+      loadUserData(mockUser.id);
+      toast({ title: "¡Bienvenido de Nuevo!", description: "Has iniciado sesión (simulado)." });
+      if (pathname.startsWith('/auth')) {
+        router.push('/');
+      }
+    } else {
+      toast({ variant: "destructive", title: "Error de Inicio de Sesión", description: "Email o contraseña incorrectos (simulado)." });
     }
+    setIsLoading(false);
+  };
+  
+  const signup = async (name: string, email: string, pass: string) => {
+    setIsLoading(true);
+    // Mock signup: any email/pass works
+    if (email && pass && name) {
+        const mockUser: User = { id: email, email, name }; // Use email as ID
+        localStorage.setItem('mockUser', JSON.stringify(mockUser));
+        setUser(mockUser);
+        loadUserData(mockUser.id);
+        toast({ title: "¡Cuenta Creada!", description: "Has sido registrado (simulado)." });
+        if (pathname.startsWith('/auth')) {
+            router.push('/');
+        }
+    } else {
+        toast({ variant: "destructive", title: "Error de Registro", description: "Por favor completa todos los campos (simulado)." });
+    }
+    setIsLoading(false);
+  };
+
+
+  const logout = () => {
+    setIsLoading(true);
+    localStorage.removeItem('mockUser');
+    const userId = user?.id; // Get user ID before clearing user
+    if (userId) {
+        // Optional: Clear user-specific data on logout, or keep it if you want it to persist for next login
+        // localStorage.removeItem(`redesignCount_${userId}`);
+        // localStorage.removeItem(`lastRedesignDate_${userId}`);
+        // localStorage.removeItem(`userFavorites_${userId}`);
+        // localStorage.removeItem(`followedUsernames_${userId}`);
+    }
+    setUser(null);
+    clearUserData();
+    toast({ title: "Sesión Cerrada", description: "Has cerrado sesión correctamente (simulado)." });
+    router.push('/auth/signin');
+    setIsLoading(false);
   };
 
   const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked' | 'title'>) => {
@@ -176,18 +188,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             maxNum = Math.max(maxNum, parseInt(match[1]));
           }
         });
-        if (plainStyleExists) {
-          newTitle = `${style} ${maxNum + 1 > 1 ? maxNum + 1 : 2}`;
-        } else {
-          newTitle = `${style} ${maxNum + 1}`;
-        }
-        if (maxNum === 0 && !plainStyleExists && styleFavorites.length > 0) { // Only "Style X" exists, no plain "Style"
+        
+        if (!plainStyleExists && styleFavorites.length === 0) { // First item, no number
+             newTitle = style;
+        } else if (plainStyleExists && maxNum === 0 && styleFavorites.length === 1) { // "Style" exists, next is "Style 2"
+            newTitle = `${style} 2`;
+        } else if (maxNum > 0) {
+            newTitle = `${style} ${maxNum + 1}`;
+        } else if (!plainStyleExists && maxNum === 0 && styleFavorites.length > 0) { // Only "Style X" exists, no plain "Style"
             newTitle = `${style} ${styleFavorites.length + 1}`;
-        } else if (maxNum === 0 && plainStyleExists ) { // Only plain "Style" exists
-             newTitle = `${style} 2`;
-        } else if (maxNum > 0 ) {
-             newTitle = `${style} ${maxNum + 1}`;
+        } else { // fallback, or first numbered if plain exists
+            newTitle = `${style} ${styleFavorites.length + 1}`;
         }
+
 
       } else {
         newTitle = style; // First item of this style
@@ -204,7 +217,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       const updatedFavorites = [newFavorite, ...prevFavorites];
       try {
-        localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
+        localStorage.setItem(`userFavorites_${user.id}`, JSON.stringify(updatedFavorites));
       } catch (e) {
         console.error("Error guardando favoritos en localStorage:", e);
       }
@@ -216,7 +229,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.filter(fav => fav.id !== id);
-      localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
+      localStorage.setItem(`userFavorites_${user.id}`, JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
   }, [user]);
@@ -227,7 +240,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const updatedFavorites = prevFavorites.map(fav =>
         fav.id === id ? { ...fav, title: newTitle } : fav
       );
-      localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
+      localStorage.setItem(`userFavorites_${user.id}`, JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
   }, [user]);
@@ -246,7 +259,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         return fav;
       });
-      localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
+      localStorage.setItem(`userFavorites_${user.id}`, JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
   }, [user]);
@@ -255,9 +268,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return false;
     const today = getTodayDateString();
     if (lastRedesignTrackDate !== today) {
-      // Reset count for new day for the current user
-      // This logic is now inside onAuthStateChanged for initial load and login
-      return true; // Can redesign if date mismatch (implies new day or first time)
+      setDailyRedesignCount(0); // Reset count for new day
+      setLastRedesignTrackDate(today);
+      localStorage.setItem(`redesignCount_${user.id}`, '0');
+      localStorage.setItem(`lastRedesignDate_${user.id}`, today);
+      return true;
     }
     return dailyRedesignCount < MAX_REDESIGNS_PER_DAY;
   }, [user, dailyRedesignCount, lastRedesignTrackDate]);
@@ -270,13 +285,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (lastRedesignTrackDate !== today) {
       newCount = 1;
       setLastRedesignTrackDate(today);
-      localStorage.setItem(`lastRedesignDate_${user.uid}`, today);
+      localStorage.setItem(`lastRedesignDate_${user.id}`, today);
     } else {
       newCount = dailyRedesignCount + 1;
     }
 
     setDailyRedesignCount(newCount);
-    localStorage.setItem(`redesignCount_${user.uid}`, newCount.toString());
+    localStorage.setItem(`redesignCount_${user.id}`, newCount.toString());
 
   }, [user, dailyRedesignCount, lastRedesignTrackDate]);
 
@@ -304,7 +319,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         newFollowed = [...prev, username];
       }
-      localStorage.setItem(`followedUsernames_${user.uid}`, JSON.stringify(newFollowed));
+      localStorage.setItem(`followedUsernames_${user.id}`, JSON.stringify(newFollowed));
       return newFollowed;
     });
   }, [user]);
@@ -316,7 +331,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{
       user,
       isLoading,
-      signInWithGoogle,
+      login,
+      signup,
       logout,
       favorites,
       addFavorite,

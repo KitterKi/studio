@@ -24,15 +24,15 @@ export default function UserNav() {
     return null;
   }
 
-  const getInitials = (displayName?: string | null, email?: string | null) => {
-    if (displayName) {
-      const names = displayName.split(' ');
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name) {
+      const names = name.split(' ');
       if (names.length > 1) {
         return (names[0][0] + (names[names.length - 1][0] || '')).toUpperCase();
       }
-      return displayName.substring(0, 2).toUpperCase();
+      return name.substring(0, 2).toUpperCase();
     }
-    if (email) return email.substring(0, 2).toUpperCase();
+    if (email) return email.substring(0,2).toUpperCase();
     return 'U';
   }
 
@@ -43,15 +43,16 @@ export default function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName, user.email)}`} alt={user.displayName || user.email || "Avatar"} data-ai-hint="profile avatar"/>
-              <AvatarFallback>{getInitials(user.displayName, user.email)}</AvatarFallback>
+              {/* For mock auth, we don't have photoURL unless you simulate it */}
+              <AvatarImage src={`https://placehold.co/40x40.png?text=${getInitials(user.name, user.email)}`} alt={user.name || user.email || "Avatar"} data-ai-hint="profile avatar"/>
+              <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.displayName || 'Usuario'}</p>
+              <p className="text-sm font-medium leading-none">{user.name || 'Usuario'}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user.email}
               </p>

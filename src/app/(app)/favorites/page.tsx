@@ -21,13 +21,11 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import Image from 'next/image';
-// Simulating these for now, as we removed the AI flow import
-// import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; 
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { APP_NAME } from '@/lib/constants';
 
-// Temporary local type for IdentifiedItem
+// Using mock IdentifiedItem as AI is simulated
 export interface IdentifiedItem {
   itemName: string;
   itemDescription?: string;
@@ -37,6 +35,7 @@ export interface IdentifiedItem {
 const MOCK_SIMILAR_ITEMS: IdentifiedItem[] = [
   { itemName: "Lámpara Moderna", suggestedSearchQuery: "lámpara de arco moderna negra" },
   { itemName: "Planta Decorativa", suggestedSearchQuery: "planta de interior alta en macetero" },
+  { itemName: "Mesa de Centro", suggestedSearchQuery: "mesa de centro redonda madera clara" },
 ];
 
 export default function FavoritesPage() {
@@ -96,10 +95,10 @@ export default function FavoritesPage() {
     setSimilarItems([]);
 
     try {
-      console.log('[FavoritesPage] Simulating findSimilarItems AI flow...');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate AI delay
-      const result = { items: MOCK_SIMILAR_ITEMS }; // Use mock data
-      console.log('[FavoritesPage] Simulated findSimilarItems AI flow result:', result);
+      console.log('[FavoritesPage] Simulating findSimilarItems...');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      const result = { items: MOCK_SIMILAR_ITEMS }; 
+      console.log('[FavoritesPage] Simulated findSimilarItems result:', result);
 
       setSimilarItems(result.items);
       if (result.items.length === 0) {
@@ -110,11 +109,20 @@ export default function FavoritesPage() {
       }
     } catch (error) {
       console.error("Error buscando artículos similares (simulado):", error);
-      toast({
+       toast({
         variant: "destructive",
         title: "Error al Buscar Artículos (Simulado)",
         description: "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.",
       });
+       if (typeof error === 'object' && error !== null && 'message' in error) {
+        if (String((error as Error).message).includes("503") || String((error as Error).message).toLowerCase().includes("overloaded")) {
+           toast({
+            variant: "destructive",
+            title: "Servicio de IA Ocupado",
+            description: "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.",
+          });
+        }
+      }
     } finally {
       setIsLoadingSimilarItems(false);
     }
@@ -127,9 +135,11 @@ export default function FavoritesPage() {
 
   const handleSaveEdit = () => {
     if (editingFavoriteId && currentEditTitle.trim() !== "") {
+      console.log("[FavoritesPage] handleSaveEdit: Saving title for", editingFavoriteId, "New title:", currentEditTitle.trim());
       updateFavoriteTitle(editingFavoriteId, currentEditTitle.trim());
       toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${currentEditTitle.trim()}".` });
     } else if (editingFavoriteId) { 
+      console.log("[FavoritesPage] handleSaveEdit: Invalid title for", editingFavoriteId, "Title was:", currentEditTitle);
       toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío. La edición fue cancelada."});
     }
     setEditingFavoriteId(null);
@@ -137,6 +147,7 @@ export default function FavoritesPage() {
   };
 
   const handleCancelEdit = () => {
+    console.log("[FavoritesPage] handleCancelEdit: Cancelling edit for", editingFavoriteId);
     toast({title: "Edición Cancelada", description: "No se realizaron cambios en el nombre. Es posible que tu navegador esté bloqueando el cuadro de diálogo.", variant: "default"});
     setEditingFavoriteId(null);
     setCurrentEditTitle('');
@@ -163,7 +174,8 @@ export default function FavoritesPage() {
                   id={fav.id}
                   imageUrl={fav.redesignedImage}
                   title={fav.title || `Rediseño en ${fav.style}`}
-                  userName={user.displayName || user.email || "Tú"}
+                  userName={user.name || user.email || "Tú"}
+                  // userAvatarUrl - not needed for mock auth or use placeholder based on name/email
                   likes={fav.likes}
                   comments={fav.comments}
                   isLikedByCurrentUser={fav.userHasLiked}
@@ -207,7 +219,10 @@ export default function FavoritesPage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => handleStartEdit(fav)}
+                        onClick={() => {
+                          console.log('EDIT BUTTON CLICKED directly on fav ID:', fav.id);
+                          handleStartEdit(fav);
+                        }}
                         aria-label="Editar nombre"
                         className="bg-background/80 hover:bg-accent text-foreground rounded-full w-8 h-8"
                         title="Editar nombre"

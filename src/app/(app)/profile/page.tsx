@@ -23,13 +23,11 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
-// Simulating these for now, as we removed the AI flow import
-// import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; 
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter } from 'next/navigation';
 
-// Temporary local type for IdentifiedItem
+// Temporary local type for IdentifiedItem if findSimilarItems flow is used
 export interface IdentifiedItem {
   itemName: string;
   itemDescription?: string;
@@ -63,10 +61,10 @@ export default function ProfilePage() {
     setSimilarItems([]);
 
     try {
-      console.log('[ProfilePage] Simulating findSimilarItems AI flow...');
+      console.log('[ProfilePage] Simulating findSimilarItems...');
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
       const result = { items: MOCK_SIMILAR_ITEMS_PROFILE }; 
-      console.log('[ProfilePage] Simulated findSimilarItems AI flow result:', result);
+      console.log('[ProfilePage] Simulated findSimilarItems result:', result);
 
       setSimilarItems(result.items);
       if (result.items.length === 0) {
@@ -106,19 +104,19 @@ export default function ProfilePage() {
     );
   }
 
-  const getInitials = (displayName?: string | null, email?: string | null) => {
-    if (displayName) {
-      const names = displayName.split(' ');
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name) {
+      const names = name.split(' ');
       if (names.length > 1) {
         return (names[0][0] + (names[names.length - 1][0] || '')).toUpperCase();
       }
-      return displayName.substring(0, 2).toUpperCase();
+      return name.substring(0, 2).toUpperCase();
     }
     if (email) return email.substring(0,2).toUpperCase();
     return 'U';
   }
 
-  const mockFollowers = Math.floor(Math.random() * 1000) + 50;
+  const mockFollowers = Math.floor(Math.random() * 1000) + 50; // Kept for UI consistency
 
   const openFavoriteDetail = (fav: FavoriteItem) => {
     setSelectedFavoriteForDetail(fav);
@@ -147,15 +145,15 @@ export default function ProfilePage() {
         <header className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10 border-b pb-8">
           <Avatar className="h-32 w-32 sm:h-40 sm:w-40 ring-4 ring-primary/30 ring-offset-background ring-offset-2 shrink-0">
             <AvatarImage
-              src={user.photoURL || `https://placehold.co/160x160.png?text=${getInitials(user.displayName, user.email)}`}
-              alt={user.displayName || user.email || 'Avatar de usuario'}
+              src={`https://placehold.co/160x160.png?text=${getInitials(user.name, user.email)}`}
+              alt={user.name || user.email || 'Avatar de usuario'}
               data-ai-hint="profile large"
             />
-            <AvatarFallback className="text-5xl">{getInitials(user.displayName, user.email)}</AvatarFallback>
+            <AvatarFallback className="text-5xl">{getInitials(user.name, user.email)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-              <h1 className="text-3xl font-light text-foreground truncate">{user.displayName || 'Usuario Anónimo'}</h1>
+              <h1 className="text-3xl font-light text-foreground truncate">{user.name || 'Usuario Anónimo'}</h1>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => router.push('/profile/edit')}>
                   <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil

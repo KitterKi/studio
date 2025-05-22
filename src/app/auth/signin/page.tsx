@@ -1,18 +1,22 @@
 
 'use client';
 
+import { useState, type FormEvent, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { LogIn } from 'lucide-react';
-import { FcGoogle } from 'react-icons/fc'; // Using react-icons for Google icon
-import { useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
-
 export default function SignInPage() {
-  const { user, signInWithGoogle, isLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { login, isLoading, user } = useAuth();
+  const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,6 +25,20 @@ export default function SignInPage() {
     }
   }, [user, isLoading, router]);
 
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!email || !password) {
+      toast({ variant: "destructive", title: "Campos incompletos", description: "Por favor, ingresa tu email y contraseña." });
+      return;
+    }
+    try {
+      await login(email, password);
+      // Redirection is handled by useEffect or inside login function
+    } catch (error: any) {
+      // This catch might not be strictly necessary if login itself shows toasts
+      toast({ variant: "destructive", title: "Error de Inicio de Sesión", description: error.message || "Ocurrió un error inesperado." });
+    }
+  };
 
   return (
     <>
@@ -30,31 +48,45 @@ export default function SignInPage() {
         </CardTitle>
         <CardDescription>Accede a tu cuenta para rediseñar tus espacios.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <Button 
-          variant="outline" 
-          className="w-full py-6 text-base" 
-          onClick={signInWithGoogle}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            'Iniciando...'
-          ) : (
-            <>
-              <FcGoogle className="mr-3 h-6 w-6" />
-              Continuar con Google
-            </>
-          )}
-        </Button>
-      </CardContent>
-      <CardFooter className="flex flex-col gap-4">
-        <p className="text-sm text-muted-foreground text-center">
-          ¿No tienes una cuenta? Google creará una por ti.
-        </p>
-         <p className="text-xs text-muted-foreground px-6 text-center">
-          Al continuar, aceptas nuestras Condiciones de Servicio y Política de Privacidad (simuladas).
-        </p>
-      </CardFooter>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="tu@ejemplo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="•••••••• (prueba con '1234')"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Iniciando...' : 'Iniciar Sesión'}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            ¿No tienes una cuenta?{' '}
+            <Link href="/auth/signup" className="font-medium text-primary hover:underline">
+              Regístrate
+            </Link>
+          </p>
+        </CardFooter>
+      </form>
     </>
   );
 }
