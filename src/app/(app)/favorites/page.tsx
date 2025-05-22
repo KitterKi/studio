@@ -24,7 +24,7 @@ import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-i
 
 // Chilean Stores for search links
 const CHILEAN_STORES = [
-  { name: "Falabella", site: "falabella.cl" },
+  { name: "Falabella", site: "www.falabella.com/falabella-cl" }, // Updated domain
   { name: "Paris", site: "paris.cl" },
   { name: "Ripley", site: "ripley.cl" },
   { name: "Sodimac", site: "sodimac.cl" },
@@ -172,7 +172,7 @@ export default function FavoritesPage() {
 
       {selectedFavorite && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col"> {/* Increased max-width */}
+          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>Find Similar Items for "{selectedFavorite.title}"</DialogTitle>
               <DialogDescription>
@@ -180,7 +180,7 @@ export default function FavoritesPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 flex-grow min-h-0"> {/* Increased gap */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 flex-grow min-h-0">
               <div className="relative aspect-video w-full rounded-lg overflow-hidden border self-start">
                 <Image
                   src={selectedFavorite.redesignedImage}
@@ -191,7 +191,7 @@ export default function FavoritesPage() {
                 />
               </div>
 
-              <div className="space-y-4 overflow-y-auto pr-2 flex-grow min-h-0"> {/* Increased space-y */}
+              <div className="space-y-4 overflow-y-auto overflow-x-hidden pr-2 flex-grow min-h-0"> {/* Added overflow-x-hidden */}
                 {isLoadingSimilarItems && (
                   <div className="flex flex-col items-center justify-center h-full py-10">
                     <LoadingSpinner text="AI is identifying items..." size={10}/>
@@ -207,9 +207,9 @@ export default function FavoritesPage() {
                   </Alert>
                 )}
                 {!isLoadingSimilarItems && similarItems.map((item, index) => (
-                  <div key={index} className="p-4 border rounded-lg bg-card shadow-md space-y-2"> {/* Increased padding and added space-y */}
-                    <h3 className="font-semibold text-lg text-card-foreground flex items-center gap-2"> {/* Increased font size */}
-                      <Search className="h-5 w-5 text-primary"/> {/* Increased icon size */}
+                  <div key={index} className="p-4 border rounded-lg bg-card shadow-md space-y-2">
+                    <h3 className="font-semibold text-lg text-card-foreground flex items-center gap-2">
+                      <Search className="h-5 w-5 text-primary"/>
                       {item.itemName}
                     </h3>
                     <p className="text-sm text-muted-foreground">{item.itemDescription}</p>
@@ -219,18 +219,18 @@ export default function FavoritesPage() {
                         {CHILEAN_STORES.map(store => (
                           <Button
                             key={store.name}
-                            variant="outline" // Changed to outline for better visibility
+                            variant="outline"
                             size="sm"
                             asChild
-                            className="text-xs text-primary border-primary/50 hover:bg-primary/10" // Custom styling for links
+                            className="text-xs text-primary border-primary/50 hover:bg-primary/10"
                           >
                             <a
                               href={`https://www.google.com/search?q=site%3A${store.site}+${encodeURIComponent(item.suggestedSearchQuery)}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5" // Added gap for icon
+                              className="flex items-center gap-1.5"
                             >
-                              {store.name} <ExternalLink className="h-3.5 w-3.5" /> {/* Increased icon size */}
+                              {store.name} <ExternalLink className="h-3.5 w-3.5" />
                             </a>
                           </Button>
                         ))}
@@ -240,7 +240,7 @@ export default function FavoritesPage() {
                 ))}
               </div>
             </div>
-            <DialogFooter className="mt-auto pt-4 border-t"> {/* Ensure footer doesn't overlap content, added border-t */}
+            <DialogFooter className="mt-auto pt-4 border-t">
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
             </DialogFooter>
           </DialogContent>
