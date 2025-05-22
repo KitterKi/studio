@@ -40,7 +40,7 @@ export default function ProfilePage() {
   
   const handleOpenFindItemsModalFromDetail = async (favorite: FavoriteItem) => {
     setFavoriteForSimilarItems(favorite);
-    setIsDetailModalOpen(false); // Close detail modal first
+    setIsDetailModalOpen(false); 
     setIsFindItemsModalOpen(true);
     setIsLoadingSimilarItems(true);
     setSimilarItems([]); 
@@ -230,16 +230,12 @@ export default function ProfilePage() {
           setIsDetailModalOpen(isOpen);
         }}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="p-4 border-b relative">
+            <DialogHeader className="p-4 border-b">
               <DialogTitle className="text-lg font-semibold truncate pr-10">{selectedFavoriteForDetail.title}</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 Estilo: {selectedFavoriteForDetail.style}
               </DialogDescription>
-              <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="absolute right-2 top-2">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DialogClose>
+              {/* The default X button from DialogContent will be used. No explicit DialogClose here. */}
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -261,18 +257,13 @@ export default function ProfilePage() {
                       variant={selectedFavoriteForDetail.userHasLiked ? "destructive" : "outline"} 
                       size="sm" 
                       onClick={() => toggleUserLike(selectedFavoriteForDetail.id)}
-                      className={cn(selectedFavoriteForDetail.userHasLiked && "bg-destructive text-destructive-foreground")}
                     >
                       <Heart className="mr-2 h-4 w-4" /> {selectedFavoriteForDetail.userHasLiked ? 'Te gusta' : 'Me gusta'} ({selectedFavoriteForDetail.likes})
                     </Button>
-                    <button
-                      onClick={() => handleOpenFindItemsModalFromDetail(selectedFavoriteForDetail)}
-                      className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary hover:underline cursor-pointer"
-                      title="Haz clic para encontrar artículos similares"
-                    >
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground" title="Comentarios (próximamente para favoritos)">
                       <MessageCircle className="h-4 w-4" />
                       <span>{selectedFavoriteForDetail.comments} comentarios</span>
-                    </button>
+                    </div>
                   </div>
                    <Button 
                     variant="ghost" 
@@ -291,10 +282,9 @@ export default function ProfilePage() {
                 <div className="flex-grow overflow-y-auto py-2">
                   <div className="flex flex-col items-center justify-center text-center text-sm text-muted-foreground italic p-4 bg-muted/30 rounded-md">
                     <MessageCircle className="h-8 w-8 mb-2 text-muted-foreground/70"/>
-                    <p className="font-medium">Comentarios Detallados</p>
+                    <p className="font-medium">Comentarios</p>
                      <p className="text-xs mt-2">
-                        (Próximamente para favoritos) <br/>
-                        Mientras tanto, haz clic en el contador de comentarios de arriba para buscar artículos similares de este diseño.
+                        La visualización y creación de comentarios para favoritos estará disponible próximamente.
                     </p>
                   </div>
                 </div>
@@ -315,11 +305,7 @@ export default function ProfilePage() {
       {favoriteForSimilarItems && (
          <Dialog open={isFindItemsModalOpen} onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setFavoriteForSimilarItems(null); // Clear the selected item when closing
-            // Optionally, re-open the detail modal if it was closed to show this one
-            // const previouslySelectedDetail = favorites.find(f => f.id === favoriteForSimilarItems?.id);
-            // if (previouslySelectedDetail) setSelectedFavoriteForDetail(previouslySelectedDetail);
-            // setIsDetailModalOpen(!!previouslySelectedDetail);
+            setFavoriteForSimilarItems(null); 
           }
           setIsFindItemsModalOpen(isOpen);
         }}>
@@ -406,6 +392,8 @@ export default function ProfilePage() {
     </>
   );
 }
+    
+
     
 
     
