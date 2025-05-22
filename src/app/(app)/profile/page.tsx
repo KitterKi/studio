@@ -134,13 +134,13 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
               <h1 className="text-3xl font-light text-foreground truncate">{user.name || 'Usuario Anónimo'}</h1>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" onClick={() => toast({ title: "Próximamente", description: "¡Función de Editar Perfil estará disponible pronto!"})}>
                   <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil
                 </Button>
                 <Button variant="ghost" size="icon" className="sm:hidden" onClick={logout} title="Cerrar Sesión">
                   <LogOut className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="hidden sm:inline-flex" disabled title="Configuración">
+                <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => toast({ title: "Próximamente", description: "¡La Configuración estará disponible pronto!"})} title="Configuración">
                   <Settings className="h-5 w-5" />
                 </Button>
               </div>
@@ -281,7 +281,7 @@ export default function ProfilePage() {
                 <div className="flex-grow overflow-y-auto py-2">
                   <div className="flex flex-col items-center justify-center text-center text-sm text-muted-foreground italic p-4 bg-muted/30 rounded-md h-full">
                     <MessageCircle className="h-8 w-8 mb-2 text-muted-foreground/70"/>
-                    <p className="font-medium">Comentarios</p>
+                     <p className="font-medium">Comentarios</p>
                      <p className="text-xs mt-2">
                         La visualización y creación de comentarios para favoritos estará disponible próximamente.
                         <br />
@@ -318,7 +318,6 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
               </DialogDescription>
-                {/* Removed explicit DialogClose X button from here */}
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
