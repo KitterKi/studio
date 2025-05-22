@@ -8,6 +8,7 @@ import { MessageCircle, Heart, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import React from 'react';
+import type { Comment } from '@/app/(app)/community/page'; // Import Comment type
 
 export interface DesignCardProps {
   id: string;
@@ -16,14 +17,16 @@ export interface DesignCardProps {
   userName: string;
   userAvatarUrl?: string;
   likes: number;
-  comments: number;
+  comments: number; // This will be commentsData.length
+  commentsData?: Comment[]; // Array of actual comment objects
   dataAiHint?: string;
   onImageClick?: () => void;
   isImageClickable?: boolean;
   variant?: 'default' | 'communityFeed';
-  index?: number; 
+  index?: number;
   isLikedByCurrentUser?: boolean;
   onLikeClick?: () => void;
+  onOpenComments?: () => void; // Callback to open comments modal
 }
 
 export default function DesignCard({
@@ -33,7 +36,8 @@ export default function DesignCard({
   userName,
   userAvatarUrl,
   likes,
-  comments,
+  comments, // This will be derived from commentsData.length if commentsData is present
+  commentsData,
   dataAiHint,
   onImageClick,
   isImageClickable,
@@ -41,7 +45,10 @@ export default function DesignCard({
   index = 0,
   isLikedByCurrentUser = false,
   onLikeClick,
+  onOpenComments,
 }: DesignCardProps) {
+
+  const displayCommentCount = commentsData ? commentsData.length : comments;
 
   if (variant === 'communityFeed') {
     const [imgWidth, imgHeight] = React.useMemo(() => {
@@ -51,31 +58,29 @@ export default function DesignCard({
           return [parseInt(match[1], 10), parseInt(match[2], 10)];
         }
       }
-      // Default if parsing fails or not a placehold.co URL
-      return [600, 400]; 
+      return [600, 400];
     }, [imageUrl]);
 
     return (
       <Card
         className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative break-inside-avoid-column"
-        // onClick is removed from the Card itself for communityFeed to allow independent button clicks
       >
-        <div 
-          className={cn("w-full", isImageClickable && "cursor-pointer")}
-          onClick={isImageClickable ? onImageClick : undefined}
+        <div
+          className={cn("w-full", (isImageClickable || onOpenComments) && "cursor-pointer")}
+          onClick={onOpenComments ? onOpenComments : (isImageClickable ? onImageClick : undefined)} // Prioritize onOpenComments
         >
           <Image
             src={imageUrl}
             alt={title || 'Diseño de usuario'}
             width={imgWidth}
             height={imgHeight}
-            className="object-cover w-full h-auto block" 
+            className="object-cover w-full h-auto block"
             data-ai-hint={dataAiHint || "diseño de interiores"}
-            priority={index < 4} 
+            priority={index < 4}
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
-        
+
         <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Avatar className="h-7 w-7 border-2 border-white/60">
@@ -84,22 +89,39 @@ export default function DesignCard({
             </Avatar>
             <span className="text-sm font-semibold text-white truncate">{userName}</span>
           </div>
-          {onLikeClick && ( // Only show like button if onLikeClick is provided
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-1 h-auto text-white hover:bg-white/20 flex items-center gap-1"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent card's onImageClick if any
-                onLikeClick();
-              }}
-              aria-pressed={isLikedByCurrentUser}
-              aria-label={isLikedByCurrentUser ? "Quitar me gusta" : "Dar me gusta"}
-            >
-              <Heart className={cn("h-4 w-4", isLikedByCurrentUser && "fill-red-500 text-red-500")} />
-              <span className="text-xs">{likes}</span>
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {onOpenComments && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-1 h-auto text-white hover:bg-white/20 flex items-center gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenComments();
+                }}
+                aria-label="Ver comentarios"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-xs">{displayCommentCount}</span>
+              </Button>
+            )}
+            {onLikeClick && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-1 h-auto text-white hover:bg-white/20 flex items-center gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLikeClick();
+                }}
+                aria-pressed={isLikedByCurrentUser}
+                aria-label={isLikedByCurrentUser ? "Quitar me gusta" : "Dar me gusta"}
+              >
+                <Heart className={cn("h-4 w-4", isLikedByCurrentUser && "fill-red-500 text-red-500")} />
+                <span className="text-xs">{likes}</span>
+              </Button>
+            )}
+          </div>
         </div>
         <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-white bg-black/40 hover:bg-black/60 h-8 w-8 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all duration-300 rounded-full" aria-label="Más opciones" onClick={(e) => e.stopPropagation()}>
           <MoreHorizontal className="h-5 w-5" />
@@ -138,25 +160,33 @@ export default function DesignCard({
           <span className="text-sm font-medium text-card-foreground">{userName}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex items-center gap-1 p-1 h-auto hover:bg-accent/50"
-            onClick={onLikeClick}
-            aria-pressed={isLikedByCurrentUser}
-            aria-label={isLikedByCurrentUser ? "Quitar me gusta" : "Dar me gusta"}
-          >
-            <Heart className={cn("h-4 w-4", isLikedByCurrentUser && "fill-destructive text-destructive")} />
-            <span className="text-xs">{likes}</span>
-          </Button>
-          <div className="flex items-center gap-1">
-            <MessageCircle className="h-4 w-4" />
-            <span className="text-xs">{comments}</span>
-          </div>
+          {onLikeClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1 p-1 h-auto hover:bg-accent/50"
+              onClick={onLikeClick}
+              aria-pressed={isLikedByCurrentUser}
+              aria-label={isLikedByCurrentUser ? "Quitar me gusta" : "Dar me gusta"}
+            >
+              <Heart className={cn("h-4 w-4", isLikedByCurrentUser && "fill-destructive text-destructive")} />
+              <span className="text-xs">{likes}</span>
+            </Button>
+          )}
+           {onOpenComments && (
+             <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1 p-1 h-auto hover:bg-accent/50"
+                onClick={onOpenComments}
+                aria-label="Ver comentarios"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-xs">{displayCommentCount}</span>
+              </Button>
+           )}
         </div>
       </CardFooter>
     </Card>
   );
 }
-
-    
