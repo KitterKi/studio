@@ -1,12 +1,12 @@
 import DesignCard, { type DesignCardProps } from '@/components/DesignCard';
 
 const MOCK_DESIGNS: DesignCardProps[] = [
-  { id: '1', imageUrl: 'https://placehold.co/600x450.png?bg=F5F5DC&txtclr=8FBC8F', title: 'Modern Living Room Transformation', userName: 'Alice Wonderland', userAvatarUrl: 'https://placehold.co/40x40.png?text=AW', likes: 120, comments: 15, dataAiHint: "living room" },
-  { id: '2', imageUrl: 'https://placehold.co/600x450.png?bg=FAF9F6&txtclr=8FBC8F', title: 'Rustic Bedroom Oasis', userName: 'Bob The Builder', userAvatarUrl: 'https://placehold.co/40x40.png?text=BB', likes: 95, comments: 8, dataAiHint: "bedroom" },
-  { id: '3', imageUrl: 'https://placehold.co/600x450.png?bg=8FBC8F&txtclr=FFFFFF', title: 'Minimalist Kitchen Concept', userName: 'Carol Danvers', userAvatarUrl: 'https://placehold.co/40x40.png?text=CD', likes: 210, comments: 22, dataAiHint: "kitchen" },
-  { id: '4', imageUrl: 'https://placehold.co/600x450.png?bg=F5F5DC&txtclr=333333', title: 'Bohemian Balcony Retreat', userName: 'David Copperfield', userAvatarUrl: 'https://placehold.co/40x40.png?text=DC', likes: 78, comments: 5, dataAiHint: "balcony" },
-  { id: '5', imageUrl: 'https://placehold.co/600x450.png?bg=FAF9F6&txtclr=808080', title: 'Industrial Home Office', userName: 'Eve Harrington', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', likes: 150, comments: 12, dataAiHint: "home office" },
-  { id: '6', imageUrl: 'https://placehold.co/600x450.png?bg=8FBC8F&txtclr=F0F0F0', title: 'Coastal Inspired Bathroom', userName: 'Frankenstein', userAvatarUrl: 'https://placehold.co/40x40.png?text=F', likes: 60, comments: 3, dataAiHint: "bathroom" },
+  { id: '1', imageUrl: 'https://placehold.co/600x450.png', title: 'Modern Living Room Transformation', userName: 'Alice Wonderland', userAvatarUrl: 'https://placehold.co/40x40.png?text=AW', likes: 120, comments: 15, dataAiHint: "living room" },
+  { id: '2', imageUrl: 'https://placehold.co/600x450.png', title: 'Rustic Bedroom Oasis', userName: 'Bob The Builder', userAvatarUrl: 'https://placehold.co/40x40.png?text=BB', likes: 95, comments: 8, dataAiHint: "bedroom" },
+  { id: '3', imageUrl: 'https://placehold.co/600x450.png', title: 'Minimalist Kitchen Concept', userName: 'Carol Danvers', userAvatarUrl: 'https://placehold.co/40x40.png?text=CD', likes: 210, comments: 22, dataAiHint: "kitchen" },
+  { id: '4', imageUrl: 'https://placehold.co/600x450.png', title: 'Bohemian Balcony Retreat', userName: 'David Copperfield', userAvatarUrl: 'https://placehold.co/40x40.png?text=DC', likes: 78, comments: 5, dataAiHint: "balcony" },
+  { id: '5', imageUrl: 'https://placehold.co/600x450.png', title: 'Industrial Home Office', userName: 'Eve Harrington', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', likes: 150, comments: 12, dataAiHint: "home office" },
+  { id: '6', imageUrl: 'https://placehold.co/600x450.png', title: 'Coastal Inspired Bathroom', userName: 'Frankenstein', userAvatarUrl: 'https://placehold.co/40x40.png?text=F', likes: 60, comments: 3, dataAiHint: "bathroom" },
 ];
 
 

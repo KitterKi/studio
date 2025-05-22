@@ -11,11 +11,12 @@ export interface DesignCardProps {
   userAvatarUrl?: string;
   likes: number;
   comments: number;
+  dataAiHint?: string; // Added dataAiHint to DesignCardProps
 }
 
-export default function DesignCard({ id, imageUrl, title, userName, userAvatarUrl, likes, comments }: DesignCardProps) {
+export default function DesignCard({ id, imageUrl, title, userName, userAvatarUrl, likes, comments, dataAiHint }: DesignCardProps) {
   return (
-    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
+    <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
       <CardHeader className="p-4">
         <CardTitle className="text-lg truncate">{title}</CardTitle>
       </CardHeader>
@@ -27,7 +28,7 @@ export default function DesignCard({ id, imageUrl, title, userName, userAvatarUr
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
             className="object-cover"
-            data-ai-hint="interior design"
+            data-ai-hint={dataAiHint || "interior design"}
           />
         </div>
       </CardContent>

@@ -42,6 +42,8 @@ const redesignRoomPrompt = ai.definePrompt({
 
 You will take a photo of a room and redesign it based on the user's selected style.
 
+Crucially, ensure that the main furniture items (like beds, sofas, tables, TVs) and architectural features (windows, doors) remain in their original positions and maintain their approximate size and orientation. The redesign should focus on changing the style, colors, textures, and decorative elements, not the fundamental layout of the room or the placement/size of these key items.
+
 Output ONLY the redesigned photo as a data URI, and nothing else.
 
 Selected style: {{{style}}}
@@ -60,7 +62,7 @@ const redesignRoomFlow = ai.defineFlow(
       model: 'googleai/gemini-2.0-flash-exp',
       prompt: [
         {media: {url: input.photoDataUri}},
-        {text: `Redesign this room in a ${input.style} style`},
+        {text: `Redesign this room in a ${input.style} style. IMPORTANT: Keep all existing furniture and major room elements (like windows, doors, sofas, beds, TVs, tables) in their current positions, sizes, and orientations. Focus on changing the style, colors, textures, and decorative elements, not the room's layout or the placement of key items.`},
       ],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
