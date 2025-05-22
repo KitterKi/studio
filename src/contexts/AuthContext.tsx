@@ -63,20 +63,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Simulate checking auth status
+    console.log('[AuthContext] Initializing auth state...');
     setIsLoading(true);
     const storedUser = localStorage.getItem('mockUser');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser) as User;
+      console.log('[AuthContext] Found stored user:', parsedUser);
       setUser(parsedUser);
-      loadUserData(parsedUser.id); // Use a generic ID or email for mock user data
+      loadUserData(parsedUser.id); 
     } else {
+      console.log('[AuthContext] No stored user found.');
       setUser(null);
       clearUserData();
     }
     setIsLoading(false);
+    console.log('[AuthContext] Auth state initialization complete. isLoading:', false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadUserData = (userId: string) => { // userId is now more generic for mock
+  const loadUserData = (userId: string) => {
+    console.log('[AuthContext] Loading user data for:', userId);
     const today = getTodayDateString();
     const storedCount = localStorage.getItem(`redesignCount_${userId}`);
     const storedDate = localStorage.getItem(`lastRedesignDate_${userId}`);
@@ -110,6 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const clearUserData = () => {
+    console.log('[AuthContext] Clearing user data.');
     setFavorites([]);
     setFollowedUsernames([]);
     setDailyRedesignCount(0);
@@ -117,62 +124,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, pass: string) => {
+    console.log('[AuthContext] Attempting login with email:', email);
     setIsLoading(true);
-    // Mock login: any email/pass works, "1234" for the specific password
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     if (pass === "1234" && email) {
-      const mockUser: User = { id: email, email, name: email.split('@')[0] }; // Use email as ID for mock
+      const mockUser: User = { id: email, email, name: email.split('@')[0] };
+      console.log('[AuthContext] Mock login successful. User:', mockUser);
       localStorage.setItem('mockUser', JSON.stringify(mockUser));
       setUser(mockUser);
       loadUserData(mockUser.id);
       toast({ title: "¡Bienvenido de Nuevo!", description: "Has iniciado sesión (simulado)." });
-      if (pathname.startsWith('/auth')) {
-        router.push('/');
-      }
+      console.log('[AuthContext] Redirecting to / after successful login.');
+      router.push('/'); // Force redirect to home on successful login
     } else {
+      console.log('[AuthContext] Mock login failed.');
       toast({ variant: "destructive", title: "Error de Inicio de Sesión", description: "Email o contraseña incorrectos (simulado)." });
     }
     setIsLoading(false);
+    console.log('[AuthContext] Login function finished. isLoading set to false.');
   };
   
   const signup = async (name: string, email: string, pass: string) => {
+    console.log('[AuthContext] Attempting signup for:', name, email);
     setIsLoading(true);
-    // Mock signup: any email/pass works
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     if (email && pass && name) {
-        const mockUser: User = { id: email, email, name }; // Use email as ID
+        const mockUser: User = { id: email, email, name }; 
+        console.log('[AuthContext] Mock signup successful. User:', mockUser);
         localStorage.setItem('mockUser', JSON.stringify(mockUser));
         setUser(mockUser);
         loadUserData(mockUser.id);
         toast({ title: "¡Cuenta Creada!", description: "Has sido registrado (simulado)." });
-        if (pathname.startsWith('/auth')) {
-            router.push('/');
-        }
+        console.log('[AuthContext] Redirecting to / after successful signup.');
+        router.push('/'); // Force redirect to home on successful signup
     } else {
+        console.log('[AuthContext] Mock signup failed. Missing fields.');
         toast({ variant: "destructive", title: "Error de Registro", description: "Por favor completa todos los campos (simulado)." });
     }
     setIsLoading(false);
+    console.log('[AuthContext] Signup function finished. isLoading set to false.');
   };
 
 
   const logout = () => {
+    console.log('[AuthContext] Logging out user...');
     setIsLoading(true);
     localStorage.removeItem('mockUser');
-    const userId = user?.id; // Get user ID before clearing user
+    const userId = user?.id; 
     if (userId) {
-        // Optional: Clear user-specific data on logout, or keep it if you want it to persist for next login
-        // localStorage.removeItem(`redesignCount_${userId}`);
-        // localStorage.removeItem(`lastRedesignDate_${userId}`);
-        // localStorage.removeItem(`userFavorites_${userId}`);
-        // localStorage.removeItem(`followedUsernames_${userId}`);
+        // Keeping user-specific data for potential re-login in mock scenario
+        // console.log('[AuthContext] User-specific data for', userId, 'not cleared from localStorage on logout for mock purposes.');
     }
     setUser(null);
-    clearUserData();
+    clearUserData(); // This clears state, not necessarily all localStorage for other mock users
     toast({ title: "Sesión Cerrada", description: "Has cerrado sesión correctamente (simulado)." });
     router.push('/auth/signin');
     setIsLoading(false);
+    console.log('[AuthContext] Logout complete. isLoading set to false.');
   };
 
   const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked' | 'title'>) => {
     if (!user) return;
+    console.log('[AuthContext] Adding favorite for user:', user.id, 'Item style:', item.style);
     setFavorites(prevFavorites => {
       const style = item.style;
       let newTitle = style;
@@ -189,19 +205,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         });
         
-        if (!plainStyleExists && styleFavorites.length === 0) { // First item, no number
-             newTitle = style;
-        } else if (plainStyleExists && maxNum === 0 && styleFavorites.length === 1) { // "Style" exists, next is "Style 2"
-            newTitle = `${style} 2`;
-        } else if (maxNum > 0) {
-            newTitle = `${style} ${maxNum + 1}`;
-        } else if (!plainStyleExists && maxNum === 0 && styleFavorites.length > 0) { // Only "Style X" exists, no plain "Style"
-            newTitle = `${style} ${styleFavorites.length + 1}`;
-        } else { // fallback, or first numbered if plain exists
-            newTitle = `${style} ${styleFavorites.length + 1}`;
+        if (plainStyleExists) {
+            newTitle = `${style} ${maxNum > 0 ? maxNum + 1 : 2}`;
+        } else {
+             newTitle = `${style} ${maxNum + 1}`;
         }
-
-
+        
       } else {
         newTitle = style; // First item of this style
       }
@@ -209,7 +218,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const newFavorite: FavoriteItem = {
         ...item,
         title: newTitle,
-        id: `fav-${Date.now()}`,
+        id: `fav-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         createdAt: new Date(),
         likes: Math.floor(Math.random() * 200) + 10,
         comments: Math.floor(Math.random() * 50) + 5,
@@ -218,15 +227,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const updatedFavorites = [newFavorite, ...prevFavorites];
       try {
         localStorage.setItem(`userFavorites_${user.id}`, JSON.stringify(updatedFavorites));
+        console.log('[AuthContext] Favorite added:', newFavorite.title);
       } catch (e) {
-        console.error("Error guardando favoritos en localStorage:", e);
+        console.error("[AuthContext] Error guardando favoritos en localStorage:", e);
+        toast({variant: "destructive", title: "Error al Guardar", description: "No se pudo guardar el favorito. El almacenamiento podría estar lleno."})
       }
       return updatedFavorites;
     });
-  }, [user]);
+  }, [user, toast]);
 
   const removeFavorite = useCallback((id: string) => {
     if (!user) return;
+    console.log('[AuthContext] Removing favorite with id:', id, 'for user:', user.id);
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.filter(fav => fav.id !== id);
       localStorage.setItem(`userFavorites_${user.id}`, JSON.stringify(updatedFavorites));
@@ -236,6 +248,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateFavoriteTitle = useCallback((id: string, newTitle: string) => {
     if (!user) return;
+    console.log('[AuthContext] Updating favorite title. ID:', id, 'New Title:', newTitle, 'User:', user.id);
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.map(fav =>
         fav.id === id ? { ...fav, title: newTitle } : fav
@@ -247,6 +260,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const toggleUserLike = useCallback((favoriteId: string) => {
     if (!user) return;
+    console.log('[AuthContext] Toggling like for favorite ID:', favoriteId, 'User:', user.id);
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.map(fav => {
         if (fav.id === favoriteId) {
@@ -268,10 +282,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return false;
     const today = getTodayDateString();
     if (lastRedesignTrackDate !== today) {
-      setDailyRedesignCount(0); // Reset count for new day
-      setLastRedesignTrackDate(today);
-      localStorage.setItem(`redesignCount_${user.id}`, '0');
-      localStorage.setItem(`lastRedesignDate_${user.id}`, today);
+      // console.log('[AuthContext] Resetting redesign count for new day for user:', user.id);
+      // No need to call setters here, they will be called in recordRedesignAttempt or if remainingRedesignsToday is checked
       return true;
     }
     return dailyRedesignCount < MAX_REDESIGNS_PER_DAY;
@@ -283,21 +295,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let newCount = dailyRedesignCount;
 
     if (lastRedesignTrackDate !== today) {
+      console.log('[AuthContext] First redesign of the day for user:', user.id);
       newCount = 1;
-      setLastRedesignTrackDate(today);
-      localStorage.setItem(`lastRedesignDate_${user.id}`, today);
+      setLastRedesignTrackDate(today); // Update state
+      localStorage.setItem(`lastRedesignDate_${user.id}`, today); // Update localStorage
     } else {
       newCount = dailyRedesignCount + 1;
     }
-
-    setDailyRedesignCount(newCount);
-    localStorage.setItem(`redesignCount_${user.id}`, newCount.toString());
+    
+    setDailyRedesignCount(newCount); // Update state
+    localStorage.setItem(`redesignCount_${user.id}`, newCount.toString()); // Update localStorage
+    console.log('[AuthContext] Redesign attempt recorded. User:', user.id, 'New count:', newCount);
 
   }, [user, dailyRedesignCount, lastRedesignTrackDate]);
 
   const remainingRedesignsToday = useMemo(() => {
     if (!user) return 0;
     const today = getTodayDateString();
+    // If the last tracked date is not today, the count effectively resets for the purpose of this calculation.
     if (lastRedesignTrackDate !== today) {
       return MAX_REDESIGNS_PER_DAY;
     }
@@ -311,6 +326,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const toggleFollow = useCallback((username: string) => {
     if (!user) return;
+    console.log('[AuthContext] Toggling follow for username:', username, 'User:', user.id);
     setFollowedUsernames(prev => {
       const isCurrentlyFollowing = prev.includes(username);
       let newFollowed: string[];
