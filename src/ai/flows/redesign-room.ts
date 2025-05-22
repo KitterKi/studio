@@ -1,4 +1,4 @@
-// 'use server'
+
 'use server';
 
 /**
@@ -16,7 +16,7 @@ const RedesignRoomInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      'A photo of the room to redesign, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' 
+      'A photo of the room to redesign, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
     ),
   style: z.string().describe('The desired design style (e.g., Modern, Rustic, Minimalist).'),
 });
@@ -42,7 +42,7 @@ const redesignRoomPrompt = ai.definePrompt({
 
 You will take a photo of a room and redesign it based on the user's selected style.
 
-Crucially, ensure that the main furniture items (like beds, sofas, tables, TVs) and architectural features (windows, doors) remain in their original positions and maintain their approximate size and orientation. The redesign should focus on changing the style, colors, textures, and decorative elements, not the fundamental layout of the room or the placement/size of these key items.
+Maintain the original camera perspective and the overall dimensions of the room. The redesign should focus on applying the new style to the walls, floor, ceiling, and overall ambiance. Do not attempt to preserve any existing furniture or objects; instead, envision the room anew in the chosen style.
 
 Output ONLY the redesigned photo as a data URI, and nothing else.
 
@@ -62,7 +62,7 @@ const redesignRoomFlow = ai.defineFlow(
       model: 'googleai/gemini-2.0-flash-exp',
       prompt: [
         {media: {url: input.photoDataUri}},
-        {text: `Redesign this room in a ${input.style} style. IMPORTANT: Keep all existing furniture and major room elements (like windows, doors, sofas, beds, TVs, tables) in their current positions, sizes, and orientations. Focus on changing the style, colors, textures, and decorative elements, not the room's layout or the placement of key items.`},
+        {text: `Redesign this room in a ${input.style} style. IMPORTANT: Maintain the original camera perspective and the overall dimensions of the room. Focus on applying the new style to the walls, floor, ceiling, and overall ambiance. Do not attempt to preserve any existing furniture or objects; instead, envision the room anew in the chosen style.`},
       ],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
@@ -71,3 +71,4 @@ const redesignRoomFlow = ai.defineFlow(
     return {redesignedPhotoDataUri: media.url!} ;
   }
 );
+
