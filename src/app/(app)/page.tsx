@@ -30,18 +30,33 @@ export default function StyleMyRoomPage() {
   const [allowRedesign, setAllowRedesign] = useState(false);
 
   useEffect(() => {
+    console.log('[StyleMyRoomPage] useEffect for allowRedesign triggered.');
     if(user){ 
-        setAllowRedesign(canUserRedesign());
+        const can = canUserRedesign();
+        console.log('[StyleMyRoomPage] User exists. canUserRedesign():', can, 'Remaining today:', remainingRedesignsToday);
+        setAllowRedesign(can);
+    } else {
+      console.log('[StyleMyRoomPage] No user. Setting allowRedesign to false.');
+      setAllowRedesign(false);
     }
   }, [user, canUserRedesign, remainingRedesignsToday]);
 
 
   const handleRedesignSubmit = async (photoDataUri: string, style: string) => {
+    console.log('[StyleMyRoomPage] handleRedesignSubmit triggered with photo and style.');
+    console.log('[StyleMyRoomPage] Current user:', !!user, 'Current allowRedesign (state):', allowRedesign);
+
     if (!user) {
+      console.log('[StyleMyRoomPage] No user authenticated. Toasting and returning.');
       toast({ variant: "destructive", title: "No Has Iniciado Sesión", description: "Por favor, inicia sesión para rediseñar habitaciones." });
       return;
     }
-    if (!allowRedesign) {
+    // Re-check canUserRedesign directly, as page state 'allowRedesign' might not be updated yet
+    // if a redesign was just recorded by another component or if context updates are pending.
+    // However, for the button's disabled state, the page's 'allowRedesign' state is what matters for immediate UI feedback.
+    // For the actual submission, we check the source of truth again.
+    if (!canUserRedesign()) {
+      console.log('[StyleMyRoomPage] Redesign not allowed by canUserRedesign() from context. Toasting and returning.');
       toast({
         variant: "destructive",
         title: "Límite Diario Alcanzado",
@@ -50,29 +65,45 @@ export default function StyleMyRoomPage() {
       return;
     }
 
+    console.log('[StyleMyRoomPage] Proceeding with redesign. Setting loading states...');
     setIsLoadingRedesign(true);
     setOriginalImage(photoDataUri);
     setRedesignedImage(null);
     setCurrentStyle(style);
 
     try {
+      console.log('[StyleMyRoomPage] Calling redesignRoom AI flow...');
       const result = await redesignRoom({ photoDataUri, style });
+      console.log('[StyleMyRoomPage] redesignRoom AI flow result:', result);
+
       if (result.redesignedPhotoDataUri) {
+        console.log('[StyleMyRoomPage] Redesign successful. Updating UI and recording attempt.');
         setRedesignedImage(result.redesignedPhotoDataUri);
         recordRedesignAttempt(); 
-        setAllowRedesign(canUserRedesign()); 
+        // After recording, immediately re-evaluate and set allowRedesign for the current page's state
+        const canStillRedesign = canUserRedesign();
+        console.log('[StyleMyRoomPage] After recording attempt, canUserRedesign():', canStillRedesign);
+        setAllowRedesign(canStillRedesign); 
         toast({
           title: "¡Rediseño Completo!",
           description: "Tu habitación ha sido rediseñada exitosamente.",
         });
       } else {
-        throw new Error("La IA no devolvió una imagen.");
+        console.error('[StyleMyRoomPage] AI did not return an image.');
+        toast({
+          variant: "destructive",
+          title: "Falló el Rediseño",
+          description: "La IA no devolvió una imagen. Prueba con otra imagen o estilo.",
+        });
+        setRedesignedImage(null); // Clear redesigned image on failure
       }
     } catch (error) {
-      console.error("Error rediseñando la habitación:", error);
+      console.error("[StyleMyRoomPage] Error during redesignRoom call or subsequent logic:", error);
       let errorMessage = "Falló el rediseño de la habitación. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
         errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
       }
       toast({
         variant: "destructive",
@@ -81,6 +112,7 @@ export default function StyleMyRoomPage() {
       });
       setRedesignedImage(null); 
     } finally {
+      console.log('[StyleMyRoomPage] In finally block, setting isLoadingRedesign to false.');
       setIsLoadingRedesign(false);
     }
   };
@@ -89,7 +121,7 @@ export default function StyleMyRoomPage() {
     if (originalImage && redesignedImage && currentStyle && user) {
       const favoriteTitle = `Mi Habitación ${currentStyle}`;
       addFavorite({
-        originalImage, 
+        originalImage, // originalImage is used in the context, will be set to '' there
         redesignedImage,
         title: favoriteTitle,
         style: currentStyle,
@@ -133,10 +165,13 @@ export default function StyleMyRoomPage() {
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start max-w-6xl mx-auto">
-        <div className="md:sticky md:top-24 space-y-6 bg-card p-6 sm:p-8 rounded-xl shadow-xl">
+        <div className="md:sticky md:top-24">
           <RoomRedesignForm 
             onSubmit={handleRedesignSubmit} 
             isLoading={isLoadingRedesign} 
+            // isSubmitDisabled is based on page's allowRedesign state and isLoadingRedesign
+            // This is for the immediate button text and disabled state in the form.
+            // The handleRedesignSubmit function will re-verify with canUserRedesign() from context.
             isSubmitDisabled={!allowRedesign || isLoadingRedesign}
           />
         </div>

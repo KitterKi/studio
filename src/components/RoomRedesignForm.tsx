@@ -52,7 +52,12 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log('[RoomRedesignForm] handleSubmit triggered');
+    console.log('[RoomRedesignForm] photoPreview:', !!photoPreview, 'selectedStyle:', selectedStyle, 'photoFile:', !!photoFile);
+    console.log('[RoomRedesignForm] isLoading (prop):', isLoading, 'isSubmitDisabled (prop):', isSubmitDisabled);
+
     if (!photoPreview || !selectedStyle || !photoFile) {
+      console.log('[RoomRedesignForm] Validation failed: Missing photo, style, or file. Toasting and returning.');
       toast({
         variant: "destructive",
         title: "Información faltante",
@@ -60,20 +65,40 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
       });
       return;
     }
+    
+    // isSubmitDisabled is a prop passed from the parent page, 
+    // usually reflecting daily limits or other parent-level conditions.
     if (isSubmitDisabled) { 
+      console.log('[RoomRedesignForm] Submission blocked by isSubmitDisabled prop (e.g., daily limit). Toasting and returning.');
        toast({
         variant: "destructive",
-        title: "Límite Diario Alcanzado",
-        description: "Has usado todos tus rediseños hoy. Vuelve mañana.",
+        title: "Acción no permitida",
+        description: "Has alcanzado tu límite diario de rediseños o la acción no está permitida actualmente.",
       });
       return;
     }
     
+    console.log('[RoomRedesignForm] All checks passed. Calling onSubmit prop.');
     await onSubmit(photoPreview, selectedStyle);
+    console.log('[RoomRedesignForm] onSubmit prop finished.');
   };
 
+  // Determine button text and disabled state more explicitly
+  let buttonText = 'Generar Rediseño';
+  let buttonDisabled = isLoading || !photoPreview || !photoFile || !selectedStyle;
+
+  if (isLoading) {
+    buttonText = 'Generando...';
+  } else if (isSubmitDisabled) { 
+    // This isSubmitDisabled comes from the parent (e.g. page.tsx)
+    // and usually means daily limit reached if isLoading is false.
+    buttonText = 'Límite Diario Alcanzado';
+    buttonDisabled = true; // Explicitly disable if parent says so (e.g. daily limit)
+  }
+
+
   return (
-    <div className="w-full space-y-8">
+    <div className="space-y-6 bg-card p-6 sm:p-8 rounded-xl shadow-xl">
       <div>
         <h2 className="text-xl font-semibold mb-3 text-foreground flex items-center">
             <UploadCloud className="mr-2 h-5 w-5 text-primary" />
@@ -123,16 +148,18 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
       </div>
       
       <div className="pt-2">
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={isLoading || !photoPreview || !photoFile || !selectedStyle || isSubmitDisabled}
-          size="lg"
-        >
-          {isLoading ? 'Generando...' : (isSubmitDisabled && !isLoading ? 'Límite Diario Alcanzado' : 'Generar Rediseño')}
-          {!isLoading && !(isSubmitDisabled && !isLoading) && <Wand2 className="ml-2 h-4 w-4" />}
-          {isLoading && <Wand2 className="ml-2 h-4 w-4 animate-pulse" />}
-        </Button>
+        <form onSubmit={handleSubmit}>
+            <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={buttonDisabled}
+            size="lg"
+            >
+            {buttonText}
+            {isLoading && <Wand2 className="ml-2 h-4 w-4 animate-pulse" />}
+            {!isLoading && !buttonDisabled && <Wand2 className="ml-2 h-4 w-4" />}
+            </Button>
+        </form>
       </div>
     </div>
   );
