@@ -6,14 +6,13 @@ import { getAuth, type Auth } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// IMPORTANT: Replace with your actual Firebase project configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBEFXDkfklp3h_5nQArEBfUOL6v0P2xCps",
+  authDomain: "stylemyroom-l25y8.firebaseapp.com",
+  projectId: "stylemyroom-l25y8",
+  storageBucket: "stylemyroom-l25y8.appspot.com", // Corrected from firebasestorage.app
+  messagingSenderId: "99144798278",
+  appId: "1:99144798278:web:663bbac40d4e2bbe273a47"
 };
 
 // Initialize Firebase
