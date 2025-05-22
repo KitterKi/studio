@@ -11,7 +11,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBEFXDkfklp3h_5nQArEBfUOL6v0P2xCps",
   authDomain: "stylemyroom-l25y8.firebaseapp.com",
   projectId: "stylemyroom-l25y8",
-  storageBucket: "stylemyroom-l25y8.appspot.com", // Corregido de firebasestorage.app a appspot.com
+  storageBucket: "stylemyroom-l25y8.firebasestorage.app", // Corregido de firebasestorage.app a appspot.com
   messagingSenderId: "99144798278",
   appId: "1:99144798278:web:663bbac40d4e2bbe273a47"
 };
