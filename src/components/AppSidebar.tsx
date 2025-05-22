@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter as NextUseRouter } from 'next/navigation'; // Corrected import and aliased
 import {
   Sidebar,
   SidebarHeader,
@@ -11,19 +11,19 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { LogoIcon } from '@/components/icons/LogoIcon';
 import { APP_NAME, SIDEBAR_NAV_ITEMS_AUTHENTICATED, SIDEBAR_NAV_ITEMS_UNAUTHENTICATED } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { LogOut, UserCircle, Settings } from 'lucide-react';
+import { LogOut, UserCircle } from 'lucide-react'; // Removed unused Settings
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const { user, logout, isLoading } = useAuth();
+  const router = NextUseRouter(); // Instantiate the router correctly
 
   const navItems = user ? SIDEBAR_NAV_ITEMS_AUTHENTICATED : SIDEBAR_NAV_ITEMS_UNAUTHENTICATED;
 
@@ -104,7 +104,7 @@ export default function AppSidebar() {
             </Button>
           </div>
            <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center space-y-2 p-2">
-             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Profile">
+             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Profile"> {/* Use router.push here */}
                 <UserCircle className="h-5 w-5" />
              </Button>
              <Button variant="ghost" size="icon" onClick={logout} title="Logout">
@@ -117,9 +117,4 @@ export default function AppSidebar() {
   );
 }
 
-// Helper for router in client component
-function useRouter() {
-  const routerInternal = usePathname(); // to ensure component re-renders on path change
-  const { push } = require('next/navigation');
-  return { push };
-}
+// Removed the custom useRouter helper function
