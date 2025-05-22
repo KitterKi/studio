@@ -10,26 +10,26 @@ interface RedesignPreviewProps {
 }
 
 const ImagePlaceholder = ({ icon: Icon, text }: { icon: React.ElementType, text: string }) => (
-  <div className="aspect-video w-full bg-muted/30 rounded-lg flex flex-col items-center justify-center text-muted-foreground p-4 shadow-inner border border-dashed">
-    <Icon className="h-10 w-10 mb-3 text-muted-foreground/70" />
-    <p className="text-xs text-center">{text}</p>
+  <div className="aspect-video w-full bg-muted/20 rounded-lg flex flex-col items-center justify-center text-muted-foreground p-6 shadow-inner border-2 border-dashed border-muted/40 min-h-[200px]">
+    <Icon className="h-12 w-12 mb-4 text-muted-foreground/60" />
+    <p className="text-sm text-center font-medium">{text}</p>
   </div>
 );
 
 export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, isLoading }: RedesignPreviewProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-medium text-center text-muted-foreground mb-3">Original</h3>
-        <div className="rounded-xl overflow-hidden border bg-card shadow-lg">
+        <h3 className="text-xl font-semibold text-center text-foreground mb-4">Original</h3>
+        <div className="rounded-xl overflow-hidden border-2 border-muted/30 bg-card shadow-xl">
           {originalImageSrc ? (
-            <div className="aspect-video relative w-full">
+            <div className="aspect-video relative w-full bg-muted/10">
               <Image
                 src={originalImageSrc}
                 alt="Habitación original"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-contain"
+                className="object-contain p-1" // Added p-1 for a slight inset
                 data-ai-hint="room interior"
               />
             </div>
@@ -40,20 +40,20 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
       </div>
 
       <div>
-        <h3 className="text-lg font-medium text-center text-muted-foreground mb-3">Rediseño IA</h3>
-        <div className="rounded-xl overflow-hidden border bg-card shadow-lg">
+        <h3 className="text-xl font-semibold text-center text-foreground mb-4">Rediseño IA</h3>
+        <div className="rounded-xl overflow-hidden border-2 border-primary/40 bg-card shadow-xl">
           {isLoading ? (
-            <div className="aspect-video w-full flex items-center justify-center bg-muted/30">
-              <LoadingSpinner size={12} text="La IA está haciendo su magia..." />
+            <div className="aspect-video w-full flex items-center justify-center bg-muted/20 min-h-[200px]">
+              <LoadingSpinner size={16} text="La IA está haciendo su magia..." />
             </div>
           ) : redesignedImageSrc ? (
-            <div className="aspect-video relative w-full">
+            <div className="aspect-video relative w-full bg-muted/10">
                <Image
                 src={redesignedImageSrc}
                 alt="Habitación rediseñada"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-contain"
+                className="object-contain p-1" // Added p-1 for a slight inset
                 data-ai-hint="redesigned room"
               />
             </div>

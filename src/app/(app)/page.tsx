@@ -89,7 +89,7 @@ export default function StyleMyRoomPage() {
     if (originalImage && redesignedImage && currentStyle && user) {
       const favoriteTitle = `Mi Habitación ${currentStyle}`;
       addFavorite({
-        originalImage, // Aunque no se guarde en localStorage, se pasa aquí
+        originalImage, 
         redesignedImage,
         title: favoriteTitle,
         style: currentStyle,
@@ -110,18 +110,18 @@ export default function StyleMyRoomPage() {
   const isAlreadyFavorite = redesignedImage && favorites.some(fav => fav.redesignedImage === redesignedImage);
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
+    <div className="space-y-10">
+      <div className="text-center space-y-3">
+        <h1 className="text-3xl font-bold tracking-tight lg:text-4xl text-foreground">
           Diseñador IA {APP_NAME}
         </h1>
-        <p className="mt-2 text-base text-muted-foreground sm:mt-3 lg:text-lg">
+        <p className="text-md text-muted-foreground lg:text-lg max-w-2xl mx-auto">
           Transforma tu espacio: sube una foto, elige un estilo ¡y deja que la IA haga su magia!
         </p>
       </div>
 
       {user && (
-        <Alert className="max-w-md mx-auto bg-accent/30 border-accent/50">
+        <Alert className="max-w-lg mx-auto bg-accent/30 border-accent/50 shadow-sm">
           <Info className="h-5 w-5 text-accent-foreground" />
           <AlertTitle className="font-semibold text-accent-foreground text-sm">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
           <AlertDescription className="text-accent-foreground/80 text-xs">
@@ -132,27 +132,27 @@ export default function StyleMyRoomPage() {
         </Alert>
       )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start max-w-7xl mx-auto">
-        <div className="lg:col-span-2 p-6 bg-card rounded-xl shadow-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start max-w-6xl mx-auto">
+        <div className="md:sticky md:top-24 space-y-6 bg-card p-6 sm:p-8 rounded-xl shadow-xl">
           <RoomRedesignForm 
             onSubmit={handleRedesignSubmit} 
             isLoading={isLoadingRedesign} 
             isSubmitDisabled={!allowRedesign || isLoadingRedesign}
           />
         </div>
-        <div className="lg:col-span-3 space-y-6">
+        <div className="space-y-8">
           <RedesignPreview
             originalImageSrc={originalImage}
             redesignedImageSrc={redesignedImage}
             isLoading={isLoadingRedesign}
           />
           {user && redesignedImage && !isLoadingRedesign && (
-            <div className="text-center pt-4">
+            <div className="text-center pt-2">
               <Button 
                 onClick={handleSaveFavorite} 
                 disabled={isAlreadyFavorite}
                 size="lg"
-                className="w-full max-w-md mx-auto shadow-md hover:shadow-lg transition-shadow"
+                className="w-full max-w-sm mx-auto shadow-lg hover:shadow-xl transition-shadow"
               >
                 <Heart className={`mr-2 h-5 w-5 ${isAlreadyFavorite ? 'fill-destructive text-destructive' : ''}`} />
                 {isAlreadyFavorite ? 'Guardado en Favoritos' : 'Guardar en Favoritos'}
