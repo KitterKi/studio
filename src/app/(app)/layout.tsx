@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react'; // Added useState
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AppHeader from '@/components/AppHeader';
 import AppSidebar from '@/components/AppSidebar';
@@ -17,62 +17,63 @@ export default function AppGroupLayout({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [isRedirecting, setIsRedirecting] = useState(false); // Added state for redirect
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
     if (isLoading) {
-      setIsRedirecting(false); // Reset redirecting state if auth is still loading
+      setIsRedirecting(false); 
       return;
     }
 
-    if (!user && !pathname.startsWith('/auth/')) {
+    const protectedPaths = ['/favorites', '/profile', '/settings', '/profile/edit'];
+    const isProtectedPath = protectedPaths.some(p => pathname.startsWith(p));
+
+    if (!user && isProtectedPath) {
       if (!isRedirecting) {
         setIsRedirecting(true);
         router.replace('/auth/signin');
       }
     } else {
-      // If user exists or we are on an auth path, we are not trying to redirect from here.
       if (isRedirecting) {
         setIsRedirecting(false);
       }
     }
-  }, [user, isLoading, router, pathname, isRedirecting]); // Added isRedirecting to dependencies
+  }, [user, isLoading, router, pathname, isRedirecting]);
 
-  if (isLoading || isRedirecting) { // Show loading screen if auth is loading OR if redirecting
-    return <InitialLoadingScreen />;
-  }
-
-  // If not loading, not redirecting, and no user,
-  // this implies we are on an auth path (which AppGroupLayout shouldn't handle)
-  // or something else is wrong. The redirect should have happened.
-  // For safety, if somehow user is null here and we are not on an auth path, show loading.
-  // However, the isRedirecting flag should cover this.
-  if (!user && !pathname.startsWith('/auth/')) {
-     // This case should ideally be covered by isRedirecting flag making the above block true
+  if (isLoading || (isRedirecting && !pathname.startsWith('/auth/'))) {
     return <InitialLoadingScreen />;
   }
   
-  // If user is logged in, render the full app layout
-  if (user) {
+  if (!user) {
+    // For unauthenticated users, render a simpler layout without sidebar
+    // but still show AppHeader and the children (e.g., community page, main redesign page if public)
+    // The AppHeader will show Login/SignUp buttons.
+    // Individual pages like /favorites will redirect if this layout is reached without a user.
     return (
-      <SidebarProvider>
         <div className="flex flex-col min-h-screen">
           <AppHeader />
-          <div className="flex flex-grow">
-            <AppSidebar />
-            <SidebarInset>
-              <main className="flex-grow container mx-auto px-4 py-8">
-                {children}
-              </main>
-            </SidebarInset>
-          </div>
+          <main className="flex-grow px-4 py-8">
+            {children}
+          </main>
         </div>
-      </SidebarProvider>
     );
   }
   
-  // Fallback if user is null but we are on an auth path (handled by AuthLayout)
-  // or if none of the above conditions met (should not happen for app routes).
-  // If on an app route and !user, the isRedirecting logic should show InitialLoadingScreen.
-  return <InitialLoadingScreen />;
+  // If user is logged in, render the full app layout with sidebar
+  return (
+    <SidebarProvider>
+      <div className="flex flex-col min-h-screen">
+        <AppHeader />
+        <div className="flex flex-grow">
+          <AppSidebar />
+          <SidebarInset>
+            {/* Removed container and mx-auto from here, let pages handle their own max-width */}
+            <main className="flex-grow px-4 py-8">
+              {children}
+            </main>
+          </SidebarInset>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
 }
