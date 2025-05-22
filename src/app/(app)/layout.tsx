@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react'; // Added useState
 import { usePathname, useRouter } from 'next/navigation';
 import AppHeader from '@/components/AppHeader';
 import AppSidebar from '@/components/AppSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import InitialLoadingScreen from '@/components/InitialLoadingScreen'; // Import the new loading screen
+import InitialLoadingScreen from '@/components/InitialLoadingScreen';
 
 export default function AppGroupLayout({
   children,
@@ -17,30 +17,41 @@ export default function AppGroupLayout({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [isRedirecting, setIsRedirecting] = useState(false); // Added state for redirect
 
   useEffect(() => {
-    // If authentication is still loading, don't do anything yet.
     if (isLoading) {
+      setIsRedirecting(false); // Reset redirecting state if auth is still loading
       return;
     }
 
-    // If not loading, no user, and not on an auth path already, redirect to signin.
-    // All routes under (app) are now protected.
     if (!user && !pathname.startsWith('/auth/')) {
-      router.replace('/auth/signin');
+      if (!isRedirecting) {
+        setIsRedirecting(true);
+        router.replace('/auth/signin');
+      }
+    } else {
+      // If user exists or we are on an auth path, we are not trying to redirect from here.
+      if (isRedirecting) {
+        setIsRedirecting(false);
+      }
     }
-  }, [user, isLoading, router, pathname]);
+  }, [user, isLoading, router, pathname, isRedirecting]); // Added isRedirecting to dependencies
 
-  if (isLoading) {
+  if (isLoading || isRedirecting) { // Show loading screen if auth is loading OR if redirecting
     return <InitialLoadingScreen />;
   }
 
-  // If there's no user and we're not on an auth path,
-  // we are in the process of redirecting. Show the loading screen to avoid content flash.
+  // If not loading, not redirecting, and no user,
+  // this implies we are on an auth path (which AppGroupLayout shouldn't handle)
+  // or something else is wrong. The redirect should have happened.
+  // For safety, if somehow user is null here and we are not on an auth path, show loading.
+  // However, the isRedirecting flag should cover this.
   if (!user && !pathname.startsWith('/auth/')) {
+     // This case should ideally be covered by isRedirecting flag making the above block true
     return <InitialLoadingScreen />;
   }
-
+  
   // If user is logged in, render the full app layout
   if (user) {
     return (
@@ -60,7 +71,8 @@ export default function AppGroupLayout({
     );
   }
   
-  // Fallback for any other scenario (e.g. an auth page somehow trying to use this layout)
-  // This should ideally not be reached if routing is set up correctly.
+  // Fallback if user is null but we are on an auth path (handled by AuthLayout)
+  // or if none of the above conditions met (should not happen for app routes).
+  // If on an app route and !user, the isRedirecting logic should show InitialLoadingScreen.
   return <InitialLoadingScreen />;
 }
