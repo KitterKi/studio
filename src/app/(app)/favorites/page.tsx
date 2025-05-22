@@ -172,7 +172,7 @@ export default function FavoritesPage() {
 
       {selectedFavorite && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col"> {/* Increased max-width */}
             <DialogHeader>
               <DialogTitle>Find Similar Items for "{selectedFavorite.title}"</DialogTitle>
               <DialogDescription>
@@ -180,7 +180,7 @@ export default function FavoritesPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 flex-grow min-h-0"> {/* Added min-h-0 for flex child */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 flex-grow min-h-0"> {/* Increased gap */}
               <div className="relative aspect-video w-full rounded-lg overflow-hidden border self-start">
                 <Image
                   src={selectedFavorite.redesignedImage}
@@ -191,53 +191,56 @@ export default function FavoritesPage() {
                 />
               </div>
 
-              <div className="space-y-3 overflow-y-auto pr-2 flex-grow min-h-0"> {/* Added min-h-0 for flex child */}
+              <div className="space-y-4 overflow-y-auto pr-2 flex-grow min-h-0"> {/* Increased space-y */}
                 {isLoadingSimilarItems && (
-                  <div className="flex flex-col items-center justify-center h-full">
+                  <div className="flex flex-col items-center justify-center h-full py-10">
                     <LoadingSpinner text="AI is identifying items..." size={10}/>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length === 0 && (
-                  <Alert>
+                  <Alert className="mt-4">
                     <Info className="h-4 w-4" />
                     <AlertTitle>Nothing Found Yet</AlertTitle>
                     <AlertDescription>
-                      The AI could not identify distinct items to search for in this image. Try another image.
+                      The AI could not identify distinct items to search for in this image, or the image might not contain easily identifiable items. Try another image or check back if the AI is still learning.
                     </AlertDescription>
                   </Alert>
                 )}
                 {!isLoadingSimilarItems && similarItems.map((item, index) => (
-                  <div key={index} className="p-3 border rounded-md bg-card shadow-sm">
-                    <h3 className="font-semibold text-card-foreground flex items-center gap-2">
-                      <Search className="h-4 w-4 text-primary"/>
+                  <div key={index} className="p-4 border rounded-lg bg-card shadow-md space-y-2"> {/* Increased padding and added space-y */}
+                    <h3 className="font-semibold text-lg text-card-foreground flex items-center gap-2"> {/* Increased font size */}
+                      <Search className="h-5 w-5 text-primary"/> {/* Increased icon size */}
                       {item.itemName}
                     </h3>
-                    <p className="text-sm text-muted-foreground my-1">{item.itemDescription}</p>
-                    <div className="space-y-1 mt-2">
-                      <p className="text-xs font-medium text-muted-foreground">Search on:</p>
-                      {CHILEAN_STORES.map(store => (
-                        <Button
-                          key={store.name}
-                          variant="link"
-                          size="sm"
-                          asChild
-                          className="p-0 h-auto text-xs text-primary hover:underline flex items-center gap-1 justify-start"
-                        >
-                          <a
-                            href={`https://www.google.com/search?q=site%3A${store.site}+${encodeURIComponent(item.suggestedSearchQuery)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                    <p className="text-sm text-muted-foreground">{item.itemDescription}</p>
+                    <div className="pt-2">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Search on:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {CHILEAN_STORES.map(store => (
+                          <Button
+                            key={store.name}
+                            variant="outline" // Changed to outline for better visibility
+                            size="sm"
+                            asChild
+                            className="text-xs text-primary border-primary/50 hover:bg-primary/10" // Custom styling for links
                           >
-                            {store.name} <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </Button>
-                      ))}
+                            <a
+                              href={`https://www.google.com/search?q=site%3A${store.site}+${encodeURIComponent(item.suggestedSearchQuery)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5" // Added gap for icon
+                            >
+                              {store.name} <ExternalLink className="h-3.5 w-3.5" /> {/* Increased icon size */}
+                            </a>
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <DialogFooter className="mt-auto pt-4"> {/* Ensure footer doesn't overlap content */}
+            <DialogFooter className="mt-auto pt-4 border-t"> {/* Ensure footer doesn't overlap content, added border-t */}
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
             </DialogFooter>
           </DialogContent>

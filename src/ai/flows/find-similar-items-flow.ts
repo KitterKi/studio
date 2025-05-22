@@ -12,6 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+// Schemas are defined internally and not exported from 'use server' files.
 const FindSimilarItemsInputSchema = z.object({
   imageDataUri: z
     .string()
@@ -24,7 +25,7 @@ export type FindSimilarItemsInput = z.infer<typeof FindSimilarItemsInputSchema>;
 const IdentifiedItemSchema = z.object({
   itemName: z.string().describe('The common name of the identified item (e.g., "Sofa", "Floor Lamp", "Coffee Table"). Keep it concise, 1-3 words.'),
   itemDescription: z.string().describe('A brief description of the item, highlighting its key visual characteristics relevant for searching (e.g., "Blue velvet 3-seater sofa with gold legs", "Modern arc floor lamp with marble base"). Aim for 5-15 words.'),
-  suggestedSearchQuery: z.string().describe('A concise search query for finding this item online, using keywords from the description (e.g., "blue velvet sofa gold legs", "modern arc floor lamp marble base").')
+  suggestedSearchQuery: z.string().describe("A practical and descriptive search query (3-7 words) that a user might type into a Chilean e-commerce site like Falabella.cl or Paris.cl to find this specific item or very similar ones. Include key materials, colors, style, and type of item. For example, for a 'Mid-century modern wooden armchair with green cushions', a good query would be 'sillón madera moderno cojines verdes'. For a 'Tall metal floor lamp with a black shade', use 'lámpara de pie metal pantalla negra'.")
 });
 export type IdentifiedItem = z.infer<typeof IdentifiedItemSchema>;
 
@@ -46,7 +47,7 @@ const prompt = ai.definePrompt({
 For each item, provide:
 1.  'itemName': A concise common name (e.g., "Armchair", "Wall Art", "Rug").
 2.  'itemDescription': A brief visual description highlighting key features useful for searching it online (e.g., "Cream boucle armchair with wooden legs", "Abstract canvas painting with blue and gold tones", "Geometric pattern wool rug").
-3.  'suggestedSearchQuery': A practical search query a user might type into an e-commerce site to find that specific item or similar ones.
+3.  'suggestedSearchQuery': A practical and descriptive search query (3-7 words) that a user might type into a Chilean e-commerce site like Falabella.cl or Paris.cl to find this specific item or very similar ones. Include key materials, colors, style, and type of item. For example, for a 'Mid-century modern wooden armchair with green cushions', a good query would be 'sillón madera moderno cojines verdes'. For a 'Tall metal floor lamp with a black shade', use 'lámpara de pie metal pantalla negra'.
 
 Focus on items that are clearly visible and central to the room's design. Avoid very small or generic accessories unless they are particularly distinctive.
 
@@ -68,4 +69,3 @@ const findSimilarItemsFlow = ai.defineFlow(
     return output;
   }
 );
-
