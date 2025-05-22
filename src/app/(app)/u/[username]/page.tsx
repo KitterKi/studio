@@ -4,13 +4,14 @@
 
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { getMockUserProfileByUsername, type MockUserProfile, type MockPost } from '@/lib/mock-public-profiles';
+import { getMockUserProfileByUsername, type MockUserProfile } from '@/lib/mock-public-profiles';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCircle, Grid3x3, Heart, MessageCircle, Edit3, Settings, UserPlus } from 'lucide-react'; // Added UserPlus for Follow
+import { UserCircle, Grid3x3, Heart, MessageCircle, Settings, UserPlus, Check } from 'lucide-react';
 import { APP_NAME } from '@/lib/constants';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect, useState } from 'react';
 
 const ProfileNotFound = () => (
   <div className="text-center py-12">
@@ -28,13 +29,38 @@ const ProfileNotFound = () => (
 export default function UserProfilePage() {
   const params = useParams();
   const usernameParam = typeof params.username === 'string' ? decodeURIComponent(params.username) : '';
-  const userProfile = getMockUserProfileByUsername(usernameParam);
+  const userProfileData = getMockUserProfileByUsername(usernameParam);
 
-  if (!userProfile) {
+  const { user: loggedInUser, isFollowing, toggleFollow } = useAuth();
+  const [isCurrentlyFollowing, setIsCurrentlyFollowing] = useState(false);
+  const [displayFollowersCount, setDisplayFollowersCount] = useState(0);
+
+  useEffect(() => {
+    if (loggedInUser && userProfileData) {
+      setIsCurrentlyFollowing(isFollowing(userProfileData.username));
+    }
+    if (userProfileData) {
+      setDisplayFollowersCount(userProfileData.followersCount);
+    }
+  }, [loggedInUser, userProfileData, isFollowing]);
+
+  if (!userProfileData) {
     return <ProfileNotFound />;
   }
 
-  const { username, avatarUrl, postsCount, followersCount, followingCount, bio, posts } = userProfile;
+  const { username, avatarUrl, postsCount, followingCount, bio, posts } = userProfileData;
+
+  const handleToggleFollow = () => {
+    if (!loggedInUser) return; // Should not happen if button is enabled
+
+    toggleFollow(username); // Update context
+    
+    // Update local state for immediate UI feedback
+    const newFollowingState = !isCurrentlyFollowing;
+    setIsCurrentlyFollowing(newFollowingState);
+    setDisplayFollowersCount(prevCount => newFollowingState ? prevCount + 1 : prevCount -1);
+  };
+
 
   const getInitials = (name: string) => {
     if (!name) return 'U';
@@ -45,42 +71,65 @@ export default function UserProfilePage() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  // Prevent hydration mismatch for initial follower count if loggedInUser modifies it
+  useEffect(() => {
+    if (userProfileData) {
+        let initialCount = userProfileData.followersCount;
+        if (loggedInUser && isFollowing(userProfileData.username) && !isCurrentlyFollowing) {
+            // This case implies the user followed then refreshed, adjust initial display if needed
+            // but mostly relies on the main useEffect for consistency
+        } else if (loggedInUser && !isFollowing(userProfileData.username) && isCurrentlyFollowing) {
+            // User unfollowed then refreshed
+        }
+         setDisplayFollowersCount(initialCount + (isFollowing(userProfileData.username) && loggedInUser && loggedInUser.name !== usernameParam ? 1 : 0) - (!isFollowing(userProfileData.username) && loggedInUser && loggedInUser.name !== usernameParam && displayFollowersCount > userProfileData.followersCount ? 1 : 0) );
+
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- This effect is tricky due to initial state
+  }, [userProfileData?.username, loggedInUser?.id]);
+
+
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-8">
-      {/* Profile Header - Instagram Style */}
       <header className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10 border-b pb-8">
         <Avatar className="h-32 w-32 sm:h-40 sm:w-40 ring-4 ring-primary/30 ring-offset-background ring-offset-2 shrink-0">
-          <AvatarImage 
-            src={avatarUrl} 
+          <AvatarImage
+            src={avatarUrl}
             alt={`Avatar de ${username}`}
-            data-ai-hint="profile large" 
+            data-ai-hint="profile large"
           />
           <AvatarFallback className="text-5xl">{getInitials(username)}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
             <h1 className="text-3xl font-light text-foreground truncate">{username}</h1>
-            <div className="flex gap-2">
-              <Button variant="default" size="sm">
-                <UserPlus className="mr-2 h-4 w-4" /> Seguir
-              </Button>
-              <Button variant="outline" size="sm" disabled>
-                Mensaje
-              </Button>
-              <Button variant="ghost" size="icon" className="sm:hidden" disabled>
+            {loggedInUser && loggedInUser.name !== username && (
+              <div className="flex gap-2">
+                <Button
+                  variant={isCurrentlyFollowing ? "secondary" : "default"}
+                  size="sm"
+                  onClick={handleToggleFollow}
+                  disabled={!loggedInUser}
+                >
+                  {isCurrentlyFollowing ? <Check className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                  {isCurrentlyFollowing ? "Siguiendo" : "Seguir"}
+                </Button>
+                <Button variant="outline" size="sm" disabled>
+                  Mensaje
+                </Button>
+              </div>
+            )}
+             <Button variant="ghost" size="icon" className="sm:hidden" disabled title="Más opciones">
                 <Settings className="h-5 w-5" />
-              </Button>
-            </div>
+            </Button>
           </div>
-          
-          {/* Stats Section */}
+
           <div className="flex gap-4 sm:gap-6 pt-2 text-center sm:text-left">
             <div>
               <span className="font-semibold text-lg">{postsCount}</span>
               <span className="text-muted-foreground ml-1">publicaciones</span>
             </div>
             <div>
-              <span className="font-semibold text-lg">{followersCount.toLocaleString()}</span>
+              <span className="font-semibold text-lg">{displayFollowersCount.toLocaleString()}</span>
               <span className="text-muted-foreground ml-1">seguidores</span>
             </div>
             <div>
@@ -93,21 +142,20 @@ export default function UserProfilePage() {
               {bio}
             </p>
           )}
-           <p className="text-xs text-muted-foreground pt-1 text-center sm:text-left">
+          <p className="text-xs text-muted-foreground pt-1 text-center sm:text-left">
             Explorando diseños en {APP_NAME}.
           </p>
         </div>
       </header>
 
-      {/* Gallery Section */}
       <section>
         <div className="flex items-center justify-center gap-4 border-t pt-2">
-            <Button variant="ghost" className="text-primary border-b-2 border-primary h-12">
-                <Grid3x3 className="mr-2 h-4 w-4"/> PUBLICACIONES
-            </Button>
-             <Button variant="ghost" className="text-muted-foreground h-12" disabled>
-                <Heart className="mr-2 h-4 w-4"/> GUARDADO (Próximamente)
-            </Button>
+          <Button variant="ghost" className="text-primary border-b-2 border-primary h-12">
+            <Grid3x3 className="mr-2 h-4 w-4" /> PUBLICACIONES
+          </Button>
+          <Button variant="ghost" className="text-muted-foreground h-12" disabled>
+            <Heart className="mr-2 h-4 w-4" /> GUARDADO (Próximamente)
+          </Button>
         </div>
 
         {posts.length > 0 ? (
@@ -124,8 +172,8 @@ export default function UserProfilePage() {
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-2">
                   <div className="text-white text-sm sm:text-base text-center flex items-center gap-2 sm:gap-4">
-                    <span className="flex items-center gap-1"><Heart className="h-4 w-4 sm:h-5 sm:w-5 fill-white"/> {post.likes}</span>
-                    <span className="flex items-center gap-1"><MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 fill-white"/> {post.comments}</span>
+                    <span className="flex items-center gap-1"><Heart className="h-4 w-4 sm:h-5 sm:w-5 fill-white" /> {post.likes}</span>
+                    <span className="flex items-center gap-1"><MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 fill-white" /> {post.comments}</span>
                   </div>
                 </div>
               </div>

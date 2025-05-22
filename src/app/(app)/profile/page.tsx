@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle } from 'lucide-react'; // Added Grid3x3, MessageCircle, Settings
+import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import { Wand2 } from 'lucide-react';
 
 
 export default function ProfilePage() {
-  const { user, isLoading, logout, favorites } = useAuth();
+  const { user, isLoading, logout, favorites, followingCount } = useAuth(); // Added followingCount
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Cargando perfil..." size={16} /></div>;
@@ -41,13 +41,12 @@ export default function ProfilePage() {
     return 'U';
   }
 
-  // Mock stats for Instagram look
+  // Mock stats for Instagram look - followers is still mock
   const mockFollowers = Math.floor(Math.random() * 1000) + 50;
-  const mockFollowing = Math.floor(Math.random() * 500) + 20;
+  // const mockFollowing = Math.floor(Math.random() * 500) + 20; // Replaced by actual followingCount
 
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-8"> {/* Increased max-w for better layout */}
-      {/* Profile Header - Instagram Style */}
+    <div className="max-w-5xl mx-auto p-4 space-y-8">
       <header className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10 border-b pb-8">
         <Avatar className="h-32 w-32 sm:h-40 sm:w-40 ring-4 ring-primary/30 ring-offset-background ring-offset-2 shrink-0">
           <AvatarImage 
@@ -85,7 +84,7 @@ export default function ProfilePage() {
               <span className="text-muted-foreground ml-1">seguidores</span>
             </div>
             <div>
-              <span className="font-semibold text-lg">{mockFollowing.toLocaleString()}</span>
+              <span className="font-semibold text-lg">{followingCount.toLocaleString()}</span> {/* Changed to actual followingCount */}
               <span className="text-muted-foreground ml-1">siguiendo</span>
             </div>
           </div>
@@ -98,7 +97,6 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Gallery Section */}
       <section>
         <div className="flex items-center justify-center gap-4 border-t pt-2">
             <Button variant="ghost" className="text-primary border-b-2 border-primary h-12">
