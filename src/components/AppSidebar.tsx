@@ -1,0 +1,125 @@
+
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { LogoIcon } from '@/components/icons/LogoIcon';
+import { APP_NAME, SIDEBAR_NAV_ITEMS_AUTHENTICATED, SIDEBAR_NAV_ITEMS_UNAUTHENTICATED } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
+import { LogOut, UserCircle, Settings } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+
+export default function AppSidebar() {
+  const pathname = usePathname();
+  const { user, logout, isLoading } = useAuth();
+
+  const navItems = user ? SIDEBAR_NAV_ITEMS_AUTHENTICATED : SIDEBAR_NAV_ITEMS_UNAUTHENTICATED;
+
+  if (isLoading) {
+    // You might want a proper skeleton loader here for the sidebar
+    return (
+       <Sidebar collapsible="icon">
+        <SidebarHeader className="flex items-center justify-center p-2 group-data-[collapsible=icon]:justify-center">
+           <div className="group-data-[collapsible=icon]:hidden flex items-center gap-2">
+            <LogoIcon />
+            <span className="font-semibold text-xl">{APP_NAME}</span>
+          </div>
+          <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full">
+            <LogoIcon />
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="p-2">
+          {/* Skeleton items */}
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+
+
+  return (
+    <Sidebar collapsible="icon" variant="sidebar" side="left" defaultOpen={true}>
+      <SidebarHeader className="p-4 flex items-center justify-between group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2">
+        <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:hidden" aria-label={`${APP_NAME} home page`}>
+          <LogoIcon />
+          <span className="font-semibold text-xl">{APP_NAME}</span>
+        </Link>
+         <Link href="/" className="hidden items-center gap-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center" aria-label={`${APP_NAME} home page`}>
+          <LogoIcon />
+        </Link>
+        {/* SidebarTrigger is usually placed in the AppHeader or main layout, not inside the sidebar itself if it controls this sidebar */}
+      </SidebarHeader>
+
+      <SidebarContent className="flex-grow p-2">
+        <SidebarMenu>
+          {navItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <Link href={item.href} passHref legacyBehavior>
+                <SidebarMenuButton
+                  variant="default"
+                  size="default"
+                  isActive={pathname === item.href}
+                  tooltip={{ children: item.label, side: 'right', align: 'center' }}
+                  className={cn(
+                    "w-full justify-start",
+                    {'bg-sidebar-accent text-sidebar-accent-foreground': pathname === item.href}
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
+
+      {user && (
+        <SidebarFooter className="p-2 border-t border-sidebar-border">
+           <div className="group-data-[collapsible=icon]:hidden p-2 space-y-2">
+             <div className="flex items-center gap-2">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={`https://placehold.co/40x40.png?text=${user.name ? user.name.substring(0,1) : user.email.substring(0,1)}`} alt={user.name || user.email} data-ai-hint="profile avatar"/>
+                  <AvatarFallback>{user.name ? user.name.substring(0, 2).toUpperCase() : user.email.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                </div>
+             </div>
+            <Button variant="ghost" onClick={logout} className="w-full justify-start">
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+           <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center space-y-2 p-2">
+             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Profile">
+                <UserCircle className="h-5 w-5" />
+             </Button>
+             <Button variant="ghost" size="icon" onClick={logout} title="Logout">
+                <LogOut className="h-5 w-5" />
+             </Button>
+           </div>
+        </SidebarFooter>
+      )}
+    </Sidebar>
+  );
+}
+
+// Helper for router in client component
+function useRouter() {
+  const routerInternal = usePathname(); // to ensure component re-renders on path change
+  const { push } = require('next/navigation');
+  return { push };
+}

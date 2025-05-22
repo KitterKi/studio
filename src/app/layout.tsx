@@ -1,11 +1,13 @@
-import type {Metadata} from 'next';
-import { Inter } from 'next/font/google'; // Changed to Inter for a clean, modern look
+
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"; // Added Toaster
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from '@/contexts/AuthContext'; // Import AuthProvider
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-geist-sans', // Keep variable name for compatibility if theme uses it
+  variable: '--font-geist-sans',
 });
 
 export const metadata: Metadata = {
@@ -20,9 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${inter.variable} antialiased flex flex-col h-full`}>
-        {children}
-        <Toaster />
+      <body className={`${inter.variable} antialiased flex flex-col h-full bg-background text-foreground`}>
+        <AuthProvider> {/* Wrap children with AuthProvider */}
+          {children}
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

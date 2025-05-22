@@ -1,4 +1,8 @@
+
+'use client'; // Mark as client component if using hooks like useAuth
+
 import DesignCard, { type DesignCardProps } from '@/components/DesignCard';
+import { useAuth } from '@/hooks/useAuth'; // Optional: if behavior changes for logged-in users
 
 const MOCK_DESIGNS: DesignCardProps[] = [
   { id: '1', imageUrl: 'https://placehold.co/600x450.png', title: 'Modern Living Room Transformation', userName: 'Alice Wonderland', userAvatarUrl: 'https://placehold.co/40x40.png?text=AW', likes: 120, comments: 15, dataAiHint: "living room" },
@@ -11,6 +15,12 @@ const MOCK_DESIGNS: DesignCardProps[] = [
 
 
 export default function CommunityPage() {
+  const { user } = useAuth(); // Example: useAuth could influence UI/actions
+
+  // This page is now accessible via (app) layout.
+  // If it needs to be fully public without the sidebar/header of (app), it should be moved.
+  // For now, it will render within the (app) layout.
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -18,12 +28,12 @@ export default function CommunityPage() {
           Community Designs
         </h1>
         <p className="mt-3 text-lg text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-          Explore designs shared by our talented community. Get inspired and share your own!
+          Explore designs shared by our talented community. Get inspired {user ? 'and share your own!' : 'by others!'}
         </p>
       </div>
 
       {MOCK_DESIGNS.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"> {/* Changed xl:grid-cols-4 to 3 for better fit */}
           {MOCK_DESIGNS.map((design) => (
             <DesignCard key={design.id} {...design} />
           ))}
@@ -36,3 +46,4 @@ export default function CommunityPage() {
     </div>
   );
 }
+
