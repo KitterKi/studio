@@ -1,18 +1,18 @@
 
 'use client';
 
-import { useState } from 'react'; // Added useState
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle, Wand2, Search, Share2, X } from 'lucide-react'; // Added Search, Share2, X
+import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle, Wand2, Search, Share2, X } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants';
-import type { FavoriteItem } from '@/contexts/AuthContext'; // Import FavoriteItem
+import type { FavoriteItem } from '@/contexts/AuthContext';
 import {
   Dialog,
   DialogContent,
@@ -21,23 +21,23 @@ import {
   DialogDescription,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog"; // Import Dialog components
-import { useToast } from '@/hooks/use-toast'; // For potential share functionality
+} from "@/components/ui/dialog";
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
   const { user, isLoading, logout, favorites, followingCount, removeFavorite, toggleUserLike } = useAuth();
   const [selectedFavoriteForDetail, setSelectedFavoriteForDetail] = useState<FavoriteItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const { toast } = useToast(); // For sharing
+  const { toast } = useToast();
 
-  // State for the "Find Similar Items" modal (copied from favorites page for reuse)
   const [isFindItemsModalOpen, setIsFindItemsModalOpen] = useState(false);
   const [favoriteForSimilarItems, setFavoriteForSimilarItems] = useState<FavoriteItem | null>(null);
-  // Placeholder for AI call logic - for now, we'll just open this modal from the detail modal
+  
   const handleOpenFindItemsModalFromDetail = (favorite: FavoriteItem) => {
+    // This function will now be triggered by both the button and the comment count click
     setFavoriteForSimilarItems(favorite);
-    setIsFindItemsModalOpen(true); // This will open the separate "find items" modal
-    setIsDetailModalOpen(false); // Close the detail modal
+    setIsFindItemsModalOpen(true); 
+    setIsDetailModalOpen(false); 
   };
 
 
@@ -196,7 +196,7 @@ export default function ProfilePage() {
       {/* Detail Modal for a Favorite Item */}
       {selectedFavoriteForDetail && (
         <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader className="p-4 border-b relative">
               <DialogTitle className="text-lg font-semibold truncate pr-10">{selectedFavoriteForDetail.title}</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -210,7 +210,7 @@ export default function ProfilePage() {
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="relative w-full aspect-[4/3] bg-muted/20 md:aspect-auto md:h-full flex items-center justify-center p-1 order-first md:order-none">
+              <div className="relative w-full aspect-[4/3] bg-muted/20 md:aspect-auto md:h-full flex items-center justify-center p-4 order-first md:order-none">
                 <Image
                   src={selectedFavoriteForDetail.redesignedImage}
                   alt={`Diseño: ${selectedFavoriteForDetail.title}`}
@@ -225,17 +225,20 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Button 
-                      variant={selectedFavoriteForDetail.userHasLiked ? "default" : "outline"} 
+                      variant={selectedFavoriteForDetail.userHasLiked ? "destructive" : "outline"} 
                       size="sm" 
                       onClick={() => toggleUserLike(selectedFavoriteForDetail.id)}
-                      className={selectedFavoriteForDetail.userHasLiked ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : ""}
                     >
                       <Heart className="mr-2 h-4 w-4" /> {selectedFavoriteForDetail.userHasLiked ? 'Te gusta' : 'Me gusta'} ({selectedFavoriteForDetail.likes})
                     </Button>
-                    <div className="flex items-center gap-1 text-muted-foreground">
+                    <button
+                      onClick={() => handleOpenFindItemsModalFromDetail(selectedFavoriteForDetail)}
+                      className="flex items-center gap-1 text-muted-foreground hover:text-primary hover:underline cursor-pointer text-sm"
+                      title="Haz clic para encontrar artículos similares"
+                    >
                       <MessageCircle className="h-4 w-4" />
                       <span>{selectedFavoriteForDetail.comments} comentarios</span>
-                    </div>
+                    </button>
                   </div>
                    <Button 
                     variant="ghost" 
@@ -252,14 +255,19 @@ export default function ProfilePage() {
                 </p>
 
                 <div className="flex-grow overflow-y-auto py-2">
-                  <p className="text-sm text-center text-muted-foreground italic">
-                    (Sección de comentarios detallados próximamente aquí)
-                  </p>
+                  <div className="flex flex-col items-center justify-center text-center text-sm text-muted-foreground italic p-4 bg-muted/30 rounded-md">
+                    <MessageCircle className="h-8 w-8 mb-2 text-muted-foreground/70"/>
+                    <p className="font-medium">Comentarios Detallados</p>
+                    <p className="text-xs">(Próximamente para favoritos)</p>
+                    <p className="mt-2 text-xs">
+                        Mientras tanto, puedes hacer clic en el contador de comentarios para buscar artículos similares de este diseño.
+                    </p>
+                  </div>
                 </div>
                 
                 <Button 
                   onClick={() => handleOpenFindItemsModalFromDetail(selectedFavoriteForDetail)}
-                  className="w-full"
+                  className="w-full mt-auto" // Added mt-auto
                 >
                   <Search className="mr-2 h-4 w-4" /> Encontrar Artículos Similares en esta Imagen
                 </Button>
@@ -304,5 +312,4 @@ export default function ProfilePage() {
     </>
   );
 }
-
     
