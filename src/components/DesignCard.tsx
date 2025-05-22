@@ -21,7 +21,9 @@ export interface DesignCardProps {
   onImageClick?: () => void;
   isImageClickable?: boolean;
   variant?: 'default' | 'communityFeed';
-  index?: number; // Added for potential priority loading
+  index?: number; 
+  isLikedByCurrentUser?: boolean; // Nueva propiedad
+  onLikeClick?: () => void; // Nueva propiedad para manejar el clic del "Me gusta"
 }
 
 export default function DesignCard({
@@ -36,7 +38,9 @@ export default function DesignCard({
   onImageClick,
   isImageClickable,
   variant = 'default',
-  index = 0
+  index = 0,
+  isLikedByCurrentUser = false,
+  onLikeClick,
 }: DesignCardProps) {
 
   if (variant === 'communityFeed') {
@@ -47,8 +51,7 @@ export default function DesignCard({
           return [parseInt(match[1], 10), parseInt(match[2], 10)];
         }
       }
-      // Fallback dimensions if parsing fails or not a placehold.co URL
-      return [600, 400]; // Default aspect ratio if parsing fails
+      return [600, 400]; 
     }, [imageUrl]);
 
     return (
@@ -56,16 +59,15 @@ export default function DesignCard({
         className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative"
         onClick={isImageClickable ? onImageClick : undefined}
       >
-        {/* Removed bg-muted from this div */}
         <div className={cn("w-full", isImageClickable && "cursor-pointer")}>
           <Image
             src={imageUrl}
             alt={title || 'Diseño de usuario'}
             width={imgWidth}
             height={imgHeight}
-            className="object-cover w-full h-auto block" // Added block
+            className="object-cover w-full h-auto block" 
             data-ai-hint={dataAiHint || "diseño de interiores"}
-            priority={index < 4} // Example: prioritize first 4 images
+            priority={index < 4} 
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
@@ -115,10 +117,17 @@ export default function DesignCard({
           <span className="text-sm font-medium text-card-foreground">{userName}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Heart className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center gap-1 p-1 h-auto hover:bg-accent/50"
+            onClick={onLikeClick}
+            aria-pressed={isLikedByCurrentUser}
+            aria-label={isLikedByCurrentUser ? "Quitar me gusta" : "Dar me gusta"}
+          >
+            <Heart className={cn("h-4 w-4", isLikedByCurrentUser && "fill-destructive text-destructive")} />
             <span className="text-xs">{likes}</span>
-          </div>
+          </Button>
           <div className="flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />
             <span className="text-xs">{comments}</span>

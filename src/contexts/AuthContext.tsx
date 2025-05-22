@@ -18,8 +18,9 @@ export interface FavoriteItem {
   title: string;
   style: string;
   createdAt: Date;
-  likes?: number; // Nuevo campo para "Me gusta"
-  comments?: number; // Nuevo campo para "Comentarios"
+  likes: number; 
+  comments: number; 
+  userHasLiked: boolean; // Nuevo campo para el "Me gusta" del usuario actual
 }
 
 interface AuthContextType {
@@ -29,8 +30,9 @@ interface AuthContextType {
   signup: (email: string, pass: string, name?:string) => Promise<void>;
   logout: () => void;
   favorites: FavoriteItem[];
-  addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments'>) => void;
+  addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked'>) => void;
   removeFavorite: (id: string) => void;
+  toggleUserLike: (favoriteId: string) => void; // Nueva función
   canUserRedesign: () => boolean;
   recordRedesignAttempt: () => void;
   remainingRedesignsToday: number;
@@ -74,12 +76,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       const storedFavorites = localStorage.getItem('userFavorites');
       if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({ // Usar 'any' temporalmente para la migración
+        setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
           ...fav,
           originalImage: fav.originalImage || '', 
           createdAt: new Date(fav.createdAt),
-          likes: fav.likes || Math.floor(Math.random() * 150) + 5, // Valor por defecto para favs antiguos
-          comments: fav.comments || Math.floor(Math.random() * 30) + 2, // Valor por defecto
+          likes: fav.likes || Math.floor(Math.random() * 150) + 5,
+          comments: fav.comments || Math.floor(Math.random() * 30) + 2,
+          userHasLiked: fav.userHasLiked || false, // Asegurar que el campo existe
         })));
       }
     } catch (error) {
@@ -130,7 +133,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(`redesignCount_${mockUser.id}`, '0');
     localStorage.setItem(`lastRedesignDate_${mockUser.id}`, today);
 
-    // Cargar favoritos para el nuevo usuario o limpiar si es necesario
     const storedFavorites = localStorage.getItem('userFavorites');
       if (storedFavorites) {
          setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
@@ -139,6 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           createdAt: new Date(fav.createdAt),
           likes: fav.likes || Math.floor(Math.random() * 150) + 5,
           comments: fav.comments || Math.floor(Math.random() * 30) + 2,
+          userHasLiked: fav.userHasLiked || false,
         })));
       } else {
         setFavorites([]);
@@ -174,24 +177,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setUser(null);
     localStorage.removeItem('authUser');
-    // No borramos 'userFavorites' al hacer logout para que persistan entre sesiones
-    // o si el mismo usuario vuelve a loguearse.
-    // Si quisiéramos una separación estricta por usuario, la lógica de favoritos
-    // debería ser más compleja (ej. user_id + favorites).
     router.push('/auth/signin');
   }, [user, router]);
 
-  const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments'>) => {
+  const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked'>) => {
     setFavorites(prevFavorites => {
       const newFavorite: FavoriteItem = {
-        originalImage: '', 
-        redesignedImage: item.redesignedImage,
-        title: item.title,
-        style: item.style,
+        ...item,
+        originalImage: '', // Reducir el tamaño en localStorage
         id: `fav-${Date.now()}`,
         createdAt: new Date(),
-        likes: Math.floor(Math.random() * 200) + 10, // "Me gusta" aleatorios
-        comments: Math.floor(Math.random() * 50) + 5, // Comentarios aleatorios
+        likes: Math.floor(Math.random() * 200) + 10, 
+        comments: Math.floor(Math.random() * 50) + 5, 
+        userHasLiked: false, // Por defecto, el usuario no le ha dado "Me gusta"
       };
       const updatedFavorites = [newFavorite, ...prevFavorites];
       try {
@@ -199,7 +197,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (e) {
         console.error("Error guardando favoritos en localStorage:", e);
         if (updatedFavorites.length > 1) { 
-            const trimmedFavorites = updatedFavorites.slice(1);
+            const trimmedFavorites = updatedFavorites.slice(0, -1); // Quitar el último (el recién añadido)
              try {
                 localStorage.setItem('userFavorites', JSON.stringify(trimmedFavorites));
                 return trimmedFavorites; 
@@ -216,6 +214,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const removeFavorite = useCallback((id: string) => {
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.filter(fav => fav.id !== id);
+      localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+      return updatedFavorites;
+    });
+  }, []);
+
+  const toggleUserLike = useCallback((favoriteId: string) => {
+    setFavorites(prevFavorites => {
+      const updatedFavorites = prevFavorites.map(fav => {
+        if (fav.id === favoriteId) {
+          const newLikedState = !fav.userHasLiked;
+          return {
+            ...fav,
+            userHasLiked: newLikedState,
+            likes: newLikedState ? fav.likes + 1 : fav.likes - 1,
+          };
+        }
+        return fav;
+      });
       localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
@@ -268,6 +284,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       favorites, 
       addFavorite, 
       removeFavorite,
+      toggleUserLike,
       canUserRedesign,
       recordRedesignAttempt,
       remainingRedesignsToday

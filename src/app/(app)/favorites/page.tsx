@@ -23,7 +23,7 @@ import Image from 'next/image';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 
 export default function FavoritesPage() {
-  const { favorites, removeFavorite, user, isLoading: authLoading } = useAuth();
+  const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike } = useAuth();
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,8 +116,10 @@ export default function FavoritesPage() {
                   imageUrl={fav.redesignedImage} 
                   title={fav.title || `Rediseño en ${fav.style}`}
                   userName={user.name || user.email || "Tú"}
-                  likes={fav.likes || 0} 
-                  comments={fav.comments || 0}
+                  likes={fav.likes} 
+                  comments={fav.comments}
+                  isLikedByCurrentUser={fav.userHasLiked}
+                  onLikeClick={() => toggleUserLike(fav.id)}
                   dataAiHint="habitación rediseñada"
                   onImageClick={() => handleOpenFindItemsModal(fav)}
                   isImageClickable={true}
