@@ -6,7 +6,7 @@ import type { FavoriteItem } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import DesignCard from '@/components/DesignCard';
 import { Button } from '@/components/ui/button';
-import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2, X, Edit3 } from 'lucide-react'; // Added Edit3
+import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2, X, Edit3 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function FavoritesPage() {
-  const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike, updateFavoriteTitle } = useAuth(); // Added updateFavoriteTitle
+  const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike, updateFavoriteTitle } = useAuth();
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,7 +71,7 @@ export default function FavoritesPage() {
     setSelectedFavorite(favorite);
     setIsModalOpen(true);
     setIsLoadingSimilarItems(true);
-    setSimilarItems([]); 
+    setSimilarItems([]);
 
     try {
       const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage });
@@ -105,15 +105,16 @@ export default function FavoritesPage() {
   };
 
   const handleEditTitle = (favorite: FavoriteItem) => {
+    console.log('handleEditTitle called for favorite:', favorite.id); // DEBUG LOG
     const newTitle = window.prompt("Ingresa el nuevo nombre para tu rediseño:", favorite.title);
     if (newTitle && newTitle.trim() !== "") {
       updateFavoriteTitle(favorite.id, newTitle.trim());
       toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${newTitle.trim()}".` });
-    } else if (newTitle === "") { // User entered empty string
+    } else if (newTitle === "") { 
         toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío."});
     }
   };
-  
+
   return (
     <>
       <div className="space-y-8">
@@ -132,17 +133,17 @@ export default function FavoritesPage() {
               <div key={fav.id} className="relative group">
                 <DesignCard
                   id={fav.id}
-                  imageUrl={fav.redesignedImage} 
+                  imageUrl={fav.redesignedImage}
                   title={fav.title || `Rediseño en ${fav.style}`}
                   userName={user.name || user.email || "Tú"}
-                  likes={fav.likes} 
+                  likes={fav.likes}
                   comments={fav.comments}
                   isLikedByCurrentUser={fav.userHasLiked}
                   onLikeClick={() => toggleUserLike(fav.id)}
                   dataAiHint="habitación rediseñada"
                   onImageClick={() => handleOpenFindItemsModal(fav)}
                   isImageClickable={true}
-                  onEditTitle={() => handleEditTitle(fav)} // Pass the new handler
+                  // onEditTitle is no longer passed to DesignCard as the edit button is now external
                 />
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2">
                    <Button
@@ -204,7 +205,7 @@ export default function FavoritesPage() {
                 Toca un objeto para buscarlo online.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
               <div className="w-full p-6 md:border-r flex items-center justify-center bg-muted/20 order-first md:order-none">
                 <div className="relative w-full max-w-md aspect-[4/3] bg-background rounded-lg shadow-xl overflow-hidden border">
@@ -213,7 +214,7 @@ export default function FavoritesPage() {
                     alt={`Habitación rediseñada: ${selectedFavorite.title}`}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 448px"
-                    className="object-contain" 
+                    className="object-contain"
                     data-ai-hint="redesigned room item search"
                   />
                 </div>
@@ -238,7 +239,7 @@ export default function FavoritesPage() {
                 )}
                 {!isLoadingSimilarItems && similarItems.length > 0 && (
                   <ScrollArea className="flex-grow p-4 min-h-0">
-                    <div className="space-y-2"> 
+                    <div className="space-y-2">
                       {similarItems.map((item, index) => (
                         <a
                           key={index}
@@ -273,3 +274,4 @@ export default function FavoritesPage() {
     </>
   );
 }
+

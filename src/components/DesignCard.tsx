@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, Heart, MoreHorizontal, Edit3 } from 'lucide-react'; // Added Edit3
+import { MessageCircle, Heart, MoreHorizontal } from 'lucide-react'; // Removed Edit3 from here
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import React from 'react';
@@ -18,7 +18,7 @@ export interface DesignCardProps {
   userName: string;
   userAvatarUrl?: string;
   likes: number;
-  comments: number; 
+  comments: number;
   commentsData?: Comment[];
   dataAiHint?: string;
   onImageClick?: () => void;
@@ -28,7 +28,7 @@ export interface DesignCardProps {
   isLikedByCurrentUser?: boolean;
   onLikeClick?: (() => void) | null;
   onOpenComments?: () => void;
-  onEditTitle?: () => void; // New prop for editing title
+  // onEditTitle?: () => void; // Removed prop
 }
 
 export default function DesignCard({
@@ -38,7 +38,7 @@ export default function DesignCard({
   userName,
   userAvatarUrl,
   likes,
-  comments, 
+  comments,
   commentsData,
   dataAiHint,
   onImageClick,
@@ -48,7 +48,7 @@ export default function DesignCard({
   isLikedByCurrentUser = false,
   onLikeClick,
   onOpenComments,
-  onEditTitle, // Destructure new prop
+  // onEditTitle, // Removed prop
 }: DesignCardProps) {
 
   const displayCommentCount = commentsData ? commentsData.length : comments;
@@ -60,7 +60,9 @@ export default function DesignCard({
         return [parseInt(match[1], 10), parseInt(match[2], 10)];
       }
     }
-    return [600, 400]; 
+    // Default or fallback dimensions if parsing fails or URL is not placehold.co
+    // These are just aspect ratio guides if we can't parse, next/image with fill will handle actual rendering.
+    return [600, 400];
   }, [imageUrl]);
 
   if (variant === 'communityFeed') {
@@ -69,17 +71,17 @@ export default function DesignCard({
         className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative break-inside-avoid-column"
       >
         <div
-          className={cn("w-full bg-muted", (isImageClickable || onOpenComments) && "cursor-pointer")}
+          className={cn("w-full bg-muted/0", (isImageClickable || onOpenComments) && "cursor-pointer")} // Removed bg-muted
           onClick={onOpenComments ? onOpenComments : (isImageClickable ? onImageClick : undefined)}
         >
           <Image
             src={imageUrl}
             alt={title || 'Diseño de usuario'}
-            width={imgWidth}
-            height={imgHeight}
-            className="object-cover w-full h-auto block"
+            width={imgWidth} // Use parsed or default width
+            height={imgHeight} // Use parsed or default height
+            className="object-cover w-full h-auto block" // w-full h-auto for responsiveness
             data-ai-hint={dataAiHint || "diseño de interiores"}
-            priority={index < 4} 
+            priority={index < 4}
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
@@ -108,7 +110,7 @@ export default function DesignCard({
                 <span className="text-xs">{displayCommentCount}</span>
               </Button>
             )}
-            {onLikeClick !== null && ( 
+            {onLikeClick !== null && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -136,13 +138,9 @@ export default function DesignCard({
   // Default variant (for Favorites page etc.)
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
-      <CardHeader className="p-4 flex justify-between items-center"> {/* Added flex for alignment */}
+      <CardHeader className="p-4 flex justify-between items-center">
         <CardTitle className="text-lg truncate">{title}</CardTitle>
-        {onEditTitle && ( // Conditionally render Edit button
-          <Button variant="ghost" size="icon" onClick={onEditTitle} aria-label="Editar nombre" className="text-muted-foreground hover:text-primary -mr-2">
-            <Edit3 className="h-4 w-4" />
-          </Button>
-        )}
+        {/* Removed Edit3 button from here */}
       </CardHeader>
       <CardContent
         className={cn("p-0 flex-grow", isImageClickable && "cursor-pointer")}
@@ -168,7 +166,7 @@ export default function DesignCard({
           <span className="text-sm font-medium text-card-foreground">{userName}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground">
-          {onLikeClick !== null && ( 
+          {onLikeClick !== null && (
             <Button
               variant="ghost"
               size="sm"
