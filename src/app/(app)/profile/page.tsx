@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns } from 'lucide-react'; // Added Users, Columns
+import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle } from 'lucide-react'; // Added Grid3x3, MessageCircle, Settings
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -46,8 +46,8 @@ export default function ProfilePage() {
   const mockFollowing = Math.floor(Math.random() * 500) + 20;
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-8">
-      {/* Profile Header */}
+    <div className="max-w-5xl mx-auto p-4 space-y-8"> {/* Increased max-w for better layout */}
+      {/* Profile Header - Instagram Style */}
       <header className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10 border-b pb-8">
         <Avatar className="h-32 w-32 sm:h-40 sm:w-40 ring-4 ring-primary/30 ring-offset-background ring-offset-2 shrink-0">
           <AvatarImage 
@@ -64,31 +64,37 @@ export default function ProfilePage() {
               <Button variant="outline" size="sm" disabled>
                 <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil
               </Button>
-              <Button variant="ghost" size="sm" onClick={logout}>
-                <LogOut className="mr-2 h-4 w-4" /> Cerrar Sesión
+              <Button variant="ghost" size="icon" className="sm:hidden" onClick={logout} title="Cerrar Sesión">
+                <LogOut className="h-5 w-5" />
+              </Button>
+               <Button variant="ghost" size="icon" className="hidden sm:inline-flex" disabled title="Configuración">
+                <Settings className="h-5 w-5" />
               </Button>
             </div>
           </div>
           <p className="text-muted-foreground text-center sm:text-left">{user.email}</p>
           
           {/* Stats Section */}
-          <div className="flex gap-6 pt-2 text-center sm:text-left">
+          <div className="flex gap-4 sm:gap-6 pt-2 text-center sm:text-left">
             <div>
               <span className="font-semibold text-lg">{favorites.length}</span>
               <span className="text-muted-foreground ml-1">publicaciones</span>
             </div>
             <div>
-              <span className="font-semibold text-lg">{mockFollowers}</span>
+              <span className="font-semibold text-lg">{mockFollowers.toLocaleString()}</span>
               <span className="text-muted-foreground ml-1">seguidores</span>
             </div>
             <div>
-              <span className="font-semibold text-lg">{mockFollowing}</span>
+              <span className="font-semibold text-lg">{mockFollowing.toLocaleString()}</span>
               <span className="text-muted-foreground ml-1">siguiendo</span>
             </div>
           </div>
-          <p className="text-sm text-foreground pt-1 text-center sm:text-left">
-            Bienvenido a tu espacio en {APP_NAME}. ¡Aquí puedes ver tus creaciones favoritas!
+          <p className="text-sm text-foreground pt-1 text-center sm:text-left max-w-md">
+            Bienvenido a tu espacio en {APP_NAME}. ¡Aquí puedes ver tus creaciones favoritas y compartirlas con el mundo!
           </p>
+          <Button variant="outline" size="sm" onClick={logout} className="w-full sm:w-auto hidden sm:flex">
+            <LogOut className="mr-2 h-4 w-4" /> Cerrar Sesión
+          </Button>
         </div>
       </header>
 
@@ -96,7 +102,7 @@ export default function ProfilePage() {
       <section>
         <div className="flex items-center justify-center gap-4 border-t pt-2">
             <Button variant="ghost" className="text-primary border-b-2 border-primary h-12">
-                <Columns className="mr-2 h-4 w-4"/> PUBLICACIONES
+                <Grid3x3 className="mr-2 h-4 w-4"/> PUBLICACIONES
             </Button>
             <Button variant="ghost" className="text-muted-foreground h-12" disabled>
                 <Heart className="mr-2 h-4 w-4"/> GUARDADO (Próximamente)
@@ -106,22 +112,20 @@ export default function ProfilePage() {
         {favorites.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-4 mt-6">
             {favorites.map((fav) => (
-              <Link href="/favorites" key={fav.id} className="group" title={`Ver detalle de "${fav.title || 'Diseño'}" en Favoritos`}>
-                <div className="aspect-square relative w-full overflow-hidden hover:opacity-90 transition-opacity duration-200">
-                  <Image
-                    src={fav.redesignedImage}
-                    alt={fav.title || `Diseño ${fav.style}`}
-                    fill
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                    className="object-cover"
-                    data-ai-hint="favorite design"
-                  />
-                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-2">
-                      <div className="text-white text-xs text-center flex items-center gap-4">
-                        <span className="flex items-center gap-1"><Heart className="h-4 w-4 fill-white"/> {fav.likes}</span>
-                        <span className="flex items-center gap-1"><MessageCircle className="h-4 w-4 fill-white"/> {fav.comments}</span>
-                      </div>
-                    </div>
+              <Link href="/favorites" key={fav.id} className="group relative aspect-square overflow-hidden" title={`Ver detalle de "${fav.title || 'Diseño'}" en Favoritos`}>
+                <Image
+                  src={fav.redesignedImage}
+                  alt={fav.title || `Diseño ${fav.style}`}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  data-ai-hint="favorite design"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-2">
+                  <div className="text-white text-sm sm:text-base text-center flex items-center gap-2 sm:gap-4">
+                    <span className="flex items-center gap-1"><Heart className="h-4 w-4 sm:h-5 sm:w-5 fill-white"/> {fav.likes}</span>
+                    <span className="flex items-center gap-1"><MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 fill-white"/> {fav.comments}</span>
+                  </div>
                 </div>
               </Link>
             ))}
