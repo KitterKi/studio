@@ -2,6 +2,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link'; // Import Link
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Heart, MoreHorizontal } from 'lucide-react';
@@ -25,7 +26,7 @@ export interface DesignCardProps {
   variant?: 'default' | 'communityFeed';
   index?: number;
   isLikedByCurrentUser?: boolean;
-  onLikeClick?: () => void;
+  onLikeClick?: (() => void) | null; // Allow null for unauthenticated users
   onOpenComments?: () => void; // Callback to open comments modal
 }
 
@@ -36,7 +37,7 @@ export default function DesignCard({
   userName,
   userAvatarUrl,
   likes,
-  comments, // This will be derived from commentsData.length if commentsData is present
+  comments, 
   commentsData,
   dataAiHint,
   onImageClick,
@@ -50,23 +51,24 @@ export default function DesignCard({
 
   const displayCommentCount = commentsData ? commentsData.length : comments;
 
-  if (variant === 'communityFeed') {
-    const [imgWidth, imgHeight] = React.useMemo(() => {
-      if (imageUrl && imageUrl.includes('placehold.co')) {
-        const match = imageUrl.match(/placehold\.co\/(\d+)x(\d+)/);
-        if (match && match[1] && match[2]) {
-          return [parseInt(match[1], 10), parseInt(match[2], 10)];
-        }
+  const [imgWidth, imgHeight] = React.useMemo(() => {
+    if (imageUrl && imageUrl.includes('placehold.co')) {
+      const match = imageUrl.match(/placehold\.co\/(\d+)x(\d+)/);
+      if (match && match[1] && match[2]) {
+        return [parseInt(match[1], 10), parseInt(match[2], 10)];
       }
-      return [600, 400];
-    }, [imageUrl]);
+    }
+    // Fallback dimensions if parsing fails or URL is not placehold.co
+    return [600, 400]; 
+  }, [imageUrl]);
 
+  if (variant === 'communityFeed') {
     return (
       <Card
         className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative break-inside-avoid-column"
       >
         <div
-          className={cn("w-full", (isImageClickable || onOpenComments) && "cursor-pointer")}
+          className={cn("w-full bg-muted", (isImageClickable || onOpenComments) && "cursor-pointer")}
           onClick={onOpenComments ? onOpenComments : (isImageClickable ? onImageClick : undefined)} // Prioritize onOpenComments
         >
           <Image
@@ -76,19 +78,19 @@ export default function DesignCard({
             height={imgHeight}
             className="object-cover w-full h-auto block"
             data-ai-hint={dataAiHint || "diseño de interiores"}
-            priority={index < 4}
+            priority={index < 4} // Load first few images faster
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
 
         <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-7 w-7 border-2 border-white/60">
+          <Link href={`/u/${encodeURIComponent(userName)}`} className="flex items-center gap-2 group/userlink" onClick={(e) => e.stopPropagation()}>
+            <Avatar className="h-7 w-7 border-2 border-white/60 group-hover/userlink:ring-2 group-hover/userlink:ring-white transition-all">
               <AvatarImage src={userAvatarUrl || `https://placehold.co/40x40.png?text=${userName?.substring(0,1)}`} alt={userName || 'Avatar de usuario'} data-ai-hint="profile avatar small"/>
               <AvatarFallback className="text-xs">{userName?.substring(0, 1).toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
-            <span className="text-sm font-semibold text-white truncate">{userName}</span>
-          </div>
+            <span className="text-sm font-semibold text-white truncate group-hover/userlink:underline">{userName}</span>
+          </Link>
           <div className="flex items-center gap-2">
             {onOpenComments && (
               <Button
@@ -105,14 +107,14 @@ export default function DesignCard({
                 <span className="text-xs">{displayCommentCount}</span>
               </Button>
             )}
-            {onLikeClick && (
+            {onLikeClick !== null && ( // Conditionally render if onLikeClick is not null
               <Button
                 variant="ghost"
                 size="sm"
                 className="p-1 h-auto text-white hover:bg-white/20 flex items-center gap-1"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onLikeClick();
+                  if(onLikeClick) onLikeClick();
                 }}
                 aria-pressed={isLikedByCurrentUser}
                 aria-label={isLikedByCurrentUser ? "Quitar me gusta" : "Dar me gusta"}
@@ -160,7 +162,7 @@ export default function DesignCard({
           <span className="text-sm font-medium text-card-foreground">{userName}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground">
-          {onLikeClick && (
+          {onLikeClick !== null && ( // Conditionally render if onLikeClick is not null
             <Button
               variant="ghost"
               size="sm"
