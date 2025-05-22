@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverActions: {
+    bodySizeLimit: '4mb', // Aumentado el límite para manejar imágenes más grandes
+  },
 };
 
 export default nextConfig;
