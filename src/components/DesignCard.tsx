@@ -1,10 +1,13 @@
 
+'use client';
+
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Heart, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import React from 'react';
 
 export interface DesignCardProps {
   id: string;
@@ -20,35 +23,46 @@ export interface DesignCardProps {
   variant?: 'default' | 'communityFeed';
 }
 
-export default function DesignCard({ 
-  id, 
-  imageUrl, 
-  title, 
-  userName, 
-  userAvatarUrl, 
-  likes, 
-  comments, 
-  dataAiHint, 
-  onImageClick, 
+export default function DesignCard({
+  id,
+  imageUrl,
+  title,
+  userName,
+  userAvatarUrl,
+  likes,
+  comments,
+  dataAiHint,
+  onImageClick,
   isImageClickable,
-  variant = 'default' 
+  variant = 'default'
 }: DesignCardProps) {
-  
+
   if (variant === 'communityFeed') {
+    const [imgWidth, imgHeight] = React.useMemo(() => {
+      if (imageUrl && imageUrl.includes('placehold.co')) {
+        const match = imageUrl.match(/placehold\.co\/(\d+)x(\d+)/);
+        if (match && match[1] && match[2]) {
+          return [parseInt(match[1], 10), parseInt(match[2], 10)];
+        }
+      }
+      // Fallback dimensions if parsing fails or not a placehold.co URL
+      return [600, 400]; // Default aspect ratio if parsing fails
+    }, [imageUrl]);
+
     return (
-      <Card 
+      <Card
         className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative"
         onClick={isImageClickable ? onImageClick : undefined}
       >
-        <div className={cn("aspect-auto w-full", isImageClickable && "cursor-pointer")}>
+        <div className={cn("w-full bg-muted", isImageClickable && "cursor-pointer")}> {/* Added bg-muted for placeholder visibility */}
           <Image
             src={imageUrl}
             alt={title || 'Diseño de usuario'}
-            width={600} // Provide base width, height will be auto based on aspect ratio
-            height={800} // Provide base height, used for initial calculation, then auto
-            className="object-cover w-full h-auto" // h-auto is key for masonry
+            width={imgWidth}
+            height={imgHeight}
+            className="object-cover w-full h-auto"
             data-ai-hint={dataAiHint || "diseño de interiores"}
-            priority={false} // consider true for above-the-fold images if any
+            priority={false}
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />

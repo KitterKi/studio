@@ -1,8 +1,8 @@
 
-'use client'; 
+'use client';
 
 import DesignCard, { type DesignCardProps } from '@/components/DesignCard';
-import { useAuth } from '@/hooks/useAuth'; 
+import { useAuth } from '@/hooks/useAuth';
 
 // Adjusted MOCK_DESIGNS with more varied aspect ratios and descriptive hints
 const MOCK_DESIGNS: Omit<DesignCardProps, 'variant' | 'likes' | 'comments' | 'id' | 'onImageClick' | 'isImageClickable'>[] = [
@@ -20,7 +20,7 @@ const MOCK_DESIGNS: Omit<DesignCardProps, 'variant' | 'likes' | 'comments' | 'id
 
 
 export default function CommunityPage() {
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
   return (
     <div className="space-y-8">
@@ -34,22 +34,20 @@ export default function CommunityPage() {
       </div>
 
       {MOCK_DESIGNS.length > 0 ? (
-        // Cambiado a un layout de grid de dos columnas en pantallas pequeñas y más en grandes
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4"> 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4">
           {MOCK_DESIGNS.map((design, index) => (
-            <div key={`design-${index}`} className="break-inside-avoid"> {/* break-inside-avoid es más para masonry, pero no daña aquí */}
-              <DesignCard
-                id={`design-${index}`}
-                imageUrl={design.imageUrl}
-                title={design.title}
-                userName={design.userName}
-                userAvatarUrl={design.userAvatarUrl}
-                likes={0} // Not displayed in communityFeed variant
-                comments={0} // Not displayed in communityFeed variant
-                dataAiHint={design.dataAiHint}
-                variant="communityFeed"
-              />
-            </div>
+            <DesignCard
+              key={`community-design-${index}`}
+              id={`design-${index}`}
+              imageUrl={design.imageUrl}
+              title={design.title}
+              userName={design.userName}
+              userAvatarUrl={design.userAvatarUrl}
+              likes={0} // Not displayed in communityFeed variant
+              comments={0} // Not displayed in communityFeed variant
+              dataAiHint={design.dataAiHint}
+              variant="communityFeed"
+            />
           ))}
         </div>
       ) : (
