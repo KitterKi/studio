@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview Identifica muebles y artículos de decoración en una imagen y sugiere consultas de búsqueda.
+ * @fileOverview Identifica muebles y artículos de decoración en una imagen y sugiere consultas de búsqueda para Google Shopping.
  *
  * - findSimilarItems - Una función que identifica artículos en una imagen.
  * - FindSimilarItemsInput - El tipo de entrada para la función findSimilarItems.
@@ -24,7 +24,7 @@ export type FindSimilarItemsInput = z.infer<typeof FindSimilarItemsInputSchema>;
 const IdentifiedItemSchema = z.object({
   itemName: z.string().describe('El nombre común del artículo identificado (ej., "Sofá", "Lámpara de pie", "Mesa de centro"). Manténlo conciso, 1-3 palabras, en español.'),
   itemDescription: z.string().describe('Una breve descripción del artículo, destacando sus características visuales clave relevantes para la búsqueda (ej., "Sofá de 3 cuerpos de terciopelo azul con patas doradas", "Lámpara de arco moderna con base de mármol"). Apunta a 5-15 palabras, en español.'),
-  suggestedSearchQuery: z.string().describe("Una consulta de búsqueda práctica y descriptiva (3-7 palabras) que un usuario podría escribir en un sitio de comercio electrónico chileno como Falabella.cl o Paris.cl para encontrar este artículo específico o muy similares. Incluye materiales clave, colores, estilo y tipo de artículo. Por ejemplo, para un 'Sillón de madera moderno de mediados de siglo con cojines verdes', una buena consulta sería 'sillón madera moderno cojines verdes'. Para una 'Lámpara de pie alta de metal con pantalla negra', usa 'lámpara de pie metal pantalla negra'.")
+  suggestedSearchQuery: z.string().describe("Una consulta de búsqueda descriptiva y efectiva (idealmente de 3 a 7 palabras) que un usuario usaría en Google Shopping para encontrar este artículo específico o artículos muy similares. Debe ser en español. Incluye materiales clave, colores, estilo, y tipo de artículo. Por ejemplo: 'silla gamer ergonómica negra y roja', 'lámpara de pie trípode madera pantalla blanca', 'alfombra yute redonda estilo nórdico'.")
 });
 export type IdentifiedItem = z.infer<typeof IdentifiedItemSchema>;
 
@@ -46,7 +46,7 @@ const prompt = ai.definePrompt({
 Para cada artículo, proporciona:
 1.  'itemName': Un nombre común conciso en español (ej., "Sillón", "Arte de Pared", "Alfombra").
 2.  'itemDescription': Una breve descripción visual en español que destaque las características clave útiles para buscarlo en línea (ej., "Sillón de bouclé crema con patas de madera", "Pintura abstracta en lienzo con tonos azules y dorados", "Alfombra de lana con patrón geométrico").
-3.  'suggestedSearchQuery': Una consulta de búsqueda práctica y descriptiva en español (3-7 palabras) que un usuario podría escribir en un sitio de comercio electrónico chileno como Falabella.cl o Paris.cl para encontrar este artículo específico o muy similares. Incluye materiales clave, colores, estilo y tipo de artículo. Por ejemplo, para un 'Sillón de madera moderno de mediados de siglo con cojines verdes', una buena consulta sería 'sillón madera moderno cojines verdes'. Para una 'Lámpara de pie alta de metal con pantalla negra', usa 'lámpara de pie metal pantalla negra'.
+3.  'suggestedSearchQuery': Una consulta de búsqueda descriptiva y efectiva en español (idealmente de 3 a 7 palabras) que un usuario usaría en Google Shopping para encontrar este artículo específico o artículos muy similares. Incluye materiales clave, colores, estilo y tipo de artículo. Por ejemplo, para un 'Sofá de cuero marrón estilo Chesterfield', una buena consulta sería 'sofá cuero marrón Chesterfield'. Para una 'Lámpara de mesa cerámica base azul pantalla lino', usa 'lámpara mesa cerámica azul lino'.
 
 Concéntrate en artículos que sean claramente visibles y centrales para el diseño de la habitación. Evita accesorios muy pequeños o genéricos a menos que sean particularmente distintivos.
 

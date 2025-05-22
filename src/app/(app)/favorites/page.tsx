@@ -22,14 +22,6 @@ import {
 import Image from 'next/image';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 
-const CHILEAN_STORES = [
-  { name: "Falabella", site: "www.falabella.com/falabella-cl" },
-  { name: "Paris", site: "paris.cl" },
-  { name: "Ripley", site: "ripley.cl" },
-  { name: "Sodimac", site: "sodimac.cl" },
-  { name: "Mercado Libre", site: "mercadolibre.cl" },
-];
-
 export default function FavoritesPage() {
   const { favorites, removeFavorite, user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -174,7 +166,7 @@ export default function FavoritesPage() {
             <DialogHeader>
               <DialogTitle>Encontrar Artículos Similares para "{selectedFavorite.title}"</DialogTitle>
               <DialogDescription>
-                La IA ha identificado estos artículos. Haz clic para buscarlos en tiendas chilenas populares. Los resultados se abrirán en una nueva pestaña.
+                La IA ha identificado estos artículos. Haz clic para buscarlos en Google Shopping. Los resultados se abrirán en una nueva pestaña.
               </DialogDescription>
             </DialogHeader>
             
@@ -205,34 +197,28 @@ export default function FavoritesPage() {
                   </Alert>
                 )}
                 {!isLoadingSimilarItems && similarItems.map((item, index) => (
-                  <div key={index} className="p-4 border rounded-lg bg-card shadow-md space-y-2">
+                  <div key={index} className="p-4 border rounded-lg bg-card shadow-md space-y-3">
                     <h3 className="font-semibold text-lg text-card-foreground flex items-center gap-2">
                       <Search className="h-5 w-5 text-primary"/>
                       {item.itemName}
                     </h3>
                     <p className="text-sm text-muted-foreground">{item.itemDescription}</p>
                     <div className="pt-2">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Buscar en:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {CHILEAN_STORES.map(store => (
-                          <Button
-                            key={store.name}
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="text-xs text-primary border-primary/50 hover:bg-primary/10"
-                          >
-                            <a
-                              href={`https://www.google.com/search?q=site%3A${store.site}+${encodeURIComponent(item.suggestedSearchQuery)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5"
-                            >
-                              {store.name} <ExternalLink className="h-3.5 w-3.5" />
-                            </a>
-                          </Button>
-                        ))}
-                      </div>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        asChild
+                        className="w-full text-primary-foreground bg-primary hover:bg-primary/90"
+                      >
+                        <a
+                          href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2"
+                        >
+                          Buscar en Google Shopping <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
                     </div>
                   </div>
                 ))}
