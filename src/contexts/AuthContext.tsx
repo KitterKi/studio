@@ -30,15 +30,16 @@ interface AuthContextType {
   signup: (email: string, pass: string, name?: string) => Promise<void>;
   logout: () => void;
   favorites: FavoriteItem[];
-  addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked'>) => void;
+  addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked' | 'title'>) => void;
   removeFavorite: (id: string) => void;
+  updateFavoriteTitle: (id: string, newTitle: string) => void; // New function
   toggleUserLike: (favoriteId: string) => void;
   canUserRedesign: () => boolean;
   recordRedesignAttempt: () => void;
   remainingRedesignsToday: number;
   followedUsernames: string[];
   isFollowing: (username: string) => boolean;
-  toggleFollow: (username: string) => void; // Simplified signature
+  toggleFollow: (username: string) => void;
   followingCount: number;
 }
 
@@ -198,14 +199,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setUser(null);
     localStorage.removeItem('authUser');
-    // Keep favorites and followedUsernames in localStorage for when they log back in
     router.push('/auth/signin');
   }, [user, router]);
 
-  const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked'>) => {
+  const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked' | 'title'>) => {
     setFavorites(prevFavorites => {
+      const style = item.style;
+      let newTitle = style;
+      const styleFavorites = prevFavorites.filter(fav => fav.title.startsWith(style));
+      
+      if (styleFavorites.length > 0) {
+        let maxNum = 1;
+        styleFavorites.forEach(fav => {
+          if (fav.title === style && maxNum === 1) { // Found "Style"
+            // If we only have "Style", the next one is "Style 2"
+          }
+          const match = fav.title.match(new RegExp(`^${style}\\s*(\\d+)$`));
+          if (match && parseInt(match[1]) >= maxNum) {
+            maxNum = parseInt(match[1]) + 1;
+          }
+        });
+         // If only "Style" exists and no "Style X", next is "Style 2"
+        if (styleFavorites.length === 1 && styleFavorites[0].title === style) {
+             newTitle = `${style} 2`;
+        } else if (styleFavorites.some(sf => sf.title === style) && maxNum === 1) { 
+            // This case handles if "Style" exists and other "Style X" might exist.
+            // If maxNum is still 1 but "Style" exists, it means "Style" is the only one or highest X is < 1 (which is impossible), so next is "Style 2"
+            // unless there's already "Style 2", then it should be maxNum logic.
+            // Let's find max number among "Style X"
+            let currentMax = 0;
+            styleFavorites.forEach(fav => {
+                const titleMatch = fav.title.match(new RegExp(`^${style}\\s*(\\d+)$`));
+                if (titleMatch) {
+                    currentMax = Math.max(currentMax, parseInt(titleMatch[1]));
+                }
+            });
+            if (styleFavorites.some(sf => sf.title === style)) { // If "Style" exists
+                 newTitle = `${style} ${currentMax + 1 > 1 ? currentMax + 1 : 2}`;
+            } else { // Only "Style X" exist
+                 newTitle = `${style} ${currentMax + 1}`;
+            }
+
+        } else if (maxNum > 1) {
+             newTitle = `${style} ${maxNum}`;
+        } else if (styleFavorites.length > 0 && !styleFavorites.some(sf => sf.title === style)) { // Only "Style X" exist, no plain "Style"
+            newTitle = `${style} ${maxNum}`;
+        }
+      }
+
+
       const newFavorite: FavoriteItem = {
         ...item,
+        title: newTitle, // Use the generated title
         originalImage: '',
         id: `fav-${Date.now()}`,
         createdAt: new Date(),
@@ -236,6 +281,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const removeFavorite = useCallback((id: string) => {
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.filter(fav => fav.id !== id);
+      localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+      return updatedFavorites;
+    });
+  }, []);
+
+  const updateFavoriteTitle = useCallback((id: string, newTitle: string) => {
+    setFavorites(prevFavorites => {
+      const updatedFavorites = prevFavorites.map(fav =>
+        fav.id === id ? { ...fav, title: newTitle } : fav
+      );
       localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
@@ -327,6 +382,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       favorites,
       addFavorite,
       removeFavorite,
+      updateFavoriteTitle,
       toggleUserLike,
       canUserRedesign,
       recordRedesignAttempt,

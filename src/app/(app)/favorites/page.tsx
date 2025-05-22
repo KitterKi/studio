@@ -6,7 +6,7 @@ import type { FavoriteItem } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import DesignCard from '@/components/DesignCard';
 import { Button } from '@/components/ui/button';
-import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2, X } from 'lucide-react';
+import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2, X, Edit3 } from 'lucide-react'; // Added Edit3
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function FavoritesPage() {
-  const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike } = useAuth();
+  const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike, updateFavoriteTitle } = useAuth(); // Added updateFavoriteTitle
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,6 +103,16 @@ export default function FavoritesPage() {
       setIsLoadingSimilarItems(false);
     }
   };
+
+  const handleEditTitle = (favorite: FavoriteItem) => {
+    const newTitle = window.prompt("Ingresa el nuevo nombre para tu rediseño:", favorite.title);
+    if (newTitle && newTitle.trim() !== "") {
+      updateFavoriteTitle(favorite.id, newTitle.trim());
+      toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${newTitle.trim()}".` });
+    } else if (newTitle === "") { // User entered empty string
+        toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío."});
+    }
+  };
   
   return (
     <>
@@ -132,8 +142,19 @@ export default function FavoritesPage() {
                   dataAiHint="habitación rediseñada"
                   onImageClick={() => handleOpenFindItemsModal(fav)}
                   isImageClickable={true}
+                  onEditTitle={() => handleEditTitle(fav)} // Pass the new handler
                 />
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2">
+                   <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleEditTitle(fav)}
+                    aria-label="Editar nombre"
+                    className="bg-background/80 hover:bg-accent text-foreground"
+                    title="Editar nombre"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="default"
                     size="icon"
@@ -252,11 +273,3 @@ export default function FavoritesPage() {
     </>
   );
 }
-    
-
-      
-
-
-
-
-    

@@ -51,10 +51,7 @@ export default function StyleMyRoomPage() {
       toast({ variant: "destructive", title: "No Has Iniciado Sesión", description: "Por favor, inicia sesión para rediseñar habitaciones." });
       return;
     }
-    // Re-check canUserRedesign directly, as page state 'allowRedesign' might not be updated yet
-    // if a redesign was just recorded by another component or if context updates are pending.
-    // However, for the button's disabled state, the page's 'allowRedesign' state is what matters for immediate UI feedback.
-    // For the actual submission, we check the source of truth again.
+
     if (!canUserRedesign()) {
       console.log('[StyleMyRoomPage] Redesign not allowed by canUserRedesign() from context. Toasting and returning.');
       toast({
@@ -80,7 +77,6 @@ export default function StyleMyRoomPage() {
         console.log('[StyleMyRoomPage] Redesign successful. Updating UI and recording attempt.');
         setRedesignedImage(result.redesignedPhotoDataUri);
         recordRedesignAttempt();
-        // After recording, immediately re-evaluate and set allowRedesign for the current page's state
         const canStillRedesign = canUserRedesign();
         console.log('[StyleMyRoomPage] After recording attempt, canUserRedesign():', canStillRedesign);
         setAllowRedesign(canStillRedesign);
@@ -95,7 +91,7 @@ export default function StyleMyRoomPage() {
           title: "Falló el Rediseño",
           description: "La IA no devolvió una imagen. Prueba con otra imagen o estilo.",
         });
-        setRedesignedImage(null); // Clear redesigned image on failure
+        setRedesignedImage(null); 
       }
     } catch (error) {
       console.error("[StyleMyRoomPage] Error during redesignRoom call or subsequent logic:", error);
@@ -119,16 +115,15 @@ export default function StyleMyRoomPage() {
 
   const handleSaveFavorite = () => {
     if (originalImage && redesignedImage && currentStyle && user) {
-      const favoriteTitle = `Mi Habitación ${currentStyle}`;
+      // Pass only essential data; AuthContext will generate the title
       addFavorite({
         originalImage, // originalImage is used in the context, will be set to '' there
         redesignedImage,
-        title: favoriteTitle,
         style: currentStyle,
       });
       toast({
         title: "¡Añadido a Favoritos!",
-        description: `${favoriteTitle} ha sido guardado.`,
+        description: `Rediseño estilo ${currentStyle} ha sido guardado.`,
       });
     } else {
       toast({
@@ -169,9 +164,6 @@ export default function StyleMyRoomPage() {
           <RoomRedesignForm
             onSubmit={handleRedesignSubmit}
             isLoading={isLoadingRedesign}
-            // isSubmitDisabled is based on page's allowRedesign state and isLoadingRedesign
-            // This is for the immediate button text and disabled state in the form.
-            // The handleRedesignSubmit function will re-verify with canUserRedesign() from context.
             isSubmitDisabled={!allowRedesign || isLoadingRedesign}
           />
         </div>

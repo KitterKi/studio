@@ -2,14 +2,14 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, Heart, MoreHorizontal } from 'lucide-react';
+import { MessageCircle, Heart, MoreHorizontal, Edit3 } from 'lucide-react'; // Added Edit3
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import React from 'react';
-import type { Comment } from '@/app/(app)/community/page'; // Import Comment type
+import type { Comment } from '@/app/(app)/community/page';
 
 export interface DesignCardProps {
   id: string;
@@ -18,16 +18,17 @@ export interface DesignCardProps {
   userName: string;
   userAvatarUrl?: string;
   likes: number;
-  comments: number; // This will be commentsData.length
-  commentsData?: Comment[]; // Array of actual comment objects
+  comments: number; 
+  commentsData?: Comment[];
   dataAiHint?: string;
   onImageClick?: () => void;
   isImageClickable?: boolean;
   variant?: 'default' | 'communityFeed';
   index?: number;
   isLikedByCurrentUser?: boolean;
-  onLikeClick?: (() => void) | null; // Allow null for unauthenticated users
-  onOpenComments?: () => void; // Callback to open comments modal
+  onLikeClick?: (() => void) | null;
+  onOpenComments?: () => void;
+  onEditTitle?: () => void; // New prop for editing title
 }
 
 export default function DesignCard({
@@ -47,6 +48,7 @@ export default function DesignCard({
   isLikedByCurrentUser = false,
   onLikeClick,
   onOpenComments,
+  onEditTitle, // Destructure new prop
 }: DesignCardProps) {
 
   const displayCommentCount = commentsData ? commentsData.length : comments;
@@ -58,7 +60,6 @@ export default function DesignCard({
         return [parseInt(match[1], 10), parseInt(match[2], 10)];
       }
     }
-    // Fallback dimensions if parsing fails or URL is not placehold.co
     return [600, 400]; 
   }, [imageUrl]);
 
@@ -69,7 +70,7 @@ export default function DesignCard({
       >
         <div
           className={cn("w-full bg-muted", (isImageClickable || onOpenComments) && "cursor-pointer")}
-          onClick={onOpenComments ? onOpenComments : (isImageClickable ? onImageClick : undefined)} // Prioritize onOpenComments
+          onClick={onOpenComments ? onOpenComments : (isImageClickable ? onImageClick : undefined)}
         >
           <Image
             src={imageUrl}
@@ -78,7 +79,7 @@ export default function DesignCard({
             height={imgHeight}
             className="object-cover w-full h-auto block"
             data-ai-hint={dataAiHint || "diseño de interiores"}
-            priority={index < 4} // Load first few images faster
+            priority={index < 4} 
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
@@ -107,7 +108,7 @@ export default function DesignCard({
                 <span className="text-xs">{displayCommentCount}</span>
               </Button>
             )}
-            {onLikeClick !== null && ( // Conditionally render if onLikeClick is not null
+            {onLikeClick !== null && ( 
               <Button
                 variant="ghost"
                 size="sm"
@@ -135,8 +136,13 @@ export default function DesignCard({
   // Default variant (for Favorites page etc.)
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
-      <CardHeader className="p-4">
+      <CardHeader className="p-4 flex justify-between items-center"> {/* Added flex for alignment */}
         <CardTitle className="text-lg truncate">{title}</CardTitle>
+        {onEditTitle && ( // Conditionally render Edit button
+          <Button variant="ghost" size="icon" onClick={onEditTitle} aria-label="Editar nombre" className="text-muted-foreground hover:text-primary -mr-2">
+            <Edit3 className="h-4 w-4" />
+          </Button>
+        )}
       </CardHeader>
       <CardContent
         className={cn("p-0 flex-grow", isImageClickable && "cursor-pointer")}
@@ -162,7 +168,7 @@ export default function DesignCard({
           <span className="text-sm font-medium text-card-foreground">{userName}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground">
-          {onLikeClick !== null && ( // Conditionally render if onLikeClick is not null
+          {onLikeClick !== null && ( 
             <Button
               variant="ghost"
               size="sm"
