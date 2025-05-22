@@ -47,8 +47,10 @@ export default function StyleMyRoomPage() {
   useEffect(() => {
     if(user){
         const can = canUserRedesign();
+        console.log('[StyleMyRoomPage] useEffect check canUserRedesign:', can, 'Remaining:', remainingRedesignsToday);
         setAllowRedesign(can);
     } else {
+      console.log('[StyleMyRoomPage] useEffect user is null, setting allowRedesign to false');
       setAllowRedesign(false);
     }
   }, [user, canUserRedesign, remainingRedesignsToday]);
@@ -84,76 +86,43 @@ export default function StyleMyRoomPage() {
     setCurrentStyle(style);
 
     // MOCK AI CALL (Comment this block and uncomment the actual AI call block below if reactivating AI)
-    try {
-      const result = await mockRedesignRoom(photoDataUri, style);
-      if (result.redesignedPhotoDataUri) {
-        setRedesignedImage(result.redesignedPhotoDataUri);
-        recordRedesignAttempt();
-        const canStillRedesignAfterAttempt = canUserRedesign();
-        setAllowRedesign(canStillRedesignAfterAttempt);
-        toast({
-          title: "¡Rediseño Simulado Completo!",
-          description: `Tu habitación ha sido rediseñada (simulación) en estilo ${style}. Quedan ${remainingRedesignsToday < 0 ? 0 : remainingRedesignsToday} rediseños hoy.`,
-        });
-      } else {
-         console.error('[StyleMyRoomPage] Mock AI did not return an image.');
-        toast({
-          variant: "destructive",
-          title: "Falló el Rediseño (Simulado)",
-          description: "La IA (simulada) no devolvió una imagen. Inténtalo de nuevo.",
-        });
-        setRedesignedImage(null);
-      }
-    } catch (error) {
-      console.error("[StyleMyRoomPage] Error during MOCK redesignRoom call:", error);
-       toast({
-        variant: "destructive",
-        title: "Falló el Rediseño (Simulado)",
-        description: "Ocurrió un error al simular el rediseño.",
-      });
-      setRedesignedImage(null);
-    } finally {
-      setIsLoadingRedesign(false);
-    }
-    // END MOCK AI CALL
-
-
-    // ACTUAL AI CALL (Uncomment this block and comment out the MOCK AI CALL block above if reactivating AI)
-    /*
+    
     try {
       console.log('[StyleMyRoomPage] Calling ACTUAL redesignRoom AI flow...');
-      const result = await redesignRoom({ photoDataUri, style });
+      // const result = await redesignRoom({ photoDataUri, style }); // ACTUAL AI CALL - Commented out for Spark plan
+      const result = await mockRedesignRoom(photoDataUri, style); // MOCK AI CALL - Enabled for Spark plan
       
       if (result.redesignedPhotoDataUri) {
-        console.log('[StyleMyRoomPage] ACTUAL redesignRoom AI flow SUCCESS. Image URI starts with:', result.redesignedPhotoDataUri.substring(0, 50));
+        // console.log('[StyleMyRoomPage] ACTUAL redesignRoom AI flow SUCCESS. Image URI starts with:', result.redesignedPhotoDataUri.substring(0, 50)); // For actual AI
+        console.log('[StyleMyRoomPage] MOCK redesignRoom AI flow SUCCESS. Image URL:', result.redesignedPhotoDataUri); // For mock AI
         setRedesignedImage(result.redesignedPhotoDataUri);
         recordRedesignAttempt();
         const canStillRedesignAfterAttempt = canUserRedesign(); // Re-check after recording
         setAllowRedesign(canStillRedesignAfterAttempt);
         toast({
-          title: "¡Rediseño Completo!",
-          description: `Tu habitación ha sido rediseñada en estilo ${style}. Quedan ${remainingRedesignsToday < 0 ? 0 : remainingRedesignsToday} rediseños hoy.`,
+          title: "¡Rediseño Simulado Completo!", // Updated for mock
+          description: `Tu habitación ha sido rediseñada (simulación) en estilo ${style}. Quedan ${remainingRedesignsToday < 0 ? 0 : remainingRedesignsToday} rediseños hoy.`,
         });
       } else {
-        console.error('[StyleMyRoomPage] AI did not return an image. Result:', result);
+        console.error('[StyleMyRoomPage] AI (simulated or actual) did not return an image. Result:', result);
         toast({
           variant: "destructive",
-          title: "Falló el Rediseño",
-          description: "La IA no devolvió una imagen. Esto puede ocurrir si el contenido fue bloqueado por filtros de seguridad o si hubo un error inesperado.",
+          title: "Falló el Rediseño (Simulado)", // Updated for mock
+          description: "La IA (simulada) no devolvió una imagen. Esto puede ocurrir si el contenido fue bloqueado por filtros de seguridad o si hubo un error inesperado.",
         });
         setRedesignedImage(null); // Ensure preview is cleared
       }
     } catch (error) {
-      console.error("[StyleMyRoomPage] Error during redesignRoom call or subsequent logic:", error);
-      let errorTitle = "Falló el Rediseño";
+      console.error("[StyleMyRoomPage] Error during redesignRoom call or subsequent logic (simulated or actual):", error);
+      let errorTitle = "Falló el Rediseño (Simulado)"; // Updated for mock
       let errorMessage = "Ocurrió un error al rediseñar la habitación. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
         if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
-          errorTitle = "Servicio de IA Ocupado";
-          errorMessage = "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+          errorTitle = "Servicio de IA Ocupado (Simulado)";
+          errorMessage = "El servicio de IA (simulado) está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
         } else if (error.message.toLowerCase().includes("safety filter") || error.message.toLowerCase().includes("blocked")) {
-          errorTitle = "Contenido Bloqueado";
-          errorMessage = "El rediseño no se pudo generar porque el contenido fue bloqueado por filtros de seguridad de la IA.";
+          errorTitle = "Contenido Bloqueado (Simulado)";
+          errorMessage = "El rediseño (simulado) no se pudo generar porque el contenido fue bloqueado por filtros de seguridad de la IA.";
         } else {
           errorMessage = error.message;
         }
@@ -167,7 +136,7 @@ export default function StyleMyRoomPage() {
     } finally {
       setIsLoadingRedesign(false);
     }
-    */
+    
   };
 
   const handleSaveFavorite = () => {
@@ -199,12 +168,12 @@ export default function StyleMyRoomPage() {
           {APP_NAME}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground max-w-lg sm:max-w-xl mx-auto">
-          Transforma tu espacio al instante. Sube una foto, elige tu estilo preferido y observa cómo la IA reimagina tu habitación.
+          Transforma tu espacio al instante (actualmente con IA simulada). Sube una foto, elige tu estilo y observa.
         </p>
       </div>
 
       {user && (
-        <Alert className="max-w-sm sm:max-w-md mx-auto bg-primary/10 border-primary/20 shadow-sm">
+        <Alert className="max-w-xs sm:max-w-sm mx-auto bg-primary/10 border-primary/20 shadow-sm">
           <Info className="h-5 w-5 text-primary" />
           <AlertTitle className="font-semibold text-primary text-sm">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
           <AlertDescription className="text-primary/80 text-xs">
@@ -215,8 +184,8 @@ export default function StyleMyRoomPage() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 items-start max-w-7xl mx-auto px-4">
-        <div className="md:col-span-2 md:sticky md:top-24 bg-card/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-xl border border-border/50">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 items-start max-w-7xl mx-auto px-2 sm:px-4">
+        <div className="md:col-span-2 md:sticky md:top-24 bg-card/80 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-2xl shadow-xl border border-border/50">
           <RoomRedesignForm
             onSubmit={handleRedesignSubmit}
             isLoading={isLoadingRedesign}
