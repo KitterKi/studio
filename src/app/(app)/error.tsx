@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,6 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
     console.error(error);
   }, [error]);
 
@@ -24,28 +24,28 @@ export default function ErrorPage({
             <AlertTriangle className="h-10 w-10 text-destructive" />
           </div>
           <CardTitle className="mt-4 text-3xl font-bold text-destructive">
-            Oops! Something Went Wrong
+            ¡Ups! Algo salió mal
           </CardTitle>
           <CardDescription className="text-lg text-card-foreground/80">
-            We're sorry, but an unexpected error occurred.
+            Lo sentimos, pero ocurrió un error inesperado.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {error?.message && (
             <p className="text-sm bg-destructive/10 p-3 rounded-md text-destructive border border-destructive/20">
-              <strong>Error details:</strong> {error.message}
+              <strong>Detalles del error:</strong> {error.message}
             </p>
           )}
            <p className="mt-4 text-sm text-card-foreground/70">
-            You can try to refresh the page or click the button below.
+            Puedes intentar actualizar la página o hacer clic en el botón de abajo.
           </p>
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row justify-center gap-3 pt-4">
           <Button onClick={() => reset()} variant="destructive" size="lg">
-            Try Again
+            Intentar de nuevo
           </Button>
           <Button onClick={() => window.location.href = '/'} variant="outline" size="lg">
-            Go to Homepage
+            Ir a la Página de Inicio
           </Button>
         </CardFooter>
       </Card>

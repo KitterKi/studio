@@ -13,11 +13,11 @@ export default function InitialLoadingScreen() {
         </h1>
         <div className="flex items-center gap-2 text-muted-foreground mt-2">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <p className="text-sm">Loading your experience...</p>
+          <p className="text-sm">Cargando tu experiencia...</p>
         </div>
       </div>
        <p className="mt-8 text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
+        &copy; {new Date().getFullYear()} {APP_NAME}. Todos los derechos reservados.
       </p>
     </div>
   );

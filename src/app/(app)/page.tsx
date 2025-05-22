@@ -26,11 +26,10 @@ export default function StyleMyRoomPage() {
     remainingRedesignsToday 
   } = useAuth();
 
-  // Derived state for whether user can submit a redesign
   const [allowRedesign, setAllowRedesign] = useState(false);
 
   useEffect(() => {
-    if(user){ // only check if user is loaded
+    if(user){ 
         setAllowRedesign(canUserRedesign());
     }
   }, [user, canUserRedesign, remainingRedesignsToday]);
@@ -38,14 +37,14 @@ export default function StyleMyRoomPage() {
 
   const handleRedesignSubmit = async (photoDataUri: string, style: string) => {
     if (!user) {
-      toast({ variant: "destructive", title: "Not Logged In", description: "Please log in to redesign rooms." });
+      toast({ variant: "destructive", title: "No Has Iniciado Sesión", description: "Por favor, inicia sesión para rediseñar habitaciones." });
       return;
     }
     if (!allowRedesign) {
       toast({
         variant: "destructive",
-        title: "Daily Limit Reached",
-        description: "You've used all your redesigns for today. Please try again tomorrow.",
+        title: "Límite Diario Alcanzado",
+        description: "Has usado todos tus rediseños por hoy. Por favor, inténtalo de nuevo mañana.",
       });
       return;
     }
@@ -59,27 +58,27 @@ export default function StyleMyRoomPage() {
       const result = await redesignRoom({ photoDataUri, style });
       if (result.redesignedPhotoDataUri) {
         setRedesignedImage(result.redesignedPhotoDataUri);
-        recordRedesignAttempt(); // Record successful attempt
-        setAllowRedesign(canUserRedesign()); // Re-check limit after recording
+        recordRedesignAttempt(); 
+        setAllowRedesign(canUserRedesign()); 
         toast({
-          title: "Redesign Complete!",
-          description: "Your room has been successfully redesigned.",
+          title: "¡Rediseño Completo!",
+          description: "Tu habitación ha sido rediseñada exitosamente.",
         });
       } else {
-        throw new Error("AI did not return an image.");
+        throw new Error("La IA no devolvió una imagen.");
       }
     } catch (error) {
-      console.error("Error redesigning room:", error);
-      let errorMessage = "Failed to redesign the room. Please try again.";
+      console.error("Error rediseñando la habitación:", error);
+      let errorMessage = "Falló el rediseño de la habitación. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
         errorMessage = error.message;
       }
       toast({
         variant: "destructive",
-        title: "Redesign Failed",
+        title: "Falló el Rediseño",
         description: errorMessage,
       });
-      setRedesignedImage(null); // Clear redesigned image on failure
+      setRedesignedImage(null); 
     } finally {
       setIsLoadingRedesign(false);
     }
@@ -87,7 +86,7 @@ export default function StyleMyRoomPage() {
 
   const handleSaveFavorite = () => {
     if (originalImage && redesignedImage && currentStyle && user) {
-      const favoriteTitle = `My ${currentStyle} Room`;
+      const favoriteTitle = `Mi Habitación ${currentStyle}`;
       addFavorite({
         originalImage,
         redesignedImage,
@@ -95,14 +94,14 @@ export default function StyleMyRoomPage() {
         style: currentStyle,
       });
       toast({
-        title: "Added to Favorites!",
-        description: `${favoriteTitle} has been saved.`,
+        title: "¡Añadido a Favoritos!",
+        description: `${favoriteTitle} ha sido guardado.`,
       });
     } else {
       toast({
         variant: "destructive",
-        title: "Cannot save favorite",
-        description: "Ensure you have a redesigned image and are logged in.",
+        title: "No se puede guardar el favorito",
+        description: "Asegúrate de tener una imagen rediseñada y haber iniciado sesión.",
       });
     }
   };
@@ -113,21 +112,21 @@ export default function StyleMyRoomPage() {
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-          StyleMyRoom AI Designer
+          Diseñador IA {APP_NAME}
         </h1>
         <p className="mt-3 text-lg text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-          Upload a photo, pick a style, and let our AI transform your space!
+          ¡Sube una foto, elige un estilo y deja que nuestra IA transforme tu espacio!
         </p>
       </div>
 
       {user && (
         <Alert className="max-w-2xl mx-auto bg-accent/30 border-accent/50">
           <Info className="h-5 w-5 text-accent-foreground" />
-          <AlertTitle className="font-semibold text-accent-foreground">Daily Redesigns Remaining: {remainingRedesignsToday}</AlertTitle>
+          <AlertTitle className="font-semibold text-accent-foreground">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
           <AlertDescription className="text-accent-foreground/80">
             {remainingRedesignsToday > 0 
-              ? `You can redesign ${remainingRedesignsToday} more room${remainingRedesignsToday === 1 ? '' : 's'} today.`
-              : "You've reached your daily redesign limit. Check back tomorrow!"}
+              ? `Puedes rediseñar ${remainingRedesignsToday} habitación${remainingRedesignsToday === 1 ? '' : 'es'} más hoy.`
+              : "¡Has alcanzado tu límite diario de rediseños. Vuelve mañana!"}
           </AlertDescription>
         </Alert>
       )}
@@ -155,7 +154,7 @@ export default function StyleMyRoomPage() {
                 className="w-full max-w-xs mx-auto"
               >
                 <Heart className={`mr-2 h-5 w-5 ${isAlreadyFavorite ? 'fill-destructive text-destructive' : ''}`} />
-                {isAlreadyFavorite ? 'Saved to Favorites' : 'Save to Favorites'}
+                {isAlreadyFavorite ? 'Guardado en Favoritos' : 'Guardar en Favoritos'}
               </Button>
             </div>
           )}

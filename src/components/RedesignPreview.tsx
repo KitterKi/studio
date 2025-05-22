@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -23,7 +24,7 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
             <ImageIcon className="h-5 w-5" />
-            Original Room
+            Habitación Original
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -31,7 +32,7 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
             <div className="aspect-video relative w-full rounded-lg overflow-hidden border">
               <Image
                 src={originalImageSrc}
-                alt="Original room"
+                alt="Habitación original"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-contain"
@@ -39,7 +40,7 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
               />
             </div>
           ) : (
-            <ImagePlaceholder text="Upload a photo of your room to see it here." />
+            <ImagePlaceholder text="Sube una foto de tu habitación para verla aquí." />
           )}
         </CardContent>
       </Card>
@@ -48,19 +49,19 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="h-5 w-5 text-primary" />
-            Redesigned Room
+            Habitación Rediseñada
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="aspect-video w-full flex items-center justify-center bg-muted/50 rounded-lg">
-              <LoadingSpinner size={16} text="AI is working its magic..." />
+              <LoadingSpinner size={16} text="La IA está haciendo su magia..." />
             </div>
           ) : redesignedImageSrc ? (
             <div className="aspect-video relative w-full rounded-lg overflow-hidden border">
                <Image
                 src={redesignedImageSrc}
-                alt="Redesigned room"
+                alt="Habitación rediseñada"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-contain"
@@ -68,7 +69,7 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
               />
             </div>
           ) : (
-            <ImagePlaceholder text="Your AI-redesigned room will appear here." />
+            <ImagePlaceholder text="Tu habitación rediseñada por IA aparecerá aquí." />
           )}
         </CardContent>
       </Card>

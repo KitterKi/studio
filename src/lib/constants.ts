@@ -2,7 +2,7 @@
 import { Wand2, Users, Heart, UserCircle, LogIn, Home } from 'lucide-react';
 
 export const DESIGN_STYLES = [
-  "Modern",
+  "Modern", // Kept in English for AI consistency and common usage
   "Rustic",
   "Minimalist",
   "Bohemian",
@@ -16,23 +16,24 @@ export const DESIGN_STYLES = [
   "Maximalist"
 ];
 
-export const APP_NAME = "StyleMyRoom";
+export const APP_NAME = "StyleMyRoom"; // App name kept as is
 
 export const AUTH_SIGNIN_PATH = "/auth/signin";
 export const AUTH_SIGNUP_PATH = "/auth/signup";
 
 export const SIDEBAR_NAV_ITEMS_AUTHENTICATED = [
-  { href: "/", label: "Redesign Room", icon: Wand2 },
-  { href: "/community", label: "Community", icon: Users },
-  { href: "/favorites", label: "My Favorites", icon: Heart },
-  { href: "/profile", label: "My Profile", icon: UserCircle },
+  { href: "/", label: "Rediseñar Habitación", icon: Wand2 },
+  { href: "/community", label: "Comunidad", icon: Users },
+  { href: "/favorites", label: "Mis Favoritos", icon: Heart },
+  { href: "/profile", label: "Mi Perfil", icon: UserCircle },
 ];
 
 export const SIDEBAR_NAV_ITEMS_UNAUTHENTICATED = [
-  { href: "/", label: "Redesign Room", icon: Wand2 },
-  { href: "/community", label: "Community", icon: Users },
-  { href: AUTH_SIGNIN_PATH, label: "Sign In", icon: LogIn },
+  { href: "/", label: "Rediseñar Habitación", icon: Wand2 },
+  { href: "/community", label: "Comunidad", icon: Users },
+  { href: AUTH_SIGNIN_PATH, label: "Iniciar Sesión", icon: LogIn },
 ];
 
 // For AppHeader, if NavLink was used, it's now mostly in Sidebar.
 // AppHeader will handle auth buttons or UserNav.
+

@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         {children}
       </Card>
        <p className="mt-8 text-center text-sm text-muted-foreground">
-        Back to <Link href="/" className="text-primary hover:underline">Homepage</Link>
+        Volver a la <Link href="/" className="text-primary hover:underline">Página de Inicio</Link>
       </p>
     </div>
   );

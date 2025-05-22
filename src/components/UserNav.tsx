@@ -14,8 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { CreditCard, LogOut, Settings, User as UserIcon } from 'lucide-react';
-import ThemeToggle from './ThemeToggle'; // Import ThemeToggle
+import { CreditCard, LogOut, Settings, User as UserIcon, Heart } from 'lucide-react'; // Added Heart
+import ThemeToggle from './ThemeToggle';
 
 export default function UserNav() {
   const { user, logout } = useAuth();
@@ -45,7 +45,7 @@ export default function UserNav() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
+              <p className="text-sm font-medium leading-none">{user.name || 'Usuario'}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user.email}
               </p>
@@ -56,24 +56,24 @@ export default function UserNav() {
             <Link href="/profile" passHref legacyBehavior>
               <DropdownMenuItem>
                 <UserIcon className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>Perfil</span>
               </DropdownMenuItem>
             </Link>
             <Link href="/favorites" passHref legacyBehavior>
               <DropdownMenuItem>
-                  <CreditCard className="mr-2 h-4 w-4" /> 
-                  <span>Favorites</span>
+                  <Heart className="mr-2 h-4 w-4" /> 
+                  <span>Favoritos</span>
               </DropdownMenuItem>
             </Link>
             <DropdownMenuItem disabled>
               <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
+              <span>Configuración</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout}>
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            <span>Cerrar Sesión</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

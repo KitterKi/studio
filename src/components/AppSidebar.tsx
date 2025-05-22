@@ -50,11 +50,11 @@ export default function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
       <SidebarHeader className="p-4 flex items-center justify-between group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2">
-        <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:hidden" aria-label={`${APP_NAME} home page`}>
+        <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:hidden" aria-label={`${APP_NAME} página de inicio`}>
           <LogoIcon />
           <span className="font-semibold text-xl">{APP_NAME}</span>
         </Link>
-         <Link href="/" className="hidden items-center gap-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center" aria-label={`${APP_NAME} home page`}>
+         <Link href="/" className="hidden items-center gap-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center" aria-label={`${APP_NAME} página de inicio`}>
           <LogoIcon />
         </Link>
       </SidebarHeader>
@@ -92,20 +92,20 @@ export default function AppSidebar() {
                   <AvatarFallback>{user.name ? user.name.substring(0, 2).toUpperCase() : user.email.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
+                  <p className="text-sm font-medium leading-none">{user.name || 'Usuario'}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                 </div>
              </div>
             <Button variant="ghost" onClick={logout} className="w-full justify-start">
               <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              Cerrar Sesión
             </Button>
           </div>
            <div className="hidden group-data-[collapsible=icon]:flex flex-col items-center space-y-2 p-2">
-             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Profile">
+             <Button variant="ghost" size="icon" onClick={() => router.push('/profile')} title="Perfil">
                 <UserCircle className="h-5 w-5" />
              </Button>
-             <Button variant="ghost" size="icon" onClick={logout} title="Logout">
+             <Button variant="ghost" size="icon" onClick={logout} title="Cerrar Sesión">
                 <LogOut className="h-5 w-5" />
              </Button>
            </div>

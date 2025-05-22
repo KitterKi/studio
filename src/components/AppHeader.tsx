@@ -21,7 +21,7 @@ export default function AppHeader() {
           {user && ( // Show sidebar trigger only if user is logged in (since sidebar is only for logged-in users)
             <SidebarTrigger className="md:hidden" onClick={() => setOpenMobile(!openMobile)} />
           )}
-          <Link href="/" className="flex items-center gap-2" aria-label={`${APP_NAME} home page`}>
+          <Link href="/" className="flex items-center gap-2" aria-label={`${APP_NAME} página de inicio`}>
             <LogoIcon />
             <span className="font-semibold text-xl">{APP_NAME}</span>
           </Link>
@@ -36,12 +36,12 @@ export default function AppHeader() {
             <>
               <Link href="/auth/signin" passHref legacyBehavior>
                 <Button variant="ghost">
-                  <LogIn className="mr-2 h-4 w-4" /> Sign In
+                  <LogIn className="mr-2 h-4 w-4" /> Iniciar Sesión
                 </Button>
               </Link>
               <Link href="/auth/signup" passHref legacyBehavior>
                 <Button>
-                  <UserPlus className="mr-2 h-4 w-4" /> Sign Up
+                  <UserPlus className="mr-2 h-4 w-4" /> Registrarse
                 </Button>
               </Link>
             </>

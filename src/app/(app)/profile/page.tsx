@@ -16,17 +16,17 @@ export default function ProfilePage() {
   const { user, isLoading, logout } = useAuth();
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading profile..." size={16} /></div>;
+    return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Cargando perfil..." size={16} /></div>;
   }
 
   if (!user) {
      return (
        <div className="text-center py-12">
         <Alert variant="destructive" className="max-w-md mx-auto">
-          <AlertTitle>Access Denied</AlertTitle>
+          <AlertTitle>Acceso Denegado</AlertTitle>
           <AlertDescription>
-            You need to be logged in to view your profile.
-             <Link href="/auth/signin" className="text-primary hover:underline ml-1">Sign In</Link>
+            Necesitas iniciar sesión para ver tu perfil.
+             <Link href="/auth/signin" className="text-primary hover:underline ml-1">Iniciar Sesión</Link>
           </AlertDescription>
         </Alert>
       </div>
@@ -43,40 +43,40 @@ export default function ProfilePage() {
     <div className="space-y-8 max-w-2xl mx-auto">
       <div className="text-center">
         <h1 className="text-4xl font-bold tracking-tight lg:text-5xl flex items-center justify-center gap-3">
-          <UserCircle className="h-10 w-10 text-primary" /> My Profile
+          <UserCircle className="h-10 w-10 text-primary" /> Mi Perfil
         </h1>
-        <p className="mt-3 text-lg text-muted-foreground">Manage your account details.</p>
+        <p className="mt-3 text-lg text-muted-foreground">Administra los detalles de tu cuenta.</p>
       </div>
 
       <Card className="shadow-xl">
         <CardHeader className="items-center text-center">
            <Avatar className="h-24 w-24 mb-4 ring-4 ring-primary/50 ring-offset-background ring-offset-2">
-            <AvatarImage src={`https://placehold.co/100x100.png?text=${getInitials(user.name, user.email)}`} alt={user.name || user.email} data-ai-hint="profile large"/>
+            <AvatarImage src={`https://placehold.co/100x100.png?text=${getInitials(user.name, user.email)}`} alt={user.name || user.email || 'Avatar de usuario'} data-ai-hint="profile large"/>
             <AvatarFallback className="text-3xl">{getInitials(user.name, user.email)}</AvatarFallback>
           </Avatar>
-          <CardTitle className="text-2xl">{user.name || 'User'}</CardTitle>
+          <CardTitle className="text-2xl">{user.name || 'Usuario'}</CardTitle>
           <CardDescription>{user.email}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="flex items-center gap-2">
-                <UserCircle className="h-4 w-4 text-muted-foreground" /> Name
+                <UserCircle className="h-4 w-4 text-muted-foreground" /> Nombre
             </Label>
             <Input id="name" value={user.name || ''} readOnly disabled className="bg-muted/30"/>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" /> Email
+                <Mail className="h-4 w-4 text-muted-foreground" /> Correo Electrónico
             </Label>
-            <Input id="email" type="email" value={user.email} readOnly disabled className="bg-muted/30"/>
+            <Input id="email" type="email" value={user.email || ''} readOnly disabled className="bg-muted/30"/>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button variant="outline" className="w-full" disabled>
-              <Edit3 className="mr-2 h-4 w-4" /> Edit Profile (Coming Soon)
+              <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil (Próximamente)
             </Button>
             <Button variant="destructive" onClick={logout} className="w-full">
-              Logout
+              Cerrar Sesión
             </Button>
           </div>
         </CardContent>

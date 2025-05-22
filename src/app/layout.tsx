@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/AuthContext';
+import { APP_NAME } from '@/lib/constants'; // Import APP_NAME
 
 const inter = Inter({
   subsets: ['latin'],
@@ -11,11 +12,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'StyleMyRoom',
-  description: 'Redesign your room with AI',
+  title: APP_NAME, // Use APP_NAME
+  description: 'Rediseña tu habitación con IA',
 };
 
-// Script to set initial theme to avoid FOUC
 const InitializeTheme = () => {
   const script = `
     (function() {
@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
+    <html lang="es" className="h-full" suppressHydrationWarning>
       <head>
         <InitializeTheme />
       </head>

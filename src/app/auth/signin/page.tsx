@@ -13,27 +13,26 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('1234'); // Pre-fill for prototype
+  const [password, setPassword] = useState('1234'); 
   const { login, isLoading } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!email || !password) {
-      toast({ variant: "destructive", title: "Missing fields", description: "Please enter email and password." });
+      toast({ variant: "destructive", title: "Campos faltantes", description: "Por favor, ingresa correo y contraseña." });
       return;
     }
     try {
       await login(email, password);
-      // Redirect is handled by useAuth hook
     } catch (error: any) {
-      let errorMessage = "An unexpected error occurred.";
+      let errorMessage = "Ocurrió un error inesperado.";
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
-      toast({ variant: "destructive", title: "Sign In Failed", description: errorMessage });
+      toast({ variant: "destructive", title: "Falló el Inicio de Sesión", description: errorMessage });
     }
   };
 
@@ -41,18 +40,18 @@ export default function SignInPage() {
     <>
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
-          <LogIn className="h-7 w-7" /> Sign In
+          <LogIn className="h-7 w-7" /> Iniciar Sesión
         </CardTitle>
-        <CardDescription>Welcome back! Access your account.</CardDescription>
+        <CardDescription>¡Bienvenido de nuevo! Accede a tu cuenta.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo Electrónico</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="tu@ejemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -60,11 +59,11 @@ export default function SignInPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               type="password"
-              value={password} // Value is pre-filled
+              value={password} 
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
@@ -74,12 +73,12 @@ export default function SignInPage() {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Signing In...' : 'Sign In'}
+            {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Don&apos;t have an account?{' '}
+            ¿No tienes una cuenta?{' '}
             <Link href="/auth/signup" className="font-medium text-primary hover:underline">
-              Sign Up
+              Regístrate
             </Link>
           </p>
         </CardFooter>

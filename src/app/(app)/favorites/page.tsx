@@ -22,9 +22,8 @@ import {
 import Image from 'next/image';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 
-// Chilean Stores for search links
 const CHILEAN_STORES = [
-  { name: "Falabella", site: "www.falabella.com/falabella-cl" }, // Updated domain
+  { name: "Falabella", site: "www.falabella.com/falabella-cl" },
   { name: "Paris", site: "paris.cl" },
   { name: "Ripley", site: "ripley.cl" },
   { name: "Sodimac", site: "sodimac.cl" },
@@ -41,17 +40,17 @@ export default function FavoritesPage() {
   const [similarItems, setSimilarItems] = useState<IdentifiedItem[]>([]);
 
   if (authLoading) {
-    return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading favorites..." size={16} /></div>;
+    return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Cargando favoritos..." size={16} /></div>;
   }
 
   if (!user) {
     return (
        <div className="text-center py-12">
         <Alert variant="destructive" className="max-w-md mx-auto">
-          <AlertTitle>Access Denied</AlertTitle>
+          <AlertTitle>Acceso Denegado</AlertTitle>
           <AlertDescription>
-            You need to be logged in to view your favorites.
-            <Link href="/auth/signin" className="text-primary hover:underline ml-1">Sign In</Link>
+            Necesitas iniciar sesión para ver tus favoritos.
+            <Link href="/auth/signin" className="text-primary hover:underline ml-1">Iniciar Sesión</Link>
           </AlertDescription>
         </Alert>
       </div>
@@ -60,16 +59,16 @@ export default function FavoritesPage() {
 
   const handleShareFavorite = (imageUrl: string, title: string) => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(`Check out this room redesign: ${title}! Image: ${imageUrl}`)
+      navigator.clipboard.writeText(`¡Mira este rediseño de habitación: ${title}! Imagen: ${imageUrl}`)
         .then(() => {
-          toast({ title: "Link Copied!", description: "Redesign info copied to clipboard." });
+          toast({ title: "¡Enlace Copiado!", description: "Información del rediseño copiada al portapapeles." });
         })
         .catch(err => {
-          console.error('Failed to copy: ', err);
-          toast({ variant: "destructive", title: "Copy Failed", description: "Could not copy to clipboard." });
+          console.error('Falló al copiar: ', err);
+          toast({ variant: "destructive", title: "Falló al Copiar", description: "No se pudo copiar al portapapeles." });
         });
     } else {
-      toast({ variant: "destructive", title: "Clipboard Error", description: "Clipboard access not available." });
+      toast({ variant: "destructive", title: "Error de Portapapeles", description: "Acceso al portapapeles no disponible." });
     }
   };
 
@@ -84,19 +83,19 @@ export default function FavoritesPage() {
       setSimilarItems(result.items);
       if (result.items.length === 0) {
         toast({
-          title: "No Distinct Items Found",
-          description: "The AI couldn't identify distinct items to search for in this image.",
+          title: "No se Encontraron Artículos Distintos",
+          description: "La IA no pudo identificar artículos distintos para buscar en esta imagen.",
         });
       }
     } catch (error) {
-      console.error("Error finding similar items:", error);
-      let errorMessage = "Failed to find similar items. Please try again.";
+      console.error("Error encontrando artículos similares:", error);
+      let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
         errorMessage = error.message;
       }
       toast({
         variant: "destructive",
-        title: "AI Error",
+        title: "Error de IA",
         description: errorMessage,
       });
     } finally {
@@ -109,10 +108,10 @@ export default function FavoritesPage() {
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl flex items-center justify-center gap-3">
-            <Heart className="h-10 w-10 text-primary" /> My Favorite Redesigns
+            <Heart className="h-10 w-10 text-primary" /> Mis Rediseños Favoritos
           </h1>
           <p className="mt-3 text-lg text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-            Your personal collection of inspiring room transformations. Click an image to find similar items!
+            Tu colección personal de transformaciones de habitaciones inspiradoras. ¡Haz clic en una imagen para encontrar artículos similares!
           </p>
         </div>
 
@@ -123,23 +122,22 @@ export default function FavoritesPage() {
                 <DesignCard
                   id={fav.id}
                   imageUrl={fav.redesignedImage} 
-                  title={fav.title || `Redesign in ${fav.style}`}
-                  userName={user.name || user.email || "You"}
+                  title={fav.title || `Rediseño en ${fav.style}`}
+                  userName={user.name || user.email || "Tú"}
                   likes={0} 
                   comments={0}
-                  dataAiHint="redesigned room"
+                  dataAiHint="habitación rediseñada"
                   onImageClick={() => handleOpenFindItemsModal(fav)}
                   isImageClickable={true}
                 />
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2">
-                  {/* Find items button removed from here, click image instead */}
                   <Button
                     variant="default"
                     size="icon"
-                    onClick={() => handleShareFavorite(fav.redesignedImage, fav.title || `Redesign in ${fav.style}`)}
-                    aria-label="Share design"
+                    onClick={() => handleShareFavorite(fav.redesignedImage, fav.title || `Rediseño en ${fav.style}`)}
+                    aria-label="Compartir diseño"
                     className="bg-primary/80 hover:bg-primary text-primary-foreground"
-                    title="Share design"
+                    title="Compartir diseño"
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>
@@ -147,8 +145,8 @@ export default function FavoritesPage() {
                     variant="destructive"
                     size="icon"
                     onClick={() => removeFavorite(fav.id)}
-                    aria-label="Remove from favorites"
-                    title="Remove from favorites"
+                    aria-label="Eliminar de favoritos"
+                    title="Eliminar de favoritos"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -159,11 +157,11 @@ export default function FavoritesPage() {
         ) : (
           <div className="text-center py-16 border-2 border-dashed border-muted rounded-lg">
             <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-2xl font-semibold text-muted-foreground mb-2">No favorites yet!</p>
-            <p className="text-muted-foreground mb-6">Start redesigning and save your best creations.</p>
+            <p className="text-2xl font-semibold text-muted-foreground mb-2">¡Aún no tienes favoritos!</p>
+            <p className="text-muted-foreground mb-6">Comienza a rediseñar y guarda tus mejores creaciones.</p>
             <Link href="/" passHref legacyBehavior>
               <Button size="lg">
-                Redesign a Room
+                Rediseñar una Habitación
               </Button>
             </Link>
           </div>
@@ -174,9 +172,9 @@ export default function FavoritesPage() {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
             <DialogHeader>
-              <DialogTitle>Find Similar Items for "{selectedFavorite.title}"</DialogTitle>
+              <DialogTitle>Encontrar Artículos Similares para "{selectedFavorite.title}"</DialogTitle>
               <DialogDescription>
-                The AI has identified these items. Click to search for them in popular Chilean stores. Results will open in a new tab.
+                La IA ha identificado estos artículos. Haz clic para buscarlos en tiendas chilenas populares. Los resultados se abrirán en una nueva pestaña.
               </DialogDescription>
             </DialogHeader>
             
@@ -184,25 +182,25 @@ export default function FavoritesPage() {
               <div className="relative aspect-video w-full rounded-lg overflow-hidden border self-start">
                 <Image
                   src={selectedFavorite.redesignedImage}
-                  alt={`Redesigned room: ${selectedFavorite.title}`}
+                  alt={`Habitación rediseñada: ${selectedFavorite.title}`}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-contain"
                 />
               </div>
 
-              <div className="space-y-4 overflow-y-auto overflow-x-hidden pr-2 flex-grow min-h-0"> {/* Added overflow-x-hidden */}
+              <div className="space-y-4 overflow-y-auto overflow-x-hidden pr-2 flex-grow min-h-0"> 
                 {isLoadingSimilarItems && (
                   <div className="flex flex-col items-center justify-center h-full py-10">
-                    <LoadingSpinner text="AI is identifying items..." size={10}/>
+                    <LoadingSpinner text="La IA está identificando artículos..." size={10}/>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length === 0 && (
                   <Alert className="mt-4">
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Nothing Found Yet</AlertTitle>
+                    <AlertTitle>No se Encontró Nada</AlertTitle>
                     <AlertDescription>
-                      The AI could not identify distinct items to search for in this image, or the image might not contain easily identifiable items. Try another image or check back if the AI is still learning.
+                      La IA no pudo identificar artículos distintos para buscar en esta imagen, o la imagen podría no contener artículos fácilmente identificables. Prueba con otra imagen.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -214,7 +212,7 @@ export default function FavoritesPage() {
                     </h3>
                     <p className="text-sm text-muted-foreground">{item.itemDescription}</p>
                     <div className="pt-2">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Search on:</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Buscar en:</p>
                       <div className="flex flex-wrap gap-2">
                         {CHILEAN_STORES.map(store => (
                           <Button
@@ -241,7 +239,7 @@ export default function FavoritesPage() {
               </div>
             </div>
             <DialogFooter className="mt-auto pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

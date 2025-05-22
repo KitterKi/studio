@@ -4,7 +4,7 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'; // Card import was missing
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,23 +22,23 @@ export default function SignUpPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
      if (!email || !password || !name) {
-       toast({ variant: "destructive", title: "Missing fields", description: "Please fill in all required fields." });
+       toast({ variant: "destructive", title: "Campos faltantes", description: "Por favor, completa todos los campos requeridos." });
       return;
     }
     if (password.length < 6) {
-      toast({ variant: "destructive", title: "Password too short", description: "Password should be at least 6 characters." });
+      toast({ variant: "destructive", title: "Contraseña muy corta", description: "La contraseña debe tener al menos 6 caracteres." });
       return;
     }
     try {
       await signup(email, password, name);
     } catch (error: any) {
-      let errorMessage = "An unexpected error occurred.";
+      let errorMessage = "Ocurrió un error inesperado.";
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
-      toast({ variant: "destructive", title: "Sign Up Failed", description: errorMessage });
+      toast({ variant: "destructive", title: "Falló el Registro", description: errorMessage });
     }
   };
 
@@ -46,18 +46,18 @@ export default function SignUpPage() {
     <>
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
-          <UserPlus className="h-7 w-7" /> Create Account
+          <UserPlus className="h-7 w-7" /> Crear Cuenta
         </CardTitle>
-        <CardDescription>Join StyleMyRoom today!</CardDescription>
+        <CardDescription>¡Únete a {APP_NAME} hoy!</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
            <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">Nombre Completo</Label>
             <Input
               id="name"
               type="text"
-              placeholder="Your Name"
+              placeholder="Tu Nombre"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -65,11 +65,11 @@ export default function SignUpPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo Electrónico</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="tu@ejemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -77,11 +77,11 @@ export default function SignUpPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               type="password"
-              placeholder="•••••••• (min. 6 characters)"
+              placeholder="•••••••• (mín. 6 caracteres)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -91,12 +91,12 @@ export default function SignUpPage() {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Creating Account...' : 'Sign Up'}
+            {isLoading ? 'Creando Cuenta...' : 'Registrarse'}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
+            ¿Ya tienes una cuenta?{' '}
             <Link href="/auth/signin" className="font-medium text-primary hover:underline">
-              Sign In
+              Iniciar Sesión
             </Link>
           </p>
         </CardFooter>
@@ -104,3 +104,5 @@ export default function SignUpPage() {
     </>
   );
 }
+// Need to ensure APP_NAME is available or hardcode it
+const APP_NAME = "StyleMyRoom";

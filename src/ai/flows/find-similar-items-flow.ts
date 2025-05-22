@@ -1,37 +1,36 @@
 
 'use server';
 /**
- * @fileOverview Identifies furniture and decor items in an image and suggests search queries.
+ * @fileOverview Identifica muebles y artículos de decoración en una imagen y sugiere consultas de búsqueda.
  *
- * - findSimilarItems - A function that identifies items in an image.
- * - FindSimilarItemsInput - The input type for the findSimilarItems function.
- * - FindSimilarItemsOutput - The return type for the findSimilarItems function.
- * - IdentifiedItem - The schema for an individual identified item.
+ * - findSimilarItems - Una función que identifica artículos en una imagen.
+ * - FindSimilarItemsInput - El tipo de entrada para la función findSimilarItems.
+ * - FindSimilarItemsOutput - El tipo de retorno para la función findSimilarItems.
+ * - IdentifiedItem - El esquema para un artículo identificado individualmente.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-// Schemas are defined internally and not exported from 'use server' files.
 const FindSimilarItemsInputSchema = z.object({
   imageDataUri: z
     .string()
     .describe(
-      "A photo of a room, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "Una foto de una habitación, como un URI de datos que debe incluir un tipo MIME y usar codificación Base64. Formato esperado: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
 export type FindSimilarItemsInput = z.infer<typeof FindSimilarItemsInputSchema>;
 
 const IdentifiedItemSchema = z.object({
-  itemName: z.string().describe('The common name of the identified item (e.g., "Sofa", "Floor Lamp", "Coffee Table"). Keep it concise, 1-3 words.'),
-  itemDescription: z.string().describe('A brief description of the item, highlighting its key visual characteristics relevant for searching (e.g., "Blue velvet 3-seater sofa with gold legs", "Modern arc floor lamp with marble base"). Aim for 5-15 words.'),
-  suggestedSearchQuery: z.string().describe("A practical and descriptive search query (3-7 words) that a user might type into a Chilean e-commerce site like Falabella.cl or Paris.cl to find this specific item or very similar ones. Include key materials, colors, style, and type of item. For example, for a 'Mid-century modern wooden armchair with green cushions', a good query would be 'sillón madera moderno cojines verdes'. For a 'Tall metal floor lamp with a black shade', use 'lámpara de pie metal pantalla negra'.")
+  itemName: z.string().describe('El nombre común del artículo identificado (ej., "Sofá", "Lámpara de pie", "Mesa de centro"). Manténlo conciso, 1-3 palabras, en español.'),
+  itemDescription: z.string().describe('Una breve descripción del artículo, destacando sus características visuales clave relevantes para la búsqueda (ej., "Sofá de 3 cuerpos de terciopelo azul con patas doradas", "Lámpara de arco moderna con base de mármol"). Apunta a 5-15 palabras, en español.'),
+  suggestedSearchQuery: z.string().describe("Una consulta de búsqueda práctica y descriptiva (3-7 palabras) que un usuario podría escribir en un sitio de comercio electrónico chileno como Falabella.cl o Paris.cl para encontrar este artículo específico o muy similares. Incluye materiales clave, colores, estilo y tipo de artículo. Por ejemplo, para un 'Sillón de madera moderno de mediados de siglo con cojines verdes', una buena consulta sería 'sillón madera moderno cojines verdes'. Para una 'Lámpara de pie alta de metal con pantalla negra', usa 'lámpara de pie metal pantalla negra'.")
 });
 export type IdentifiedItem = z.infer<typeof IdentifiedItemSchema>;
 
 
 const FindSimilarItemsOutputSchema = z.object({
-  items: z.array(IdentifiedItemSchema).describe('A list of up to 3-5 prominent furniture or decor items identified in the image.')
+  items: z.array(IdentifiedItemSchema).describe('Una lista de hasta 3-5 artículos prominentes de mobiliario o decoración identificados en la imagen.')
 });
 export type FindSimilarItemsOutput = z.infer<typeof FindSimilarItemsOutputSchema>;
 
@@ -43,15 +42,15 @@ const prompt = ai.definePrompt({
   name: 'findSimilarItemsPrompt',
   input: {schema: FindSimilarItemsInputSchema},
   output: {schema: FindSimilarItemsOutputSchema},
-  prompt: `You are an expert interior design assistant. Your task is to analyze the provided image of a room and identify up to 3-5 prominent and distinct furniture or decor items.
-For each item, provide:
-1.  'itemName': A concise common name (e.g., "Armchair", "Wall Art", "Rug").
-2.  'itemDescription': A brief visual description highlighting key features useful for searching it online (e.g., "Cream boucle armchair with wooden legs", "Abstract canvas painting with blue and gold tones", "Geometric pattern wool rug").
-3.  'suggestedSearchQuery': A practical and descriptive search query (3-7 words) that a user might type into a Chilean e-commerce site like Falabella.cl or Paris.cl to find this specific item or very similar ones. Include key materials, colors, style, and type of item. For example, for a 'Mid-century modern wooden armchair with green cushions', a good query would be 'sillón madera moderno cojines verdes'. For a 'Tall metal floor lamp with a black shade', use 'lámpara de pie metal pantalla negra'.
+  prompt: `Eres un asistente experto en diseño de interiores. Tu tarea es analizar la imagen proporcionada de una habitación e identificar hasta 3-5 artículos prominentes y distintos de mobiliario o decoración.
+Para cada artículo, proporciona:
+1.  'itemName': Un nombre común conciso en español (ej., "Sillón", "Arte de Pared", "Alfombra").
+2.  'itemDescription': Una breve descripción visual en español que destaque las características clave útiles para buscarlo en línea (ej., "Sillón de bouclé crema con patas de madera", "Pintura abstracta en lienzo con tonos azules y dorados", "Alfombra de lana con patrón geométrico").
+3.  'suggestedSearchQuery': Una consulta de búsqueda práctica y descriptiva en español (3-7 palabras) que un usuario podría escribir en un sitio de comercio electrónico chileno como Falabella.cl o Paris.cl para encontrar este artículo específico o muy similares. Incluye materiales clave, colores, estilo y tipo de artículo. Por ejemplo, para un 'Sillón de madera moderno de mediados de siglo con cojines verdes', una buena consulta sería 'sillón madera moderno cojines verdes'. Para una 'Lámpara de pie alta de metal con pantalla negra', usa 'lámpara de pie metal pantalla negra'.
 
-Focus on items that are clearly visible and central to the room's design. Avoid very small or generic accessories unless they are particularly distinctive.
+Concéntrate en artículos que sean claramente visibles y centrales para el diseño de la habitación. Evita accesorios muy pequeños o genéricos a menos que sean particularmente distintivos.
 
-Image to analyze: {{media url=imageDataUri}}`,
+Imagen a analizar: {{media url=imageDataUri}}`,
 });
 
 const findSimilarItemsFlow = ai.defineFlow(
@@ -63,7 +62,6 @@ const findSimilarItemsFlow = ai.defineFlow(
   async (input) => {
     const {output} = await prompt(input);
     if (!output || !output.items) {
-      // Fallback or error handling if no items are identified or output is malformed
       return { items: [] };
     }
     return output;
