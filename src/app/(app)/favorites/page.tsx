@@ -143,13 +143,16 @@ export default function FavoritesPage() {
                   dataAiHint="habitación rediseñada"
                   onImageClick={() => handleOpenFindItemsModal(fav)}
                   isImageClickable={true}
-                  // onEditTitle is no longer passed to DesignCard as the edit button is now external
                 />
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2">
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-2"> {/* Increased z-index */}
                    <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => handleEditTitle(fav)}
+                    onClick={() => {
+                        console.log('EDIT BUTTON CLICKED directly on fav ID:', fav.id);
+                        handleEditTitle(fav);
+                      }
+                    }
                     aria-label="Editar nombre"
                     className="bg-background/80 hover:bg-accent text-foreground"
                     title="Editar nombre"
@@ -275,3 +278,4 @@ export default function FavoritesPage() {
   );
 }
 
+    
