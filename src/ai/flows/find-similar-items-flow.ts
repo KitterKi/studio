@@ -35,6 +35,7 @@ const FindSimilarItemsOutputSchema = z.object({
 export type FindSimilarItemsOutput = z.infer<typeof FindSimilarItemsOutputSchema>;
 
 export async function findSimilarItems(input: FindSimilarItemsInput): Promise<FindSimilarItemsOutput> {
+  console.log('[findSimilarItemsFlow] Called with input data URI length:', input.imageDataUri.length);
   return findSimilarItemsFlow(input);
 }
 
@@ -65,15 +66,18 @@ const findSimilarItemsFlow = ai.defineFlow(
   },
   async (input) => {
     try {
+      console.log('[findSimilarItemsFlow] Attempting to call AI prompt...');
       const {output} = await prompt(input);
+      console.log('[findSimilarItemsFlow] AI prompt call successful. Output:', output);
       if (!output || !output.items) {
-        console.log("findSimilarItemsFlow: AI model returned successfully but found no distinct items or the output structure was unexpected.");
+        console.warn("[findSimilarItemsFlow] AI model returned successfully but found no distinct items or the output structure was unexpected. Output received:", output);
         return { items: [] };
       }
       return output;
-    } catch (error) {
-        console.error("findSimilarItemsFlow: Error occurred while calling the AI model (e.g., 503, API key issue, network error):", error);
-        throw error; // Re-throw the error to be caught by the client-side UI component that called this flow
+    } catch (error: any) {
+        console.error("[findSimilarItemsFlow] Error occurred while calling the AI model:", error.message || error);
+        // Re-throw the error so client-side can catch it and display a more specific message if possible.
+        throw new Error(error.message || 'Error en el flujo de IA al buscar artículos.');
     }
   }
 );

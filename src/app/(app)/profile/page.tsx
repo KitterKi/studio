@@ -26,19 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter } from 'next/navigation';
-
-// Temporary local type for IdentifiedItem if findSimilarItems flow is used
-export interface IdentifiedItem {
-  itemName: string;
-  itemDescription?: string;
-  suggestedSearchQuery: string;
-}
-
-const MOCK_SIMILAR_ITEMS_PROFILE: IdentifiedItem[] = [
-  { itemName: "Sofá Moderno", suggestedSearchQuery: "sofá moderno gris claro" },
-  { itemName: "Lámpara de Pie", suggestedSearchQuery: "lámpara de pie minimalista negra" },
-  { itemName: "Alfombra Geométrica", suggestedSearchQuery: "alfombra geométrica blanco y negro" },
-];
+import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 
 
 export default function ProfilePage() {
@@ -61,24 +49,27 @@ export default function ProfilePage() {
     setSimilarItems([]);
 
     try {
-      console.log('[ProfilePage] Simulating findSimilarItems...');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-      const result = { items: MOCK_SIMILAR_ITEMS_PROFILE }; 
-      console.log('[ProfilePage] Simulated findSimilarItems result:', result);
+      console.log('[ProfilePage] Calling findSimilarItems with image:', favorite.redesignedImage.substring(0,50) + "...");
+      const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage }); 
+      console.log('[ProfilePage] findSimilarItems result:', result);
 
       setSimilarItems(result.items);
       if (result.items.length === 0) {
         toast({
-          title: "No se Encontraron Artículos (Simulado)",
-          description: "La IA (simulada) no identificó artículos distintos para buscar en esta imagen.",
+          title: "No se Encontraron Artículos",
+          description: "La IA no identificó artículos distintos para buscar en esta imagen.",
         });
       }
-    } catch (error) {
-      console.error("Error buscando artículos similares (simulado):", error);
+    } catch (error: any) {
+      console.error("[ProfilePage] Error buscando artículos similares:", error);
+      let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
+      if (error && error.message) {
+        errorMessage = error.message;
+      }
       toast({
         variant: "destructive",
-        title: "Error al Buscar Artículos (Simulado)",
-        description: "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.",
+        title: "Error al Buscar Artículos",
+        description: errorMessage,
       });
     } finally {
       setIsLoadingSimilarItems(false);
@@ -112,7 +103,7 @@ export default function ProfilePage() {
       }
       return name.substring(0, 2).toUpperCase();
     }
-    if (email) return email.substring(0,2).toUpperCase();
+    if (email) return email.substring(0, 2).toUpperCase();
     return 'U';
   }
 
@@ -145,15 +136,15 @@ export default function ProfilePage() {
         <header className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10 border-b pb-8">
           <Avatar className="h-32 w-32 sm:h-40 sm:w-40 ring-4 ring-primary/30 ring-offset-background ring-offset-2 shrink-0">
             <AvatarImage
-              src={`https://placehold.co/160x160.png?text=${getInitials(user.name, user.email)}`}
-              alt={user.name || user.email || 'Avatar de usuario'}
+              src={user.photoURL || `https://placehold.co/160x160.png?text=${getInitials(user.displayName, user.email)}`}
+              alt={user.displayName || user.email || 'Avatar de usuario'}
               data-ai-hint="profile large"
             />
-            <AvatarFallback className="text-5xl">{getInitials(user.name, user.email)}</AvatarFallback>
+            <AvatarFallback className="text-5xl">{getInitials(user.displayName, user.email)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-              <h1 className="text-3xl font-light text-foreground truncate">{user.name || 'Usuario Anónimo'}</h1>
+              <h1 className="text-3xl font-light text-foreground truncate">{user.displayName || 'Usuario Anónimo'}</h1>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => router.push('/profile/edit')}>
                   <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil
@@ -329,17 +320,17 @@ export default function ProfilePage() {
           setIsFindItemsModalOpen(isOpen);
         }}>
           <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="p-6 border-b">
-              <DialogTitle className="text-xl font-semibold text-primary">
+            <DialogHeader className="p-4 sm:p-6 border-b">
+              <DialogTitle className="text-lg sm:text-xl font-semibold text-primary truncate">
                  Artículos: {favoriteForSimilarItems.title}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-1">
+              <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
               </DialogDescription>
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="w-full p-6 md:border-r flex items-center justify-center bg-muted/20 order-first md:order-none">
+              <div className="w-full p-4 sm:p-6 md:border-r flex items-center justify-center bg-muted/20 order-first md:order-none">
                 <div className="relative w-full max-w-md aspect-[4/3] bg-background rounded-lg shadow-xl overflow-hidden border">
                   <Image
                     src={favoriteForSimilarItems.redesignedImage}
@@ -354,24 +345,24 @@ export default function ProfilePage() {
 
               <div className="flex flex-col min-h-0 order-last md:order-none">
                 {isLoadingSimilarItems && (
-                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6">
+                  <div className="flex flex-col items-center justify-center h-full py-8 sm:py-10 flex-grow p-4 sm:p-6">
                     <LoadingSpinner text="La IA está identificando artículos..." size={10}/>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length === 0 && (
-                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6 text-center">
+                  <div className="flex flex-col items-center justify-center h-full py-8 sm:py-10 flex-grow p-4 sm:p-6 text-center">
                     <Alert variant="default" className="max-w-sm bg-card border-border">
-                      <Info className="h-5 w-5" />
-                      <AlertTitle>No se Encontró Nada</AlertTitle>
+                      <Info className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <AlertTitle className="text-sm sm:text-base">No se Encontró Nada</AlertTitle>
                       <AlertDescription className="text-xs">
-                        La IA (simulada) no pudo identificar artículos distintos en esta imagen.
+                        La IA no pudo identificar artículos distintos en esta imagen.
                       </AlertDescription>
                     </Alert>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length > 0 && (
-                  <ScrollArea className="flex-grow p-4 min-h-0">
-                    <div className="space-y-2">
+                  <ScrollArea className="flex-grow p-3 sm:p-4 min-h-0">
+                    <div className="space-y-1.5 sm:space-y-2">
                       {similarItems.map((item, index) => (
                         <a
                           key={index}
@@ -379,15 +370,15 @@ export default function ProfilePage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={cn(
-                            "flex items-center justify-between p-3 rounded-md transition-colors group",
+                            "flex items-center justify-between p-2.5 sm:p-3 rounded-md transition-colors group",
                             "bg-card hover:bg-accent/50 border border-border hover:border-primary/50"
                           )}
                           aria-label={`Buscar "${item.itemName}" en Google Shopping`}
                         >
-                          <span className="font-medium text-sm text-card-foreground group-hover:text-primary truncate pr-2" title={item.itemName}>
+                          <span className="font-medium text-xs sm:text-sm text-card-foreground group-hover:text-primary truncate pr-2" title={item.itemName}>
                             {item.itemName}
                           </span>
-                          <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0" />
+                          <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-primary shrink-0" />
                         </a>
                       ))}
                     </div>
