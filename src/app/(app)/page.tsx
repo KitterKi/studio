@@ -106,6 +106,8 @@ export default function StyleMyRoomPage() {
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
+       // This toast might show the technical error message if the API call itself fails.
+       // If the API call works but no image is returned (which is a specific case caught above), a different toast is shown.
       toast({
         variant: "destructive",
         title: "Falló el Rediseño Simulado",
@@ -121,7 +123,7 @@ export default function StyleMyRoomPage() {
   const handleSaveFavorite = () => {
     if (originalImage && redesignedImage && currentStyle && user) {
       addFavorite({
-        originalImage, 
+        // originalImage, // No longer storing full originalImage DataURI
         redesignedImage,
         style: currentStyle,
       });
@@ -143,10 +145,10 @@ export default function StyleMyRoomPage() {
   return (
     <div className="space-y-10">
       <div className="text-center space-y-3">
-        <h1 className="text-3xl font-bold tracking-tight lg:text-4xl text-foreground">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl text-foreground">
           Diseñador IA {APP_NAME}
         </h1>
-        <p className="text-md text-muted-foreground lg:text-lg max-w-2xl mx-auto">
+        <p className="text-sm text-muted-foreground sm:text-base lg:text-lg max-w-2xl mx-auto">
           Transforma tu espacio: sube una foto, elige un estilo ¡y deja que la IA (simulada) haga su magia!
         </p>
       </div>

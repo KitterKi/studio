@@ -115,7 +115,7 @@ export default function FavoritesPage() {
        if (error instanceof Error) {
         if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
           errorTitle = "Servicio Simulado Ocupado";
-          errorMessage = "El servicio simulado está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+          errorMessage = "El servicio simulado de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
         } else {
           errorMessage = error.message;
         }
@@ -143,9 +143,9 @@ export default function FavoritesPage() {
       toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${currentEditTitle.trim()}".` });
     } else if (editingFavoriteId) { 
       // console.log("[FavoritesPage] New title is an empty string.");
-      toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío."});
-      // Do not exit edit mode, let user correct or cancel.
-      return; 
+      toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío. La edición fue cancelada."});
+       // Do not exit edit mode, let user correct or cancel.
+      // return; // Kept return to ensure it doesn't proceed to reset editing state on invalid save.
     }
     setEditingFavoriteId(null);
     setCurrentEditTitle('');
@@ -153,6 +153,7 @@ export default function FavoritesPage() {
 
   const handleCancelEdit = () => {
     // console.log("[FavoritesPage] handleCancelEdit called.");
+    toast({title: "Edición Cancelada", description: "No se realizaron cambios en el nombre.", variant: "default"});
     setEditingFavoriteId(null);
     setCurrentEditTitle('');
   };
@@ -162,16 +163,16 @@ export default function FavoritesPage() {
     <>
       <div className="space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight lg:text-5xl flex items-center justify-center gap-3">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl flex items-center justify-center gap-3">
             <Heart className="h-10 w-10 text-primary" /> Mis Rediseños Favoritos
           </h1>
-          <p className="mt-3 text-lg text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
+          <p className="mt-3 text-base text-muted-foreground sm:text-lg sm:mt-5 xl:text-xl">
             Tu colección personal de transformaciones de habitaciones inspiradoras. ¡Haz clic en una imagen para encontrar artículos similares (simulación)!
           </p>
         </div>
 
         {favorites.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {favorites.map((fav) => (
               <div key={fav.id} className="relative group">
                 <DesignCard
@@ -280,6 +281,7 @@ export default function FavoritesPage() {
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online (simulación).
               </DialogDescription>
+               {/* Removed explicit DialogClose X button from header */}
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">

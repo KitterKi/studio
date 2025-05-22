@@ -81,7 +81,7 @@ export default function ProfilePage() {
       if (error instanceof Error) {
          if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
           errorTitle = "Servicio Simulado Ocupado";
-          errorMessage = "El servicio simulado está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
+          errorMessage = "El servicio simulado de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
         } else {
           errorMessage = error.message;
         }
@@ -204,7 +204,7 @@ export default function ProfilePage() {
           </div>
 
           {favorites.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-4 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-6">
               {favorites.map((fav) => (
                 <button
                   key={fav.id}
@@ -257,10 +257,11 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground">
                 Estilo: {selectedFavoriteForDetail.style}
               </DialogDescription>
+               {/* Removed explicit DialogClose X button */}
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="relative w-full aspect-[4/3] bg-muted/30 md:aspect-auto md:h-full flex items-center justify-center p-4 order-first md:order-none">
+              <div className="relative w-full aspect-[4/3] bg-muted/30 md:aspect-auto flex items-center justify-center p-4 order-first md:order-none">
                 <Image
                   src={selectedFavoriteForDetail.redesignedImage}
                   alt={`Diseño: ${selectedFavoriteForDetail.title}`}
@@ -303,11 +304,10 @@ export default function ProfilePage() {
                 <div className="flex-grow overflow-y-auto py-2">
                   <div className="flex flex-col items-center justify-center text-center text-sm text-muted-foreground italic p-4 bg-muted/30 rounded-md h-full">
                     <MessageCircle className="h-8 w-8 mb-2 text-muted-foreground/70"/>
-                     <p className="font-medium">Comentarios</p>
-                     <p className="text-xs mt-2">
-                        La visualización y creación de comentarios para favoritos aún no está implementada.
-                        <br/>
-                        Puedes interactuar con los comentarios de diseños en la página de la Comunidad.
+                     <p className="font-medium">Comentarios no disponibles para favoritos</p>
+                     <p className="text-xs mt-1">
+                        La visualización y creación de comentarios detallados para tus diseños guardados como favoritos aún no está implementada.
+                        Puedes interactuar con los comentarios de diseños en la página de la <Link href="/community" className="text-primary hover:underline">Comunidad</Link>.
                     </p>
                   </div>
                 </div>
@@ -339,6 +339,7 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online (simulación).
               </DialogDescription>
+              {/* Removed explicit DialogClose X button */}
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation'; // Added useRouter, useSearchParams
+import { useRouter, useSearchParams } from 'next/navigation';
 import DesignCard, { type DesignCardProps as FullDesignCardProps } from '@/components/DesignCard';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -159,17 +159,17 @@ export default function CommunityPage() {
     <>
       <div className="space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
             Diseños de la Comunidad
           </h1>
-          <p className="mt-3 text-lg text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
+          <p className="mt-3 text-base text-muted-foreground sm:text-lg sm:mt-5 xl:text-xl">
             Explora diseños compartidos por nuestra talentosa comunidad. Inspírate {user ? '¡y comparte los tuyos!' : 'con otros!'}
           </p>
         </div>
 
         {designs.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-4">
               {displayedDesigns.map((design, index) => (
                 <DesignCard
                   key={design.id}
