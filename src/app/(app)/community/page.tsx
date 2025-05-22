@@ -38,21 +38,21 @@ interface CommunityDesign extends Omit<FullDesignCardProps, 'variant' | 'comment
 
 
 const INITIAL_MOCK_DESIGNS_RAW: Omit<CommunityDesign, 'commentsData'>[] = [
-  { id: 'comm-1', imageUrl: 'https://placehold.co/600x800.png', title: 'Sala Moderna Espaciosa', userName: 'Alicia M.', userAvatarUrl: 'https://placehold.co/40x40.png?text=AM', dataAiHint: "modern living room", likes: 120, isLikedByCurrentUser: false },
+  { id: 'comm-1', imageUrl: 'https://placehold.co/600x800.png', title: 'Sala de Estar Moderna y Espaciosa', userName: 'Alicia M.', userAvatarUrl: 'https://placehold.co/40x40.png?text=AM', dataAiHint: "living room", likes: 120, isLikedByCurrentUser: false },
   { id: 'comm-2', imageUrl: 'https://placehold.co/500x750.png', title: 'Dormitorio Rústico Acogedor', userName: 'Bob C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=BC', dataAiHint: "rustic bedroom", likes: 95, isLikedByCurrentUser: false },
   { id: 'comm-3', imageUrl: 'https://placehold.co/700x500.png', title: 'Cocina Minimalista y Luminosa', userName: 'Carolina D.', userAvatarUrl: 'https://placehold.co/40x40.png?text=CD', dataAiHint: "minimalist kitchen", likes: 210, isLikedByCurrentUser: false },
-  { id: 'comm-4', imageUrl: 'https://placehold.co/450x600.png', title: 'Balcón Bohemio con Plantas', userName: 'David C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=DC', dataAiHint: "bohemian balcony", likes: 78, isLikedByCurrentUser: false },
-  { id: 'comm-5', imageUrl: 'https://placehold.co/800x600.png', title: 'Oficina Industrial en Casa', userName: 'Eva H.', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', dataAiHint: "industrial home office", likes: 150, isLikedByCurrentUser: false },
-  { id: 'comm-6', imageUrl: 'https://placehold.co/600x450.png', title: 'Baño Costero Relajante', userName: 'Frank G.', userAvatarUrl: 'https://placehold.co/40x40.png?text=FG', dataAiHint: "coastal bathroom", likes: 60, isLikedByCurrentUser: false },
-  { id: 'comm-7', imageUrl: 'https://placehold.co/550x700.png', title: 'Comedor Escandinavo Simple', userName: 'Gloria P.', userAvatarUrl: 'https://placehold.co/40x40.png?text=GP', dataAiHint: "scandinavian dining", likes: 115, isLikedByCurrentUser: false },
+  { id: 'comm-4', imageUrl: 'https://placehold.co/450x600.png', title: 'Balcón Bohemio Lleno de Plantas', userName: 'David E.', userAvatarUrl: 'https://placehold.co/40x40.png?text=DE', dataAiHint: "bohemian balcony", likes: 78, isLikedByCurrentUser: false },
+  { id: 'comm-5', imageUrl: 'https://placehold.co/800x600.png', title: 'Oficina Industrial en Casa', userName: 'Eva H.', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', dataAiHint: "industrial office", likes: 150, isLikedByCurrentUser: false },
+  { id: 'comm-6', imageUrl: 'https://placehold.co/600x450.png', title: 'Baño Estilo Costero Relajante', userName: 'Frank G.', userAvatarUrl: 'https://placehold.co/40x40.png?text=FG', dataAiHint: "coastal bathroom", likes: 60, isLikedByCurrentUser: false },
+  { id: 'comm-7', imageUrl: 'https://placehold.co/550x700.png', title: 'Comedor Escandinavo Sencillo', userName: 'Gloria P.', userAvatarUrl: 'https://placehold.co/40x40.png?text=GP', dataAiHint: "scandinavian dining", likes: 115, isLikedByCurrentUser: false },
   { id: 'comm-8', imageUrl: 'https://placehold.co/750x550.png', title: 'Terraza Japandi Tranquila', userName: 'Hector L.', userAvatarUrl: 'https://placehold.co/40x40.png?text=HL', dataAiHint: "japandi terrace", likes: 99, isLikedByCurrentUser: false },
-  { id: 'comm-9', imageUrl: 'https://placehold.co/650x800.png', title: 'Estudio Art Deco Elegante', userName: 'Ines V.', userAvatarUrl: 'https://placehold.co/40x40.png?text=IV', dataAiHint: "art deco study", likes: 133, isLikedByCurrentUser: false },
+  { id: 'comm-9', imageUrl: 'https://placehold.co/650x800.png', title: 'Estudio Art Deco Elegante', userName: 'Ines V.', userAvatarUrl: 'https://placehold.co/40x40.png?text=IV', dataAiHint: "deco study", likes: 133, isLikedByCurrentUser: false },
   { id: 'comm-10', imageUrl: 'https://placehold.co/500x500.png', title: 'Patio Maximalista Vibrante', userName: 'Juan K.', userAvatarUrl: 'https://placehold.co/40x40.png?text=JK', dataAiHint: "maximalist patio", likes: 88, isLikedByCurrentUser: false },
-  { id: 'comm-11', imageUrl: 'https://placehold.co/620x420.png', title: 'Entrada Tradicional', userName: 'Laura B.', userAvatarUrl: 'https://placehold.co/40x40.png?text=LB', dataAiHint: "traditional entryway", likes: 55, isLikedByCurrentUser: false },
-  { id: 'comm-12', imageUrl: 'https://placehold.co/480x680.png', title: 'Cuarto Infantil Juguetón', userName: 'Miguel S.', userAvatarUrl: 'https://placehold.co/40x40.png?text=MS', dataAiHint: "playful kidsroom", likes: 170, isLikedByCurrentUser: false },
-  { id: 'comm-13', imageUrl: 'https://placehold.co/720x520.png', title: 'Sótano Moderno', userName: 'Nora F.', userAvatarUrl: 'https://placehold.co/40x40.png?text=NF', dataAiHint: "modern basement", likes: 105, isLikedByCurrentUser: false },
-  { id: 'comm-14', imageUrl: 'https://placehold.co/430x580.png', title: 'Ático Chic Urbano', userName: 'Oscar P.', userAvatarUrl: 'https://placehold.co/40x40.png?text=OP', dataAiHint: "urban chic attic", likes: 190, isLikedByCurrentUser: false },
-  { id: 'comm-15', imageUrl: 'https://placehold.co/820x620.png', title: 'Estudio de Música en Casa', userName: 'Paula R.', userAvatarUrl: 'https://placehold.co/40x40.png?text=PR', dataAiHint: "home music studio", likes: 162, isLikedByCurrentUser: false },
+  { id: 'comm-11', imageUrl: 'https://placehold.co/620x420.png', title: 'Entrada Tradicional Iluminada', userName: 'Laura B.', userAvatarUrl: 'https://placehold.co/40x40.png?text=LB', dataAiHint: "traditional entryway", likes: 55, isLikedByCurrentUser: false },
+  { id: 'comm-12', imageUrl: 'https://placehold.co/480x680.png', title: 'Cuarto Infantil Juguetón y Colorido', userName: 'Miguel S.', userAvatarUrl: 'https://placehold.co/40x40.png?text=MS', dataAiHint: "kids room", likes: 170, isLikedByCurrentUser: false },
+  { id: 'comm-13', imageUrl: 'https://placehold.co/720x520.png', title: 'Sótano Moderno Multifuncional', userName: 'Nora F.', userAvatarUrl: 'https://placehold.co/40x40.png?text=NF', dataAiHint: "modern basement", likes: 105, isLikedByCurrentUser: false },
+  { id: 'comm-14', imageUrl: 'https://placehold.co/430x580.png', title: 'Ático Urbano Chic con Vistas', userName: 'Oscar P.', userAvatarUrl: 'https://placehold.co/40x40.png?text=OP', dataAiHint: "urban attic", likes: 190, isLikedByCurrentUser: false },
+  { id: 'comm-15', imageUrl: 'https://placehold.co/820x620.png', title: 'Estudio de Música Casero Acústico', userName: 'Paula R.', userAvatarUrl: 'https://placehold.co/40x40.png?text=PR', dataAiHint: "music studio", likes: 162, isLikedByCurrentUser: false },
 ];
 
 const MOCK_COMMENTS_EXAMPLES: Omit<Comment, 'id' | 'timestamp'>[] = [
@@ -284,3 +284,4 @@ export default function CommunityPage() {
     </>
   );
 }
+
