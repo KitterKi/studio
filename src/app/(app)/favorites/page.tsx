@@ -6,7 +6,7 @@ import type { FavoriteItem } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import DesignCard from '@/components/DesignCard';
 import { Button } from '@/components/ui/button';
-import { Heart, Trash2, Share2, ExternalLink, Info, Search } from 'lucide-react';
+import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2 } from 'lucide-react'; // Added Wand2
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import Image from 'next/image';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
@@ -155,6 +156,7 @@ export default function FavoritesPage() {
             <p className="text-muted-foreground mb-6">Comienza a rediseñar y guarda tus mejores creaciones.</p>
             <Link href="/" passHref legacyBehavior>
               <Button size="lg">
+                <Wand2 className="mr-2 h-4 w-4" /> {/* Added Wand2 Icon */}
                 Rediseñar una Habitación
               </Button>
             </Link>
@@ -166,14 +168,17 @@ export default function FavoritesPage() {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0">
             <DialogHeader className="p-6 border-b">
-              <DialogTitle className="text-xl">Encontrar Artículos para "{selectedFavorite.title}"</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-2xl font-bold text-foreground">
+                Encontrar Artículos para "{selectedFavorite.title}"
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-1">
                 Artículos identificados por la IA. Haz clic para buscar en Google Shopping (abrirá en nueva pestaña).
               </DialogDescription>
+               <DialogClose />
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="relative aspect-square w-full md:aspect-auto md:h-full p-4 md:border-r flex items-center justify-center bg-muted/30">
+              <div className="relative aspect-square w-full md:aspect-auto md:h-full p-4 md:border-r flex items-center justify-center">
                 <Image
                   src={selectedFavorite.redesignedImage}
                   alt={`Habitación rediseñada: ${selectedFavorite.title}`}
@@ -201,23 +206,20 @@ export default function FavoritesPage() {
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length > 0 && (
-                  <div className="space-y-3 overflow-y-auto flex-grow pr-1"> 
+                  <div className="space-y-1 overflow-y-auto flex-grow pr-2"> 
                     {similarItems.map((item, index) => (
                       <a
                         key={index}
                         href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title={`Buscar "${item.itemName}" en Google Shopping`}
-                        className="flex items-center justify-between p-3 bg-card/60 hover:bg-card rounded-lg transition-colors duration-150 shadow-sm border cursor-pointer group"
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/30 transition-colors group"
+                        aria-label={`Buscar "${item.itemName}" en Google Shopping`}
                       >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <Search className="h-5 w-5 text-primary shrink-0" />
-                          <span className="font-medium text-card-foreground truncate" title={item.itemName}>{item.itemName}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-primary group-hover:text-primary/80 text-sm shrink-0 ml-2">
-                          Buscar <ExternalLink className="h-3.5 w-3.5" />
-                        </div>
+                        <span className="font-semibold text-foreground group-hover:text-primary truncate pr-2" title={item.itemName}>
+                          {item.itemName}
+                        </span>
+                        <ExternalLink className="h-5 w-5 text-muted-foreground group-hover:text-primary shrink-0" />
                       </a>
                     ))}
                   </div>
@@ -234,3 +236,5 @@ export default function FavoritesPage() {
   );
 }
     
+
+      
