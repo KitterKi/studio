@@ -203,28 +203,22 @@ export default function FavoritesPage() {
                 {!isLoadingSimilarItems && similarItems.length > 0 && (
                   <div className="space-y-3 overflow-y-auto flex-grow pr-1"> 
                     {similarItems.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-card/60 hover:bg-card rounded-lg transition-colors duration-150 shadow-sm border">
+                      <a
+                        key={index}
+                        href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Buscar "${item.itemName}" en Google Shopping`}
+                        className="flex items-center justify-between p-3 bg-card/60 hover:bg-card rounded-lg transition-colors duration-150 shadow-sm border cursor-pointer group"
+                      >
                         <div className="flex items-center gap-3 overflow-hidden">
                           <Search className="h-5 w-5 text-primary shrink-0" />
                           <span className="font-medium text-card-foreground truncate" title={item.itemName}>{item.itemName}</span>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                          className="text-primary hover:text-primary/80 hover:bg-primary/10 px-3 shrink-0 ml-2"
-                        >
-                          <a
-                            href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5"
-                            title={`Buscar "${item.itemName}" en Google Shopping`}
-                          >
-                            Buscar <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
-                        </Button>
-                      </div>
+                        <div className="flex items-center gap-1.5 text-primary group-hover:text-primary/80 text-sm shrink-0 ml-2">
+                          Buscar <ExternalLink className="h-3.5 w-3.5" />
+                        </div>
+                      </a>
                     ))}
                   </div>
                 )}
