@@ -235,7 +235,6 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground">
                 Estilo: {selectedFavoriteForDetail.style}
               </DialogDescription>
-              {/* The default X button from DialogContent will be used. No explicit DialogClose here. */}
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -260,10 +259,10 @@ export default function ProfilePage() {
                     >
                       <Heart className="mr-2 h-4 w-4" /> {selectedFavoriteForDetail.userHasLiked ? 'Te gusta' : 'Me gusta'} ({selectedFavoriteForDetail.likes})
                     </Button>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground" title="Comentarios (próximamente para favoritos)">
-                      <MessageCircle className="h-4 w-4" />
-                      <span>{selectedFavoriteForDetail.comments} comentarios</span>
-                    </div>
+                     <div className="flex items-center gap-1 text-sm text-muted-foreground" title="Comentarios (próximamente para favoritos)">
+                        <MessageCircle className="h-4 w-4" />
+                        <span>{selectedFavoriteForDetail.comments} comentarios</span>
+                     </div>
                   </div>
                    <Button 
                     variant="ghost" 
@@ -280,11 +279,13 @@ export default function ProfilePage() {
                 </p>
 
                 <div className="flex-grow overflow-y-auto py-2">
-                  <div className="flex flex-col items-center justify-center text-center text-sm text-muted-foreground italic p-4 bg-muted/30 rounded-md">
+                  <div className="flex flex-col items-center justify-center text-center text-sm text-muted-foreground italic p-4 bg-muted/30 rounded-md h-full">
                     <MessageCircle className="h-8 w-8 mb-2 text-muted-foreground/70"/>
                     <p className="font-medium">Comentarios</p>
                      <p className="text-xs mt-2">
                         La visualización y creación de comentarios para favoritos estará disponible próximamente.
+                        <br />
+                        Por ahora, puedes ver los comentarios de este diseño en la página de la Comunidad si fue compartido.
                     </p>
                   </div>
                 </div>
@@ -317,11 +318,7 @@ export default function ProfilePage() {
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
               </DialogDescription>
-                 <DialogClose asChild>
-                    <Button variant="ghost" size="icon" className="absolute right-4 top-3">
-                    <X className="h-4 w-4" />
-                    </Button>
-                </DialogClose>
+                {/* Removed explicit DialogClose X button from here */}
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
@@ -392,6 +389,8 @@ export default function ProfilePage() {
     </>
   );
 }
+    
+
     
 
     
