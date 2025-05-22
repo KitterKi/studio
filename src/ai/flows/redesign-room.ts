@@ -38,11 +38,12 @@ const redesignRoomPrompt = ai.definePrompt({
   name: 'redesignRoomPrompt',
   input: {schema: RedesignRoomInputSchema},
   output: {schema: RedesignRoomOutputSchema},
-  prompt: `You are a special interior decorator. Your task is to redesign the provided room image in the '{{{style}}}' style.
+  prompt: `You are an expert interior decorator. Your task is to redesign the provided room image in the '{{{style}}}' style.
+IMPORTANT: First, identify the type of room in the original image (e.g., bedroom, living room, kitchen, bathroom, etc.). The redesigned image MUST be of the SAME room type. For example, if the original is a bedroom, the redesign must also be a bedroom.
 You MUST maintain the original camera perspective and the overall dimensions of the room.
 Completely reimagine the space. This means you should NOT try to keep any of the existing furniture or decor from the original image.
-Instead, furnish and decorate the room entirely with NEW items that are quintessential to the '{{{style}}}' aesthetic. This includes selecting appropriate furniture, wall treatments, flooring, lighting, and accessories.
-The final image should be a beautiful, professionally designed room that clearly represents the '{{{style}}}' style.
+Instead, furnish and decorate the room entirely with NEW items that are quintessential to the '{{{style}}}' aesthetic, fitting for the identified room type. This includes selecting appropriate furniture, wall treatments, flooring, lighting, and accessories.
+The final image should be a beautiful, professionally designed room that clearly represents the '{{{style}}}' style and the original room's purpose.
 Output ONLY the redesigned photo as a data URI.
 
 Original photo: {{media url=photoDataUri}}
@@ -60,11 +61,12 @@ const redesignRoomFlow = ai.defineFlow(
       model: 'googleai/gemini-2.0-flash-exp',
       prompt: [
         {media: {url: input.photoDataUri}},
-        {text: `You are a special interior decorator. Your task is to redesign the provided room image in the '${input.style}' style.
+        {text: `You are an expert interior decorator. Your task is to redesign the provided room image in the '${input.style}' style.
+IMPORTANT: First, identify the type of room in the original image (e.g., bedroom, living room, kitchen, bathroom, etc.). The redesigned image MUST be of the SAME room type. For example, if the original is a bedroom, the redesign must also be a bedroom.
 You MUST maintain the original camera perspective and the overall dimensions of the room.
 Completely reimagine the space. This means you should NOT try to keep any of the existing furniture or decor from the original image.
-Instead, furnish and decorate the room entirely with NEW items that are quintessential to the '${input.style}' aesthetic. This includes selecting appropriate furniture, wall treatments, flooring, lighting, and accessories.
-The final image should be a beautiful, professionally designed room that clearly represents the '${input.style}' style.`},
+Instead, furnish and decorate the room entirely with NEW items that are quintessential to the '${input.style}' aesthetic, fitting for the identified room type. This includes selecting appropriate furniture, wall treatments, flooring, lighting, and accessories.
+The final image should be a beautiful, professionally designed room that clearly represents the '${input.style}' style and the original room's purpose.`},
       ],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
