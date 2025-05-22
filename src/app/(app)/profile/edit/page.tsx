@@ -11,10 +11,14 @@ export default function EditProfilePage() {
     <div className="max-w-2xl mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl flex items-center gap-2">
-            <ArrowLeft className="h-6 w-6" />
-            Editar Perfil
-          </CardTitle>
+          <Link href="/profile" passHref legacyBehavior>
+            <a className="inline-block hover:text-primary transition-colors">
+              <CardTitle className="text-2xl flex items-center gap-2 cursor-pointer">
+                <ArrowLeft className="h-6 w-6" />
+                Editar Perfil
+              </CardTitle>
+            </a>
+          </Link>
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-muted-foreground">
