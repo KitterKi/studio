@@ -21,6 +21,7 @@ export interface DesignCardProps {
   onImageClick?: () => void;
   isImageClickable?: boolean;
   variant?: 'default' | 'communityFeed';
+  index?: number; // Added for potential priority loading
 }
 
 export default function DesignCard({
@@ -34,7 +35,8 @@ export default function DesignCard({
   dataAiHint,
   onImageClick,
   isImageClickable,
-  variant = 'default'
+  variant = 'default',
+  index = 0
 }: DesignCardProps) {
 
   if (variant === 'communityFeed') {
@@ -54,15 +56,16 @@ export default function DesignCard({
         className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative"
         onClick={isImageClickable ? onImageClick : undefined}
       >
-        <div className={cn("w-full bg-muted", isImageClickable && "cursor-pointer")}> {/* Added bg-muted for placeholder visibility */}
+        {/* Removed bg-muted from this div */}
+        <div className={cn("w-full", isImageClickable && "cursor-pointer")}>
           <Image
             src={imageUrl}
             alt={title || 'Diseño de usuario'}
             width={imgWidth}
             height={imgHeight}
-            className="object-cover w-full h-auto"
+            className="object-cover w-full h-auto block" // Added block
             data-ai-hint={dataAiHint || "diseño de interiores"}
-            priority={false}
+            priority={index < 4} // Example: prioritize first 4 images
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
