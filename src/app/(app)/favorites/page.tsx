@@ -105,13 +105,36 @@ export default function FavoritesPage() {
   };
 
   const handleEditTitle = (favorite: FavoriteItem) => {
-    console.log('handleEditTitle called for favorite:', favorite.id); // DEBUG LOG
+    console.log('[FavoritesPage] handleEditTitle called for favorite ID:', favorite.id, 'Current title:', favorite.title);
+
+    toast({
+        title: "Editando Nombre",
+        description: "Por favor, espera el diálogo del navegador.",
+        duration: 2000,
+    });
+
     const newTitle = window.prompt("Ingresa el nuevo nombre para tu rediseño:", favorite.title);
-    if (newTitle && newTitle.trim() !== "") {
+    console.log('[FavoritesPage] window.prompt returned:', newTitle);
+
+
+    if (newTitle === null) {
+      // User cancelled the prompt
+      console.log('[FavoritesPage] Prompt cancelled by user.');
+      toast({
+        title: "Edición Cancelada",
+        description: "No se realizaron cambios en el nombre.",
+      });
+      return;
+    }
+
+    if (newTitle.trim() !== "") {
+      console.log('[FavoritesPage] New title is valid, updating to:', newTitle.trim());
       updateFavoriteTitle(favorite.id, newTitle.trim());
       toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${newTitle.trim()}".` });
-    } else if (newTitle === "") { 
-        toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío."});
+    } else {
+      // newTitle is an empty string (e.g., user cleared the text and pressed OK)
+      console.log('[FavoritesPage] New title is an empty string.');
+      toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío."});
     }
   };
 
@@ -144,7 +167,7 @@ export default function FavoritesPage() {
                   onImageClick={() => handleOpenFindItemsModal(fav)}
                   isImageClickable={true}
                 />
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-2"> {/* Increased z-index */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-2">
                    <Button
                     variant="outline"
                     size="icon"
@@ -277,5 +300,3 @@ export default function FavoritesPage() {
     </>
   );
 }
-
-    
