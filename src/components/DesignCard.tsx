@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Heart } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface DesignCardProps {
   id: string;
@@ -11,16 +12,21 @@ export interface DesignCardProps {
   userAvatarUrl?: string;
   likes: number;
   comments: number;
-  dataAiHint?: string; // Added dataAiHint to DesignCardProps
+  dataAiHint?: string;
+  onImageClick?: () => void;
+  isImageClickable?: boolean;
 }
 
-export default function DesignCard({ id, imageUrl, title, userName, userAvatarUrl, likes, comments, dataAiHint }: DesignCardProps) {
+export default function DesignCard({ id, imageUrl, title, userName, userAvatarUrl, likes, comments, dataAiHint, onImageClick, isImageClickable }: DesignCardProps) {
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
       <CardHeader className="p-4">
         <CardTitle className="text-lg truncate">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="p-0 flex-grow">
+      <CardContent
+        className={cn("p-0 flex-grow", isImageClickable && "cursor-pointer")}
+        onClick={isImageClickable ? onImageClick : undefined}
+      >
         <div className="aspect-[4/3] relative w-full">
           <Image
             src={imageUrl}
