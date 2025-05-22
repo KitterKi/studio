@@ -179,15 +179,19 @@ export default function FavoritesPage() {
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="relative w-full p-4 md:border-r flex items-center justify-center bg-muted/30 order-first md:order-none">
-                <Image
-                  src={selectedFavorite.redesignedImage}
-                  alt={`Habitación rediseñada: ${selectedFavorite.title}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-contain rounded-md"
-                  data-ai-hint="redesigned room item search"
-                />
+              {/* Image Column Wrapper - provides background, padding (matting), and centering */}
+              <div className="w-full p-6 md:border-r flex items-center justify-center bg-muted/20 order-first md:order-none">
+                {/* Aspect Ratio Enforcer & Image Container */}
+                <div className="relative w-full max-w-md aspect-[4/3] bg-background rounded-lg shadow-xl overflow-hidden border">
+                  <Image
+                    src={selectedFavorite.redesignedImage}
+                    alt={`Habitación rediseñada: ${selectedFavorite.title}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 448px"
+                    className="object-contain" 
+                    data-ai-hint="redesigned room item search"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col min-h-0 order-last md:order-none">
@@ -249,3 +253,6 @@ export default function FavoritesPage() {
       
 
 
+
+
+    
