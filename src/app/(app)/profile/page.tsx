@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle, Wand2, Search, Share2, X } from 'lucide-react';
+import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle, Wand2, Search, Share2, X, ExternalLink, Info } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -23,6 +23,9 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
+import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ProfilePage() {
   const { user, isLoading, logout, favorites, followingCount, removeFavorite, toggleUserLike } = useAuth();
@@ -32,12 +35,39 @@ export default function ProfilePage() {
 
   const [isFindItemsModalOpen, setIsFindItemsModalOpen] = useState(false);
   const [favoriteForSimilarItems, setFavoriteForSimilarItems] = useState<FavoriteItem | null>(null);
+  const [isLoadingSimilarItems, setIsLoadingSimilarItems] = useState(false);
+  const [similarItems, setSimilarItems] = useState<IdentifiedItem[]>([]);
   
-  const handleOpenFindItemsModalFromDetail = (favorite: FavoriteItem) => {
-    // This function will now be triggered by both the button and the comment count click
+  const handleOpenFindItemsModalFromDetail = async (favorite: FavoriteItem) => {
     setFavoriteForSimilarItems(favorite);
-    setIsFindItemsModalOpen(true); 
-    setIsDetailModalOpen(false); 
+    setIsDetailModalOpen(false); // Close detail modal first
+    setIsFindItemsModalOpen(true);
+    setIsLoadingSimilarItems(true);
+    setSimilarItems([]); 
+
+    try {
+      const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage });
+      setSimilarItems(result.items);
+      if (result.items.length === 0) {
+        toast({
+          title: "No se Encontraron Artículos Distintos",
+          description: "La IA no pudo identificar artículos distintos para buscar en esta imagen.",
+        });
+      }
+    } catch (error) {
+      console.error("Error encontrando artículos similares:", error);
+      let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({
+        variant: "destructive",
+        title: "Error de IA",
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoadingSimilarItems(false);
+    }
   };
 
 
@@ -195,7 +225,10 @@ export default function ProfilePage() {
 
       {/* Detail Modal for a Favorite Item */}
       {selectedFavoriteForDetail && (
-        <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <Dialog open={isDetailModalOpen} onOpenChange={(isOpen) => {
+          if (!isOpen) setSelectedFavoriteForDetail(null);
+          setIsDetailModalOpen(isOpen);
+        }}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader className="p-4 border-b relative">
               <DialogTitle className="text-lg font-semibold truncate pr-10">{selectedFavoriteForDetail.title}</DialogTitle>
@@ -210,7 +243,7 @@ export default function ProfilePage() {
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="relative w-full aspect-[4/3] bg-muted/20 md:aspect-auto md:h-full flex items-center justify-center p-4 order-first md:order-none">
+              <div className="relative w-full aspect-[4/3] bg-muted/30 md:aspect-auto md:h-full flex items-center justify-center p-4 order-first md:order-none">
                 <Image
                   src={selectedFavoriteForDetail.redesignedImage}
                   alt={`Diseño: ${selectedFavoriteForDetail.title}`}
@@ -228,12 +261,13 @@ export default function ProfilePage() {
                       variant={selectedFavoriteForDetail.userHasLiked ? "destructive" : "outline"} 
                       size="sm" 
                       onClick={() => toggleUserLike(selectedFavoriteForDetail.id)}
+                      className={cn(selectedFavoriteForDetail.userHasLiked && "bg-destructive text-destructive-foreground")}
                     >
                       <Heart className="mr-2 h-4 w-4" /> {selectedFavoriteForDetail.userHasLiked ? 'Te gusta' : 'Me gusta'} ({selectedFavoriteForDetail.likes})
                     </Button>
                     <button
                       onClick={() => handleOpenFindItemsModalFromDetail(selectedFavoriteForDetail)}
-                      className="flex items-center gap-1 text-muted-foreground hover:text-primary hover:underline cursor-pointer text-sm"
+                      className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary hover:underline cursor-pointer"
                       title="Haz clic para encontrar artículos similares"
                     >
                       <MessageCircle className="h-4 w-4" />
@@ -258,16 +292,16 @@ export default function ProfilePage() {
                   <div className="flex flex-col items-center justify-center text-center text-sm text-muted-foreground italic p-4 bg-muted/30 rounded-md">
                     <MessageCircle className="h-8 w-8 mb-2 text-muted-foreground/70"/>
                     <p className="font-medium">Comentarios Detallados</p>
-                    <p className="text-xs">(Próximamente para favoritos)</p>
-                    <p className="mt-2 text-xs">
-                        Mientras tanto, puedes hacer clic en el contador de comentarios para buscar artículos similares de este diseño.
+                     <p className="text-xs mt-2">
+                        (Próximamente para favoritos) <br/>
+                        Mientras tanto, haz clic en el contador de comentarios de arriba para buscar artículos similares de este diseño.
                     </p>
                   </div>
                 </div>
                 
                 <Button 
                   onClick={() => handleOpenFindItemsModalFromDetail(selectedFavoriteForDetail)}
-                  className="w-full mt-auto" // Added mt-auto
+                  className="w-full mt-auto"
                 >
                   <Search className="mr-2 h-4 w-4" /> Encontrar Artículos Similares en esta Imagen
                 </Button>
@@ -277,10 +311,16 @@ export default function ProfilePage() {
         </Dialog>
       )}
 
-      {/* Re-add the "Find Similar Items" modal logic from favorites page (simplified for this context) */}
+      {/* "Find Similar Items" modal - Full implementation */}
       {favoriteForSimilarItems && (
          <Dialog open={isFindItemsModalOpen} onOpenChange={(isOpen) => {
-          if (!isOpen) setFavoriteForSimilarItems(null);
+          if (!isOpen) {
+            setFavoriteForSimilarItems(null); // Clear the selected item when closing
+            // Optionally, re-open the detail modal if it was closed to show this one
+            // const previouslySelectedDetail = favorites.find(f => f.id === favoriteForSimilarItems?.id);
+            // if (previouslySelectedDetail) setSelectedFavoriteForDetail(previouslySelectedDetail);
+            // setIsDetailModalOpen(!!previouslySelectedDetail);
+          }
           setIsFindItemsModalOpen(isOpen);
         }}>
           <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
@@ -297,9 +337,63 @@ export default function ProfilePage() {
                     </Button>
                 </DialogClose>
             </DialogHeader>
-            {/* Placeholder for the actual find items content */}
-            <div className="flex-grow p-6 flex items-center justify-center">
-                <p className="text-muted-foreground">Función "Encontrar Artículos Similares" se activaría aquí para "{favoriteForSimilarItems.title}".</p>
+            
+            <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
+              <div className="w-full p-6 md:border-r flex items-center justify-center bg-muted/20 order-first md:order-none">
+                <div className="relative w-full max-w-md aspect-[4/3] bg-background rounded-lg shadow-xl overflow-hidden border">
+                  <Image
+                    src={favoriteForSimilarItems.redesignedImage}
+                    alt={`Habitación rediseñada: ${favoriteForSimilarItems.title}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 448px"
+                    className="object-contain" 
+                    data-ai-hint="redesigned room item search"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col min-h-0 order-last md:order-none">
+                {isLoadingSimilarItems && (
+                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6">
+                    <LoadingSpinner text="La IA está identificando artículos..." size={10}/>
+                  </div>
+                )}
+                {!isLoadingSimilarItems && similarItems.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6 text-center">
+                    <Alert variant="default" className="max-w-sm bg-card border-border">
+                      <Info className="h-5 w-5" />
+                      <AlertTitle>No se Encontró Nada</AlertTitle>
+                      <AlertDescription className="text-xs">
+                        La IA no pudo identificar artículos distintos en esta imagen. Prueba con otra.
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+                {!isLoadingSimilarItems && similarItems.length > 0 && (
+                  <ScrollArea className="flex-grow p-4 min-h-0">
+                    <div className="space-y-2"> 
+                      {similarItems.map((item, index) => (
+                        <a
+                          key={index}
+                          href={`https://www.google.com/search?tbm=shop&gl=CL&hl=es&q=${encodeURIComponent(item.suggestedSearchQuery)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            "flex items-center justify-between p-3 rounded-md transition-colors group",
+                            "bg-card hover:bg-accent/50 border border-border hover:border-primary/50"
+                          )}
+                          aria-label={`Buscar "${item.itemName}" en Google Shopping`}
+                        >
+                          <span className="font-medium text-sm text-card-foreground group-hover:text-primary truncate pr-2" title={item.itemName}>
+                            {item.itemName}
+                          </span>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0" />
+                        </a>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
             </div>
              <DialogFooter className="p-4 border-t mt-auto bg-background sm:justify-start">
                 <DialogClose asChild>
@@ -312,4 +406,6 @@ export default function ProfilePage() {
     </>
   );
 }
+    
+
     
