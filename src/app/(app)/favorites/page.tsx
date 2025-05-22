@@ -21,10 +21,23 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import Image from 'next/image';
-import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; // AI call re-enabled
+// Simulating these for now, as we removed the AI flow import
+// import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; 
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { APP_NAME } from '@/lib/constants';
 
+// Temporary local type for IdentifiedItem
+export interface IdentifiedItem {
+  itemName: string;
+  itemDescription?: string;
+  suggestedSearchQuery: string;
+}
+
+const MOCK_SIMILAR_ITEMS: IdentifiedItem[] = [
+  { itemName: "Lámpara Moderna", suggestedSearchQuery: "lámpara de arco moderna negra" },
+  { itemName: "Planta Decorativa", suggestedSearchQuery: "planta de interior alta en macetero" },
+];
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite, user, isLoading: authLoading, toggleUserLike, updateFavoriteTitle } = useAuth();
@@ -61,7 +74,7 @@ export default function FavoritesPage() {
     if (editingFavoriteId) return; 
 
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(`¡Mira este rediseño de habitación: ${title}! Imagen: ${imageUrl}`)
+      navigator.clipboard.writeText(`¡Mira este rediseño de habitación de ${APP_NAME}: ${title}! Imagen: ${imageUrl}`)
         .then(() => {
           toast({ title: "¡Enlace Copiado!", description: "Información del rediseño copiada al portapapeles." });
         })
@@ -83,36 +96,24 @@ export default function FavoritesPage() {
     setSimilarItems([]);
 
     try {
-      console.log('[FavoritesPage] Calling ACTUAL findSimilarItems AI flow...');
-      const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage });
-      console.log('[FavoritesPage] ACTUAL findSimilarItems AI flow result:', result);
+      console.log('[FavoritesPage] Simulating findSimilarItems AI flow...');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate AI delay
+      const result = { items: MOCK_SIMILAR_ITEMS }; // Use mock data
+      console.log('[FavoritesPage] Simulated findSimilarItems AI flow result:', result);
 
       setSimilarItems(result.items);
       if (result.items.length === 0) {
         toast({
-          title: "No se Encontraron Artículos",
-          description: "La IA no identificó artículos distintos en esta imagen o no pudo generar sugerencias de búsqueda.",
+          title: "No se Encontraron Artículos (Simulado)",
+          description: "La IA (simulada) no identificó artículos distintos en esta imagen o no pudo generar sugerencias de búsqueda.",
         });
       }
     } catch (error) {
-      console.error("Error buscando artículos similares:", error);
-      let errorTitle = "Error al Buscar Artículos";
-      let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
-       if (error instanceof Error) {
-        if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
-          errorTitle = "Servicio de IA Ocupado";
-          errorMessage = "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
-        } else if (error.message.toLowerCase().includes("safety filter") || error.message.toLowerCase().includes("blocked")) {
-          errorTitle = "Contenido Bloqueado";
-          errorMessage = "La búsqueda no se pudo completar porque el contenido fue bloqueado por filtros de seguridad de la IA.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
+      console.error("Error buscando artículos similares (simulado):", error);
       toast({
         variant: "destructive",
-        title: errorTitle,
-        description: errorMessage,
+        title: "Error al Buscar Artículos (Simulado)",
+        description: "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.",
       });
     } finally {
       setIsLoadingSimilarItems(false);
@@ -136,7 +137,7 @@ export default function FavoritesPage() {
   };
 
   const handleCancelEdit = () => {
-    toast({title: "Edición Cancelada", description: "No se realizaron cambios en el nombre.", variant: "default"});
+    toast({title: "Edición Cancelada", description: "No se realizaron cambios en el nombre. Es posible que tu navegador esté bloqueando el cuadro de diálogo.", variant: "default"});
     setEditingFavoriteId(null);
     setCurrentEditTitle('');
   };
@@ -147,7 +148,7 @@ export default function FavoritesPage() {
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight flex items-center justify-center gap-3">
-            <Heart className="h-10 w-10 text-primary" /> Mis Rediseños Favoritos
+            <Heart className="h-8 w-8 sm:h-10 sm:w-10 text-primary" /> Mis Rediseños Favoritos
           </h1>
           <p className="mt-3 text-base sm:text-lg xl:text-xl text-muted-foreground">
             Tu colección personal de transformaciones de habitaciones inspiradoras. ¡Haz clic en una imagen para encontrar artículos similares!
@@ -162,7 +163,7 @@ export default function FavoritesPage() {
                   id={fav.id}
                   imageUrl={fav.redesignedImage}
                   title={fav.title || `Rediseño en ${fav.style}`}
-                  userName={user.name || user.email || "Tú"}
+                  userName={user.displayName || user.email || "Tú"}
                   likes={fav.likes}
                   comments={fav.comments}
                   isLikedByCurrentUser={fav.userHasLiked}
@@ -283,16 +284,16 @@ export default function FavoritesPage() {
               <div className="flex flex-col min-h-0 order-last md:order-none">
                 {isLoadingSimilarItems && (
                   <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6">
-                    <LoadingSpinner text="La IA está identificando artículos..." size={10}/>
+                    <LoadingSpinner text="La IA (simulada) está identificando artículos..." size={10}/>
                   </div>
                 )}
                 {!isLoadingSimilarItems && similarItems.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full py-10 flex-grow p-6 text-center">
                     <Alert variant="default" className="max-w-sm bg-card border-border">
                       <Info className="h-5 w-5" />
-                      <AlertTitle>No se Encontró Nada</AlertTitle>
+                      <AlertTitle>No se Encontró Nada (Simulado)</AlertTitle>
                       <AlertDescription className="text-xs">
-                        La IA no pudo identificar artículos distintos en esta imagen.
+                        La IA (simulada) no pudo identificar artículos distintos en esta imagen.
                       </AlertDescription>
                     </Alert>
                   </div>

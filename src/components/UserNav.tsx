@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { CreditCard, LogOut, Settings, User as UserIcon, Heart } from 'lucide-react'; 
+import { LogOut, Settings, User as UserIcon, Heart } from 'lucide-react'; 
 import ThemeToggle from './ThemeToggle';
 
 export default function UserNav() {
@@ -24,9 +24,15 @@ export default function UserNav() {
     return null;
   }
 
-  const getInitials = (name?: string, email?: string) => {
-    if (name) return name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
-    if (email) return email.substring(0,2).toUpperCase();
+  const getInitials = (displayName?: string | null, email?: string | null) => {
+    if (displayName) {
+      const names = displayName.split(' ');
+      if (names.length > 1) {
+        return (names[0][0] + (names[names.length - 1][0] || '')).toUpperCase();
+      }
+      return displayName.substring(0, 2).toUpperCase();
+    }
+    if (email) return email.substring(0, 2).toUpperCase();
     return 'U';
   }
 
@@ -37,15 +43,15 @@ export default function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={`https://placehold.co/40x40.png?text=${getInitials(user.name, user.email)}`} alt={user.name || user.email} data-ai-hint="profile avatar"/>
-              <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
+              <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName, user.email)}`} alt={user.displayName || user.email || "Avatar"} data-ai-hint="profile avatar"/>
+              <AvatarFallback>{getInitials(user.displayName, user.email)}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.name || 'Usuario'}</p>
+              <p className="text-sm font-medium leading-none">{user.displayName || 'Usuario'}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user.email}
               </p>

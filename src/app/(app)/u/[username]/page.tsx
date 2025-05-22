@@ -2,7 +2,7 @@
 // src/app/(app)/u/[username]/page.tsx
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getMockUserProfileByUsername, type MockUserProfile } from '@/lib/mock-public-profiles';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,20 +30,19 @@ export default function UserProfilePage() {
   const params = useParams();
   const usernameParam = typeof params.username === 'string' ? decodeURIComponent(params.username) : '';
   const userProfileData = getMockUserProfileByUsername(usernameParam);
+  const router = useRouter();
 
   const { user: loggedInUser, isFollowing, toggleFollow } = useAuth();
   const [isCurrentlyFollowing, setIsCurrentlyFollowing] = useState(false);
   const [displayFollowersCount, setDisplayFollowersCount] = useState(0);
 
   useEffect(() => {
-    // This effect initializes the displayFollowersCount from the mock data
-    // and sets the initial follow state for the logged-in user.
     if (userProfileData) {
       setDisplayFollowersCount(userProfileData.followersCount);
       if (loggedInUser) {
         setIsCurrentlyFollowing(isFollowing(userProfileData.username));
       } else {
-        setIsCurrentlyFollowing(false); // If no loggedInUser, cannot be following
+        setIsCurrentlyFollowing(false); 
       }
     }
   }, [userProfileData, loggedInUser, isFollowing]);
@@ -52,16 +51,18 @@ export default function UserProfilePage() {
     return <ProfileNotFound />;
   }
 
-  const { username, avatarUrl, postsCount, followingCount, bio, posts } = userProfileData;
+  const { username, avatarUrl, postsCount, followingCount: initialFollowingCount, bio, posts } = userProfileData;
 
   const handleToggleFollow = () => {
-    if (!loggedInUser || !userProfileData) return;
+    if (!loggedInUser || !userProfileData) {
+      router.push('/auth/signin'); // Redirect to sign-in if not logged in
+      return;
+    }
 
-    toggleFollow(userProfileData.username); // This updates AuthContext and localStorage
+    toggleFollow(userProfileData.username); 
 
     const newFollowingState = !isCurrentlyFollowing;
     setIsCurrentlyFollowing(newFollowingState);
-    // Locally adjust the displayed follower count for this specific profile
     setDisplayFollowersCount(prevCount => newFollowingState ? prevCount + 1 : prevCount -1);
   };
 
@@ -89,13 +90,12 @@ export default function UserProfilePage() {
         <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
             <h1 className="text-3xl font-light text-foreground truncate">{username}</h1>
-            {loggedInUser && loggedInUser.name !== username && (
+            {loggedInUser && loggedInUser.displayName !== username && (
               <div className="flex gap-2">
                 <Button
                   variant={isCurrentlyFollowing ? "secondary" : "default"}
                   size="sm"
                   onClick={handleToggleFollow}
-                  disabled={!loggedInUser} // Button should be enabled if loggedInUser exists
                 >
                   {isCurrentlyFollowing ? <Check className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
                   {isCurrentlyFollowing ? "Siguiendo" : "Seguir"}
@@ -105,6 +105,15 @@ export default function UserProfilePage() {
                 </Button>
               </div>
             )}
+             {!loggedInUser && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleToggleFollow} // Will redirect to signin if no user
+                >
+                  <UserPlus className="mr-2 h-4 w-4" /> Seguir
+                </Button>
+             )}
              <Button variant="ghost" size="icon" className="sm:hidden" disabled title="Más opciones">
                 <Settings className="h-5 w-5" />
             </Button>
@@ -120,7 +129,7 @@ export default function UserProfilePage() {
               <span className="text-muted-foreground ml-1">seguidores</span>
             </div>
             <div>
-              <span className="font-semibold text-lg">{followingCount.toLocaleString()}</span>
+              <span className="font-semibold text-lg">{initialFollowingCount.toLocaleString()}</span>
               <span className="text-muted-foreground ml-1">siguiendo</span>
             </div>
           </div>
@@ -146,12 +155,12 @@ export default function UserProfilePage() {
         </div>
 
         {posts.length > 0 ? (
-           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-6">
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-2 mt-6">
             {posts.map((post) => (
               <Link
                 href={`/community?openDesignId=${post.id}`}
                 key={post.id}
-                className="group relative aspect-square overflow-hidden"
+                className="group relative aspect-square overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
                 title={`Ver detalles de la publicación de ${username}`}
               >
                 <Image

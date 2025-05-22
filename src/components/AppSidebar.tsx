@@ -11,7 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  useSidebar, // Import useSidebar
+  useSidebar, 
 } from '@/components/ui/sidebar';
 import { LogoIcon } from '@/components/icons/LogoIcon';
 import { APP_NAME, SIDEBAR_NAV_ITEMS_AUTHENTICATED, SIDEBAR_NAV_ITEMS_UNAUTHENTICATED } from '@/lib/constants';
@@ -19,13 +19,13 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'; // Corrected import
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const { user, logout, isLoading } = useAuth();
   const router = NextUseRouter();
-  const { isMobile, setOpenMobile } = useSidebar(); // Get isMobile and setOpenMobile
+  const { isMobile, setOpenMobile } = useSidebar(); 
 
   const navItems = user ? SIDEBAR_NAV_ITEMS_AUTHENTICATED : SIDEBAR_NAV_ITEMS_UNAUTHENTICATED;
 
@@ -34,6 +34,18 @@ export default function AppSidebar() {
       setOpenMobile(false);
     }
   };
+
+  const getInitials = (displayName?: string | null, email?: string | null) => {
+    if (displayName) {
+      const names = displayName.split(' ');
+      if (names.length > 1) {
+        return (names[0][0] + (names[names.length - 1][0] || '')).toUpperCase();
+      }
+      return displayName.substring(0, 2).toUpperCase();
+    }
+    if (email) return email.substring(0, 2).toUpperCase();
+    return 'U';
+  }
 
   if (isLoading) {
     return (
@@ -81,7 +93,7 @@ export default function AppSidebar() {
                     "w-full justify-start",
                     {'bg-sidebar-accent text-sidebar-accent-foreground': pathname === item.href}
                   )}
-                  onClick={handleNavigationClick} // Close sidebar on click
+                  onClick={handleNavigationClick} 
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
@@ -97,11 +109,11 @@ export default function AppSidebar() {
            <div className="group-data-[collapsible=icon]:hidden p-2 space-y-2">
              <div className="flex items-center gap-2">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={`https://placehold.co/40x40.png?text=${user.name ? user.name.substring(0,1) : user.email.substring(0,1)}`} alt={user.name || user.email} data-ai-hint="profile avatar"/>
-                  <AvatarFallback>{user.name ? user.name.substring(0, 2).toUpperCase() : user.email.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName, user.email)}`} alt={user.displayName || "Avatar"} data-ai-hint="profile avatar"/>
+                  <AvatarFallback>{getInitials(user.displayName, user.email)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium leading-none">{user.name || 'Usuario'}</p>
+                  <p className="text-sm font-medium leading-none">{user.displayName || 'Usuario'}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                 </div>
              </div>
@@ -123,4 +135,3 @@ export default function AppSidebar() {
     </Sidebar>
   );
 }
-

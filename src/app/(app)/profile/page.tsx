@@ -23,10 +23,24 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
-import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; // AI call re-enabled
+// Simulating these for now, as we removed the AI flow import
+// import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow'; 
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter } from 'next/navigation';
+
+// Temporary local type for IdentifiedItem
+export interface IdentifiedItem {
+  itemName: string;
+  itemDescription?: string;
+  suggestedSearchQuery: string;
+}
+
+const MOCK_SIMILAR_ITEMS_PROFILE: IdentifiedItem[] = [
+  { itemName: "Sofá Moderno", suggestedSearchQuery: "sofá moderno gris claro" },
+  { itemName: "Lámpara de Pie", suggestedSearchQuery: "lámpara de pie minimalista negra" },
+  { itemName: "Alfombra Geométrica", suggestedSearchQuery: "alfombra geométrica blanco y negro" },
+];
 
 
 export default function ProfilePage() {
@@ -49,36 +63,24 @@ export default function ProfilePage() {
     setSimilarItems([]);
 
     try {
-      console.log('[ProfilePage] Calling ACTUAL findSimilarItems AI flow...');
-      const result = await findSimilarItems({ imageDataUri: favorite.redesignedImage });
-      console.log('[ProfilePage] ACTUAL findSimilarItems AI flow result:', result);
+      console.log('[ProfilePage] Simulating findSimilarItems AI flow...');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      const result = { items: MOCK_SIMILAR_ITEMS_PROFILE }; 
+      console.log('[ProfilePage] Simulated findSimilarItems AI flow result:', result);
 
       setSimilarItems(result.items);
       if (result.items.length === 0) {
         toast({
-          title: "No se Encontraron Artículos",
-          description: "La IA no identificó artículos distintos para buscar en esta imagen.",
+          title: "No se Encontraron Artículos (Simulado)",
+          description: "La IA (simulada) no identificó artículos distintos para buscar en esta imagen.",
         });
       }
     } catch (error) {
-      console.error("Error buscando artículos similares:", error);
-      let errorTitle = "Error al Buscar Artículos";
-      let errorMessage = "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.";
-      if (error instanceof Error) {
-         if (error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("service unavailable")) {
-          errorTitle = "Servicio de IA Ocupado";
-          errorMessage = "El servicio de IA está experimentando alta demanda. Por favor, inténtalo de nuevo en unos minutos.";
-        } else if (error.message.toLowerCase().includes("safety filter") || error.message.toLowerCase().includes("blocked")) {
-          errorTitle = "Contenido Bloqueado";
-          errorMessage = "La búsqueda no se pudo completar porque el contenido fue bloqueado por filtros de seguridad de la IA.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
+      console.error("Error buscando artículos similares (simulado):", error);
       toast({
         variant: "destructive",
-        title: errorTitle,
-        description: errorMessage,
+        title: "Error al Buscar Artículos (Simulado)",
+        description: "Falló la búsqueda de artículos similares. Por favor, inténtalo de nuevo.",
       });
     } finally {
       setIsLoadingSimilarItems(false);
@@ -104,8 +106,14 @@ export default function ProfilePage() {
     );
   }
 
-  const getInitials = (name?: string, email?: string) => {
-    if (name) return name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
+  const getInitials = (displayName?: string | null, email?: string | null) => {
+    if (displayName) {
+      const names = displayName.split(' ');
+      if (names.length > 1) {
+        return (names[0][0] + (names[names.length - 1][0] || '')).toUpperCase();
+      }
+      return displayName.substring(0, 2).toUpperCase();
+    }
     if (email) return email.substring(0,2).toUpperCase();
     return 'U';
   }
@@ -119,7 +127,7 @@ export default function ProfilePage() {
 
   const handleShareFavoriteFromDetail = (imageUrl: string, title: string) => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(`¡Mira este rediseño de habitación: ${title}! Imagen: ${imageUrl}`)
+      navigator.clipboard.writeText(`¡Mira este rediseño de habitación de ${APP_NAME}: ${title}! Imagen: ${imageUrl}`)
         .then(() => {
           toast({ title: "¡Enlace Copiado!", description: "Información del rediseño copiada al portapapeles." });
         })
@@ -139,15 +147,15 @@ export default function ProfilePage() {
         <header className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10 border-b pb-8">
           <Avatar className="h-32 w-32 sm:h-40 sm:w-40 ring-4 ring-primary/30 ring-offset-background ring-offset-2 shrink-0">
             <AvatarImage
-              src={`https://placehold.co/160x160.png?text=${getInitials(user.name, user.email)}`}
-              alt={user.name || user.email || 'Avatar de usuario'}
+              src={user.photoURL || `https://placehold.co/160x160.png?text=${getInitials(user.displayName, user.email)}`}
+              alt={user.displayName || user.email || 'Avatar de usuario'}
               data-ai-hint="profile large"
             />
-            <AvatarFallback className="text-5xl">{getInitials(user.name, user.email)}</AvatarFallback>
+            <AvatarFallback className="text-5xl">{getInitials(user.displayName, user.email)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-              <h1 className="text-3xl font-light text-foreground truncate">{user.name || 'Usuario Anónimo'}</h1>
+              <h1 className="text-3xl font-light text-foreground truncate">{user.displayName || 'Usuario Anónimo'}</h1>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => router.push('/profile/edit')}>
                   <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil
@@ -193,7 +201,7 @@ export default function ProfilePage() {
           </div>
 
           {favorites.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-2 mt-6">
               {favorites.map((fav) => (
                 <button
                   key={fav.id}
@@ -222,7 +230,7 @@ export default function ProfilePage() {
           ) : (
             <div className="text-center py-16 mt-6 border-2 border-dashed border-muted rounded-lg">
               <ImageIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <p className="text-xl font-semibold text-muted-foreground mb-2">Aún no tienes publicaciones</p>
+              <p className="text-2xl font-semibold text-muted-foreground mb-2">Aún no tienes publicaciones</p>
               <p className="text-muted-foreground mb-6">¡Empieza a rediseñar y guarda tus creaciones para verlas aquí!</p>
               <Link href="/" passHref legacyBehavior>
                 <Button size="lg">
@@ -306,6 +314,9 @@ export default function ProfilePage() {
                 >
                   <Search className="mr-2 h-4 w-4" /> Encontrar Artículos Similares
                 </Button>
+                 <DialogClose asChild>
+                    <Button variant="outline" className="w-full">Cerrar</Button>
+                </DialogClose>
               </div>
             </div>
           </DialogContent>
@@ -355,7 +366,7 @@ export default function ProfilePage() {
                       <Info className="h-5 w-5" />
                       <AlertTitle>No se Encontró Nada</AlertTitle>
                       <AlertDescription className="text-xs">
-                        La IA no pudo identificar artículos distintos en esta imagen.
+                        La IA (simulada) no pudo identificar artículos distintos en esta imagen.
                       </AlertDescription>
                     </Alert>
                   </div>

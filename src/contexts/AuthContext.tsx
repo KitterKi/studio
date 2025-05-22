@@ -3,17 +3,27 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { auth } from '@/lib/firebase'; // Import auth from your Firebase config
+import { 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  onAuthStateChanged, 
+  signOut,
+  type User as FirebaseUser // Rename to avoid conflict
+} from "firebase/auth";
+import { useToast } from '@/hooks/use-toast';
 
-export interface User {
-  id: string;
-  email: string;
-  name?: string;
+export interface User { // This will now store Firebase User info
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL?: string | null; // Optional: if you want to use Google profile picture
 }
 
 export interface FavoriteItem {
   id: string;
-  originalImage: string;
+  // originalImage: string; // No longer saving original image
   redesignedImage: string;
   title: string;
   style: string;
@@ -26,13 +36,12 @@ export interface FavoriteItem {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
-  signup: (email: string, pass: string, name?: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => void;
   favorites: FavoriteItem[];
   addFavorite: (item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked' | 'title'>) => void;
   removeFavorite: (id: string) => void;
-  updateFavoriteTitle: (id: string, newTitle: string) => void; // New function
+  updateFavoriteTitle: (id: string, newTitle: string) => void;
   toggleUserLike: (favoriteId: string) => void;
   canUserRedesign: () => boolean;
   recordRedesignAttempt: () => void;
@@ -50,26 +59,32 @@ const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Start as true
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const router = useRouter();
+  const pathname = usePathname();
+  const { toast } = useToast();
 
   const [dailyRedesignCount, setDailyRedesignCount] = useState(0);
   const [lastRedesignTrackDate, setLastRedesignTrackDate] = useState<string | null>(null);
   const [followedUsernames, setFollowedUsernames] = useState<string[]>([]);
 
   useEffect(() => {
-    setIsLoading(true);
-    let parsedUser: User | null = null;
-    try {
-      const storedUser = localStorage.getItem('authUser');
-      if (storedUser) {
-        parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      setIsLoading(true); // Set loading true while processing auth state
+      if (firebaseUser) {
+        const appUser: User = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+        };
+        setUser(appUser);
+        
+        // Load user-specific data from localStorage
         const today = getTodayDateString();
-        const storedCount = localStorage.getItem(`redesignCount_${parsedUser.id}`);
-        const storedDate = localStorage.getItem(`lastRedesignDate_${parsedUser.id}`);
+        const storedCount = localStorage.getItem(`redesignCount_${appUser.uid}`);
+        const storedDate = localStorage.getItem(`lastRedesignDate_${appUser.uid}`);
 
         if (storedDate === today && storedCount) {
           setDailyRedesignCount(parseInt(storedCount, 10));
@@ -77,181 +92,110 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setDailyRedesignCount(0);
           setLastRedesignTrackDate(today);
-          localStorage.setItem(`redesignCount_${parsedUser.id}`, '0');
-          localStorage.setItem(`lastRedesignDate_${parsedUser.id}`, today);
+          localStorage.setItem(`redesignCount_${appUser.uid}`, '0');
+          localStorage.setItem(`lastRedesignDate_${appUser.uid}`, today);
         }
-      }
-      const storedFavorites = localStorage.getItem('userFavorites');
-      if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
-          ...fav,
-          originalImage: fav.originalImage || '',
-          createdAt: new Date(fav.createdAt),
-          likes: fav.likes || Math.floor(Math.random() * 150) + 5,
-          comments: fav.comments || Math.floor(Math.random() * 30) + 2,
-          userHasLiked: fav.userHasLiked || false,
-        })));
-      }
-      const storedFollowedUsernames = localStorage.getItem('followedUsernames');
-      if (storedFollowedUsernames) {
-        setFollowedUsernames(JSON.parse(storedFollowedUsernames));
-      }
 
-    } catch (error) {
-      console.error("Error cargando desde localStorage", error);
-      localStorage.removeItem('authUser');
-      localStorage.removeItem('userFavorites');
-      localStorage.removeItem('followedUsernames');
-      if (parsedUser) {
-        localStorage.removeItem(`redesignCount_${parsedUser.id}`);
-        localStorage.removeItem(`lastRedesignDate_${parsedUser.id}`);
+        const storedFavorites = localStorage.getItem(`userFavorites_${appUser.uid}`);
+        if (storedFavorites) {
+          setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
+            ...fav,
+            createdAt: new Date(fav.createdAt),
+          })));
+        } else {
+          setFavorites([]);
+        }
+
+        const storedFollowedUsernames = localStorage.getItem(`followedUsernames_${appUser.uid}`);
+        if (storedFollowedUsernames) {
+          setFollowedUsernames(JSON.parse(storedFollowedUsernames));
+        } else {
+          setFollowedUsernames([]);
+        }
+
+      } else {
+        setUser(null);
+        setFavorites([]);
+        setFollowedUsernames([]);
+        setDailyRedesignCount(0);
+        setLastRedesignTrackDate(null);
       }
-    } finally {
-      setIsLoading(false);
-    }
+      setIsLoading(false); // Set loading false after processing
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      const today = getTodayDateString();
-      const storedCount = localStorage.getItem(`redesignCount_${user.id}`);
-      const storedDate = localStorage.getItem(`lastRedesignDate_${user.id}`);
 
-      if (storedDate === today && storedCount) {
-        setDailyRedesignCount(parseInt(storedCount, 10));
-        setLastRedesignTrackDate(today);
-      } else {
-        setDailyRedesignCount(0);
-        setLastRedesignTrackDate(today);
-        localStorage.setItem(`redesignCount_${user.id}`, '0');
-        localStorage.setItem(`lastRedesignDate_${user.id}`, today);
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle setting user and redirecting
+      toast({ title: "¡Bienvenido!", description: "Has iniciado sesión con Google."});
+      // Redirect after successful sign-in if on auth pages
+      if (pathname.startsWith('/auth')) {
+        router.push('/');
       }
-    } else {
-      setDailyRedesignCount(0);
-      setLastRedesignTrackDate(null);
+    } catch (error: any) {
+      console.error("Error al iniciar sesión con Google:", error);
+      toast({ variant: "destructive", title: "Error de Inicio de Sesión", description: error.message || "No se pudo iniciar sesión con Google." });
+      setIsLoading(false);
     }
-  }, [user]);
+  };
 
-
-  const login = useCallback(async (email: string, _pass: string) => {
+  const logout = async () => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const mockUser: User = { id: 'mock-user-id-' + email, email, name: email.split('@')[0] };
-    setUser(mockUser);
-    localStorage.setItem('authUser', JSON.stringify(mockUser));
-
-    const today = getTodayDateString();
-    setDailyRedesignCount(0);
-    setLastRedesignTrackDate(today);
-    localStorage.setItem(`redesignCount_${mockUser.id}`, '0');
-    localStorage.setItem(`lastRedesignDate_${mockUser.id}`, today);
-
-    const storedFavorites = localStorage.getItem('userFavorites');
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites).map((fav: any) => ({
-        ...fav,
-        originalImage: fav.originalImage || '',
-        createdAt: new Date(fav.createdAt),
-        likes: fav.likes || Math.floor(Math.random() * 150) + 5,
-        comments: fav.comments || Math.floor(Math.random() * 30) + 2,
-        userHasLiked: fav.userHasLiked || false,
-      })));
-    } else {
-      setFavorites([]);
+    try {
+      await signOut(auth);
+      // onAuthStateChanged will set user to null
+      toast({ title: "Sesión Cerrada", description: "Has cerrado sesión correctamente."});
+      router.push('/auth/signin'); // Redirect to sign-in after logout
+    } catch (error: any) {
+      console.error("Error al cerrar sesión:", error);
+      toast({ variant: "destructive", title: "Error al Cerrar Sesión", description: error.message });
+      setIsLoading(false);
     }
-    const storedFollowedUsernames = localStorage.getItem('followedUsernames');
-    if (storedFollowedUsernames) {
-      setFollowedUsernames(JSON.parse(storedFollowedUsernames));
-    } else {
-      setFollowedUsernames([]);
-    }
-
-    setIsLoading(false);
-    router.push('/');
-  }, [router]);
-
-  const signup = useCallback(async (email: string, _pass: string, name?: string) => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const mockUser: User = { id: 'mock-user-id-' + email, email, name: name || email.split('@')[0] };
-    setUser(mockUser);
-    localStorage.setItem('authUser', JSON.stringify(mockUser));
-    setFavorites([]);
-    localStorage.setItem('userFavorites', JSON.stringify([]));
-    setFollowedUsernames([]);
-    localStorage.setItem('followedUsernames', JSON.stringify([]));
-
-
-    const today = getTodayDateString();
-    setDailyRedesignCount(0);
-    setLastRedesignTrackDate(today);
-    localStorage.setItem(`redesignCount_${mockUser.id}`, '0');
-    localStorage.setItem(`lastRedesignDate_${mockUser.id}`, today);
-
-    setIsLoading(false);
-    router.push('/');
-  }, [router]);
-
-  const logout = useCallback(() => {
-    if (user) {
-      localStorage.removeItem(`redesignCount_${user.id}`);
-      localStorage.removeItem(`lastRedesignDate_${user.id}`);
-    }
-    setUser(null);
-    localStorage.removeItem('authUser');
-    router.push('/auth/signin');
-  }, [user, router]);
+  };
 
   const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt' | 'likes' | 'comments' | 'userHasLiked' | 'title'>) => {
+    if (!user) return;
     setFavorites(prevFavorites => {
       const style = item.style;
       let newTitle = style;
       const styleFavorites = prevFavorites.filter(fav => fav.title.startsWith(style));
       
       if (styleFavorites.length > 0) {
-        let maxNum = 1;
+        let maxNum = 0;
+        let plainStyleExists = false;
         styleFavorites.forEach(fav => {
-          if (fav.title === style && maxNum === 1) { // Found "Style"
-            // If we only have "Style", the next one is "Style 2"
-          }
+          if (fav.title === style) plainStyleExists = true;
           const match = fav.title.match(new RegExp(`^${style}\\s*(\\d+)$`));
-          if (match && parseInt(match[1]) >= maxNum) {
-            maxNum = parseInt(match[1]) + 1;
+          if (match) {
+            maxNum = Math.max(maxNum, parseInt(match[1]));
           }
         });
-         // If only "Style" exists and no "Style X", next is "Style 2"
-        if (styleFavorites.length === 1 && styleFavorites[0].title === style) {
-             newTitle = `${style} 2`;
-        } else if (styleFavorites.some(sf => sf.title === style) && maxNum === 1) { 
-            // This case handles if "Style" exists and other "Style X" might exist.
-            // If maxNum is still 1 but "Style" exists, it means "Style" is the only one or highest X is < 1 (which is impossible), so next is "Style 2"
-            // unless there's already "Style 2", then it should be maxNum logic.
-            // Let's find max number among "Style X"
-            let currentMax = 0;
-            styleFavorites.forEach(fav => {
-                const titleMatch = fav.title.match(new RegExp(`^${style}\\s*(\\d+)$`));
-                if (titleMatch) {
-                    currentMax = Math.max(currentMax, parseInt(titleMatch[1]));
-                }
-            });
-            if (styleFavorites.some(sf => sf.title === style)) { // If "Style" exists
-                 newTitle = `${style} ${currentMax + 1 > 1 ? currentMax + 1 : 2}`;
-            } else { // Only "Style X" exist
-                 newTitle = `${style} ${currentMax + 1}`;
-            }
-
-        } else if (maxNum > 1) {
-             newTitle = `${style} ${maxNum}`;
-        } else if (styleFavorites.length > 0 && !styleFavorites.some(sf => sf.title === style)) { // Only "Style X" exist, no plain "Style"
-            newTitle = `${style} ${maxNum}`;
+        if (plainStyleExists) {
+          newTitle = `${style} ${maxNum + 1 > 1 ? maxNum + 1 : 2}`;
+        } else {
+          newTitle = `${style} ${maxNum + 1}`;
         }
+        if (maxNum === 0 && !plainStyleExists && styleFavorites.length > 0) { // Only "Style X" exists, no plain "Style"
+            newTitle = `${style} ${styleFavorites.length + 1}`;
+        } else if (maxNum === 0 && plainStyleExists ) { // Only plain "Style" exists
+             newTitle = `${style} 2`;
+        } else if (maxNum > 0 ) {
+             newTitle = `${style} ${maxNum + 1}`;
+        }
+
+      } else {
+        newTitle = style; // First item of this style
       }
-
-
+      
       const newFavorite: FavoriteItem = {
         ...item,
-        title: newTitle, // Use the generated title
-        originalImage: '',
+        title: newTitle,
         id: `fav-${Date.now()}`,
         createdAt: new Date(),
         likes: Math.floor(Math.random() * 200) + 10,
@@ -260,43 +204,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       const updatedFavorites = [newFavorite, ...prevFavorites];
       try {
-        localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+        localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
       } catch (e) {
         console.error("Error guardando favoritos en localStorage:", e);
-        if (updatedFavorites.length > 1) {
-          const trimmedFavorites = updatedFavorites.slice(0, -1);
-          try {
-            localStorage.setItem('userFavorites', JSON.stringify(trimmedFavorites));
-            return trimmedFavorites;
-          } catch (e2) {
-            console.error("Error guardando favoritos recortados:", e2);
-          }
-        }
-        return prevFavorites;
       }
       return updatedFavorites;
     });
-  }, []);
+  }, [user]);
 
   const removeFavorite = useCallback((id: string) => {
+    if (!user) return;
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.filter(fav => fav.id !== id);
-      localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
-  }, []);
+  }, [user]);
 
   const updateFavoriteTitle = useCallback((id: string, newTitle: string) => {
+    if (!user) return;
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.map(fav =>
         fav.id === id ? { ...fav, title: newTitle } : fav
       );
-      localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
-  }, []);
+  }, [user]);
 
   const toggleUserLike = useCallback((favoriteId: string) => {
+    if (!user) return;
     setFavorites(prevFavorites => {
       const updatedFavorites = prevFavorites.map(fav => {
         if (fav.id === favoriteId) {
@@ -309,16 +246,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         return fav;
       });
-      localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(`userFavorites_${user.uid}`, JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
-  }, []);
+  }, [user]);
 
   const canUserRedesign = useCallback(() => {
     if (!user) return false;
     const today = getTodayDateString();
     if (lastRedesignTrackDate !== today) {
-      return true;
+      // Reset count for new day for the current user
+      // This logic is now inside onAuthStateChanged for initial load and login
+      return true; // Can redesign if date mismatch (implies new day or first time)
     }
     return dailyRedesignCount < MAX_REDESIGNS_PER_DAY;
   }, [user, dailyRedesignCount, lastRedesignTrackDate]);
@@ -331,13 +270,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (lastRedesignTrackDate !== today) {
       newCount = 1;
       setLastRedesignTrackDate(today);
-      localStorage.setItem(`lastRedesignDate_${user.id}`, today);
+      localStorage.setItem(`lastRedesignDate_${user.uid}`, today);
     } else {
       newCount = dailyRedesignCount + 1;
     }
 
     setDailyRedesignCount(newCount);
-    localStorage.setItem(`redesignCount_${user.id}`, newCount.toString());
+    localStorage.setItem(`redesignCount_${user.uid}`, newCount.toString());
 
   }, [user, dailyRedesignCount, lastRedesignTrackDate]);
 
@@ -356,6 +295,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [followedUsernames]);
 
   const toggleFollow = useCallback((username: string) => {
+    if (!user) return;
     setFollowedUsernames(prev => {
       const isCurrentlyFollowing = prev.includes(username);
       let newFollowed: string[];
@@ -364,10 +304,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         newFollowed = [...prev, username];
       }
-      localStorage.setItem('followedUsernames', JSON.stringify(newFollowed));
+      localStorage.setItem(`followedUsernames_${user.uid}`, JSON.stringify(newFollowed));
       return newFollowed;
     });
-  }, []);
+  }, [user]);
 
   const followingCount = useMemo(() => followedUsernames.length, [followedUsernames]);
 
@@ -376,8 +316,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{
       user,
       isLoading,
-      login,
-      signup,
+      signInWithGoogle,
       logout,
       favorites,
       addFavorite,
