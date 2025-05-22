@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { CreditCard, LogOut, Settings, User as UserIcon, Heart } from 'lucide-react'; // Added Heart
+import { CreditCard, LogOut, Settings, User as UserIcon, Heart } from 'lucide-react'; 
 import ThemeToggle from './ThemeToggle';
 
 export default function UserNav() {
@@ -65,10 +65,12 @@ export default function UserNav() {
                   <span>Favoritos</span>
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem disabled>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Configuración</span>
-            </DropdownMenuItem>
+            <Link href="/settings" passHref legacyBehavior>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Configuración</span>
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout}>

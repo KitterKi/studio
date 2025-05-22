@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle, Wand2, Search, Share2, X, ExternalLink, Info } from 'lucide-react';
+import { UserCircle, Mail, Edit3, Heart, Image as ImageIcon, LogOut, Users, Columns, Settings, Grid3x3, MessageCircle, Wand2, Search, Share2, X, ExternalLink, Info, ArrowLeft } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -26,12 +26,14 @@ import { useToast } from '@/hooks/use-toast';
 import { findSimilarItems, type IdentifiedItem } from '@/ai/flows/find-similar-items-flow';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRouter } from 'next/navigation'; // Added useRouter
 
 export default function ProfilePage() {
   const { user, isLoading, logout, favorites, followingCount, removeFavorite, toggleUserLike } = useAuth();
   const [selectedFavoriteForDetail, setSelectedFavoriteForDetail] = useState<FavoriteItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter(); // Initialized useRouter
 
   const [isFindItemsModalOpen, setIsFindItemsModalOpen] = useState(false);
   const [favoriteForSimilarItems, setFavoriteForSimilarItems] = useState<FavoriteItem | null>(null);
@@ -134,13 +136,13 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
               <h1 className="text-3xl font-light text-foreground truncate">{user.name || 'Usuario Anónimo'}</h1>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => toast({ title: "Próximamente", description: "¡Función de Editar Perfil estará disponible pronto!"})}>
+                <Button variant="outline" size="sm" onClick={() => router.push('/profile/edit')}>
                   <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil
                 </Button>
                 <Button variant="ghost" size="icon" className="sm:hidden" onClick={logout} title="Cerrar Sesión">
                   <LogOut className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => toast({ title: "Próximamente", description: "¡La Configuración estará disponible pronto!"})} title="Configuración">
+                <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => router.push('/settings')} title="Configuración">
                   <Settings className="h-5 w-5" />
                 </Button>
               </div>
@@ -259,7 +261,7 @@ export default function ProfilePage() {
                     >
                       <Heart className="mr-2 h-4 w-4" /> {selectedFavoriteForDetail.userHasLiked ? 'Te gusta' : 'Me gusta'} ({selectedFavoriteForDetail.likes})
                     </Button>
-                     <div className="flex items-center gap-1 text-sm text-muted-foreground" title="Comentarios (próximamente para favoritos)">
+                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <MessageCircle className="h-4 w-4" />
                         <span>{selectedFavoriteForDetail.comments} comentarios</span>
                      </div>
@@ -283,9 +285,9 @@ export default function ProfilePage() {
                     <MessageCircle className="h-8 w-8 mb-2 text-muted-foreground/70"/>
                      <p className="font-medium">Comentarios</p>
                      <p className="text-xs mt-2">
-                        La visualización y creación de comentarios para favoritos estará disponible próximamente.
-                        <br />
-                        Por ahora, puedes ver los comentarios de este diseño en la página de la Comunidad si fue compartido.
+                        La visualización y creación de comentarios para favoritos aún no está implementada.
+                        <br/>
+                        Puedes interactuar con los comentarios de diseños en la página de la Comunidad.
                     </p>
                   </div>
                 </div>
@@ -395,3 +397,4 @@ export default function ProfilePage() {
     
 
     
+
