@@ -18,16 +18,18 @@ export default function AppGroupLayout({
   const router = useRouter();
   const pathname = usePathname();
 
+  const IS_AUTH_PATH = pathname.startsWith('/auth/');
+  const PROTECTED_PATHS = ['/favorites', '/profile']; // Routes requiring login
+  const PUBLIC_APP_SHELL_PATHS = ['/', '/community']; // Routes using AppHeader but not necessarily AppSidebar when logged out
+
   useEffect(() => {
     if (!isLoading && !user) {
-      const isAuthPath = pathname.startsWith('/auth/');
-      const isCommunityPage = pathname === '/community';
-
-      if (!isAuthPath && !isCommunityPage) {
+      // If on a protected path and not an auth path itself, redirect to signin
+      if (PROTECTED_PATHS.includes(pathname) && !IS_AUTH_PATH) {
         router.replace('/auth/signin');
       }
     }
-  }, [user, isLoading, router, pathname]);
+  }, [user, isLoading, router, pathname, IS_AUTH_PATH]);
 
   if (isLoading) {
     return (
@@ -37,33 +39,21 @@ export default function AppGroupLayout({
     );
   }
 
-  const isAuthPath = pathname.startsWith('/auth/');
-  const isCommunityPage = pathname === '/community';
-
-  // If no user and on a protected page (not auth, not community),
-  // a redirect is in progress. Show a clear "Redirecting..." message.
-  if (!user && !isAuthPath && !isCommunityPage) {
-    return (
-      <div className="flex flex-col flex-grow h-screen items-center justify-center bg-background">
-        <LoadingSpinner text="Redirecting to login..." size={16} />
-      </div>
-    );
+  // If this layout is somehow active for an auth path, pass children through.
+  // The (auth)/layout.tsx should ideally handle these routes.
+  if (IS_AUTH_PATH) {
+    return <>{children}</>;
   }
 
-  // Render the main app layout if:
-  // 1. User is logged in.
-  // OR
-  // 2. User is not logged in, BUT the current path is /community.
-  // For auth paths (/auth/signin, etc.), Next.js should use the (auth)/layout.tsx,
-  // so this (app)/layout.tsx should not render its main UI for those paths.
-  if (user || isCommunityPage) {
+  // User is logged in: Render full app layout with sidebar
+  if (user) {
     return (
       <SidebarProvider>
         <div className="flex flex-col min-h-screen">
           <AppHeader />
           <div className="flex flex-grow">
-            {user && <AppSidebar />} {/* Sidebar is only rendered if there's a user */}
-            <SidebarInset className={user ? "" : "md:ml-0"}> {/* Adjust margin if sidebar is not present */}
+            <AppSidebar />
+            <SidebarInset>
               <main className="flex-grow container mx-auto px-4 py-8">
                 {children}
               </main>
@@ -73,20 +63,41 @@ export default function AppGroupLayout({
       </SidebarProvider>
     );
   }
-  
-  // If it's an auth path (e.g., /auth/signin) and we've reached here,
-  // it means `!user` and `isAuthPath` is true.
-  // In this scenario, the (auth)/layout.tsx is responsible for rendering.
-  // This (app)/layout.tsx should simply pass through the children, which
-  // will be the content from the (auth) route group (e.g., SignInPage).
-  if (isAuthPath) {
-    return <>{children}</>;
+
+  // No user, but on a public page that uses the app shell (header, no sidebar)
+  if (!user && PUBLIC_APP_SHELL_PATHS.includes(pathname)) {
+    return (
+      <SidebarProvider> {/* SidebarProvider might be needed for useSidebar hook in AppHeader */}
+        <div className="flex flex-col min-h-screen">
+          <AppHeader /> {/* Header will show Sign In / Sign Up */}
+          <div className="flex flex-grow">
+            {/* No AppSidebar for non-logged-in users */}
+            <SidebarInset className="md:ml-0"> {/* Ensure main content takes full width */}
+              <main className="flex-grow container mx-auto px-4 py-8">
+                {children}
+              </main>
+            </SidebarInset>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
   }
 
-  // Fallback for any other unexpected state, though ideally covered.
+  // No user and on a protected path: useEffect is redirecting. Show a message.
+  if (!user && PROTECTED_PATHS.includes(pathname)) {
+    return (
+      <div className="flex flex-col flex-grow h-screen items-center justify-center bg-background">
+        <LoadingSpinner text="Redirecting to login..." size={16} />
+      </div>
+    );
+  }
+  
+  // Fallback for any other scenario (e.g., a new route within (app) group not defined as public or protected)
+  // This could also indicate that the child component is trying to render before the redirect logic has a chance to run.
   return (
     <div className="flex flex-col h-screen items-center justify-center bg-background">
-      <p>An unexpected state was reached. Please try refreshing.</p>
+       <LoadingSpinner text="Verifying access..." size={16} />
+      {/* Consider adding a more specific error or a link to the homepage */}
     </div>
   );
 }

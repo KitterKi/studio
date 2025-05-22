@@ -12,14 +12,14 @@ import { LogIn, UserPlus } from 'lucide-react';
 
 export default function AppHeader() {
   const { user, isLoading } = useAuth();
-  const { isMobile, toggleSidebar, openMobile, setOpenMobile } = useSidebar(); // Get sidebar state if needed for trigger visibility
+  const { openMobile, setOpenMobile } = useSidebar(); // Removed isMobile as SidebarTrigger visibility is tied to user state
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
-          {user && ( // Show sidebar trigger only if user is logged in and sidebar is part of the layout
-            <SidebarTrigger className="md:hidden" onClick={() => setOpenMobile(!openMobile)} /> // For mobile
+          {user && ( // Show sidebar trigger only if user is logged in (since sidebar is only for logged-in users)
+            <SidebarTrigger className="md:hidden" onClick={() => setOpenMobile(!openMobile)} />
           )}
           <Link href="/" className="flex items-center gap-2" aria-label={`${APP_NAME} home page`}>
             <LogoIcon />
@@ -29,7 +29,7 @@ export default function AppHeader() {
         
         <nav className="flex items-center gap-2">
           {isLoading ? (
-            <div className="h-9 w-20 animate-pulse bg-muted rounded-md"></div>
+            <div className="h-9 w-20 animate-pulse bg-muted rounded-md"></div> // Skeleton loader for auth state
           ) : user ? (
             <UserNav />
           ) : (
