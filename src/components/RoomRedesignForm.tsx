@@ -94,10 +94,11 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
 
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-3 sm:space-y-4">
       <div>
-        <h2 className="text-md sm:text-lg font-semibold mb-1.5 sm:mb-2 text-primary flex items-center">
-            <UploadCloud className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+        <h2 className="text-sm font-semibold mb-1 text-primary flex items-center
+                       sm:text-base sm:mb-1.5">
+            <UploadCloud className="mr-1.5 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5" />
             1. Sube tu Foto
         </h2>
         <Input
@@ -105,19 +106,21 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
           type="file"
           accept="image/png, image/jpeg, image/webp"
           onChange={handleFileChange}
-          className="file:mr-2 file:py-1.5 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors h-10 text-xs sm:text-sm cursor-pointer focus-visible:ring-primary"
+          className="file:mr-1.5 file:py-1 file:px-1.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors h-9 text-[11px] cursor-pointer focus-visible:ring-primary
+                     sm:file:mr-2 sm:file:py-1.5 sm:file:px-2 sm:file:rounded-md sm:file:text-xs sm:h-10 sm:text-xs"
           aria-label="Subir foto de la habitación"
           disabled={isLoading}
         />
         {photoPreview && (
-          <div className="mt-2 sm:mt-3 p-1.5 border border-border rounded-lg bg-background/50">
-            <p className="text-xs font-medium mb-1 sm:mb-1.5 text-center text-muted-foreground">Vista previa:</p>
+          <div className="mt-1.5 sm:mt-2 p-1 border border-border rounded-md bg-background/50">
+            <p className="text-[10px] font-medium mb-0.5 text-center text-muted-foreground sm:text-xs sm:mb-1">Vista previa:</p>
             <Image
               src={photoPreview}
               alt="Vista previa de la habitación"
-              width={300} 
-              height={225}
-              className="rounded-md object-contain mx-auto max-h-[100px] sm:max-h-[120px] md:max-h-[150px] w-auto"
+              width={240} 
+              height={180}
+              className="rounded-sm object-contain mx-auto max-h-[80px] w-auto 
+                         sm:max-h-[100px] md:max-h-[120px]"
               data-ai-hint="room preview"
             />
           </div>
@@ -125,8 +128,9 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
       </div>
 
       <div>
-        <h2 className="text-md sm:text-lg font-semibold mb-1.5 sm:mb-2 text-primary flex items-center">
-            <Palette className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+        <h2 className="text-sm font-semibold mb-1 text-primary flex items-center
+                       sm:text-base sm:mb-1.5">
+            <Palette className="mr-1.5 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5" />
             2. Elige un Estilo
         </h2>
         <Select value={selectedStyle} onValueChange={setSelectedStyle} disabled={isLoading || !photoPreview}>
@@ -134,13 +138,15 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
             id="design-style" 
             aria-label="Seleccionar estilo de diseño" 
             disabled={isLoading || !photoPreview} 
-            className="h-10 text-xs sm:text-sm focus:ring-primary"
+            className="h-9 text-[11px] focus:ring-primary
+                       sm:h-10 sm:text-xs"
           >
             <SelectValue placeholder="Selecciona un estilo..." />
           </SelectTrigger>
           <SelectContent className="bg-popover text-popover-foreground">
             {DESIGN_STYLES.map((style) => (
-              <SelectItem key={style} value={style} className="text-xs sm:text-sm py-1.5 sm:py-2 focus:bg-accent focus:text-accent-foreground">
+              <SelectItem key={style} value={style} className="text-[11px] py-1 focus:bg-accent focus:text-accent-foreground
+                                                              sm:text-xs sm:py-1.5">
                 {style}
               </SelectItem>
             ))}
@@ -152,16 +158,19 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
         <form onSubmit={handleSubmit}>
             <Button 
             type="submit" 
-            className="w-full text-sm sm:text-base py-2.5 sm:py-3" 
+            className="w-full text-xs py-2 
+                       sm:text-sm sm:py-2.5" 
             disabled={finalButtonDisabled}
-            size="lg" // Size lg gives h-11 by default, we are overriding with py
+            size="default" 
             >
             {buttonText}
-            {isLoading && <Wand2 className="ml-2 h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />}
-            {!isLoading && !finalButtonDisabled && <Wand2 className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />}
+            {isLoading && <Wand2 className="ml-1.5 h-3 w-3 sm:ml-2 sm:h-4 sm:w-4 animate-pulse" />}
+            {!isLoading && !finalButtonDisabled && <Wand2 className="ml-1.5 h-3 w-3 sm:ml-2 sm:h-4 sm:w-4" />}
             </Button>
         </form>
       </div>
     </div>
   );
 }
+
+    

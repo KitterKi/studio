@@ -10,21 +10,25 @@ interface RedesignPreviewProps {
 }
 
 const ImagePlaceholder = ({ icon: Icon, text, subtext }: { icon: React.ElementType, text: string, subtext?: string }) => (
-  <div className="aspect-video w-full bg-card/50 rounded-xl flex flex-col items-center justify-center text-center text-muted-foreground p-3 sm:p-4 shadow-inner border-2 border-dashed border-border/40 min-h-[150px] sm:min-h-[200px] md:min-h-[220px]">
-    <Icon className="h-8 w-8 sm:h-10 sm:w-10 mb-2 sm:mb-3 text-muted-foreground/50" />
-    <p className="text-xs sm:text-sm font-semibold text-foreground/80">{text}</p>
-    {subtext && <p className="text-[10px] sm:text-xs mt-1">{subtext}</p>}
+  <div className="aspect-video w-full bg-card/50 rounded-lg flex flex-col items-center justify-center text-center text-muted-foreground p-2 shadow-inner border-2 border-dashed border-border/40 min-h-[120px] 
+                 sm:p-3 sm:min-h-[150px] md:min-h-[180px]">
+    <Icon className="h-6 w-6 mb-1.5 text-muted-foreground/50 
+                   sm:h-8 sm:w-8 sm:mb-2" />
+    <p className="text-[10px] font-semibold text-foreground/80 
+                   sm:text-xs sm:font-semibold">{text}</p>
+    {subtext && <p className="text-[9px] mt-0.5 sm:text-[10px]">{subtext}</p>}
   </div>
 );
 
 export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, isLoading }: RedesignPreviewProps) {
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-3 sm:space-y-4">
       <div>
-        <h3 className="text-base sm:text-lg md:text-xl font-bold text-center text-primary mb-2 md:mb-3 tracking-tight">Original</h3>
-        <div className="rounded-2xl overflow-hidden border-2 border-border/30 bg-card shadow-xl p-1">
+        <h3 className="text-sm font-bold text-center text-primary mb-1.5 tracking-tight
+                       sm:text-base md:text-lg sm:mb-2">Original</h3>
+        <div className="rounded-lg overflow-hidden border-2 border-border/30 bg-card shadow-lg p-0.5 sm:p-1">
           {originalImageSrc ? (
-            <div className="aspect-video relative w-full bg-muted/10 rounded-xl overflow-hidden">
+            <div className="aspect-video relative w-full bg-muted/10 rounded-md overflow-hidden">
               <Image
                 src={originalImageSrc}
                 alt="Habitación original"
@@ -41,14 +45,15 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
       </div>
 
       <div>
-        <h3 className="text-base sm:text-lg md:text-xl font-bold text-center text-accent mb-2 md:mb-3 tracking-tight">Rediseño IA (Simulado)</h3>
-        <div className="rounded-2xl overflow-hidden border-2 border-accent/40 bg-card shadow-xl p-1">
+        <h3 className="text-sm font-bold text-center text-accent mb-1.5 tracking-tight
+                       sm:text-base md:text-lg sm:mb-2">Rediseño IA (Simulado)</h3>
+        <div className="rounded-lg overflow-hidden border-2 border-accent/40 bg-card shadow-lg p-0.5 sm:p-1">
           {isLoading ? (
-            <div className="aspect-video w-full flex items-center justify-center bg-card/50 min-h-[150px] sm:min-h-[200px] md:min-h-[220px] rounded-xl">
-              <LoadingSpinner size={8} text="La IA está reimaginando tu espacio..." /> 
+            <div className="aspect-video w-full flex items-center justify-center bg-card/50 min-h-[120px] sm:min-h-[150px] md:min-h-[180px] rounded-md">
+              <LoadingSpinner size={6} text="La IA está reimaginando tu espacio..." /> 
             </div>
           ) : redesignedImageSrc ? (
-            <div className="aspect-video relative w-full bg-muted/10 rounded-xl overflow-hidden">
+            <div className="aspect-video relative w-full bg-muted/10 rounded-md overflow-hidden">
                <Image
                 src={redesignedImageSrc}
                 alt="Habitación rediseñada"
@@ -66,3 +71,5 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
     </div>
   );
 }
+
+    
