@@ -118,11 +118,11 @@ export default function FavoritesPage() {
 
 
     if (newTitle === null) {
-      // User cancelled the prompt
-      console.log('[FavoritesPage] Prompt cancelled by user.');
+      // User cancelled the prompt or browser suppressed it
+      console.log('[FavoritesPage] Prompt cancelled by user (or suppressed by browser).');
       toast({
         title: "Edición Cancelada",
-        description: "No se realizaron cambios en el nombre.",
+        description: "No se ingresó un nuevo nombre o el diálogo fue cancelado (posiblemente por el navegador).",
       });
       return;
     }
