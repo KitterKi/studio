@@ -176,11 +176,10 @@ export default function FavoritesPage() {
               <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Toca un objeto para buscarlo online.
               </DialogDescription>
-              {/* El botón X de cierre explícito ha sido eliminado. DialogContent lo provee por defecto. */}
             </DialogHeader>
             
             <div className="grid md:grid-cols-2 gap-0 flex-grow min-h-0">
-              <div className="relative w-full md:h-full p-4 md:border-r flex items-center justify-center bg-muted/30 order-first md:order-none">
+              <div className="relative w-full p-4 md:border-r flex items-center justify-center bg-muted/30 order-first md:order-none">
                 <Image
                   src={selectedFavorite.redesignedImage}
                   alt={`Habitación rediseñada: ${selectedFavorite.title}`}
@@ -248,4 +247,5 @@ export default function FavoritesPage() {
     
 
       
+
 
