@@ -13,7 +13,7 @@ export interface User {
 
 export interface FavoriteItem {
   id: string;
-  originalImage: string;
+  originalImage: string; // This will be an empty string in localStorage for favorites
   redesignedImage: string;
   title: string;
   style: string;
@@ -70,18 +70,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           localStorage.setItem(`lastRedesignDate_${parsedUser.id}`, today);
         }
       }
-      const storedFavorites = localStorage.getItem('userFavorites'); // Favorites are currently global
+      const storedFavorites = localStorage.getItem('userFavorites');
       if (storedFavorites) {
         setFavorites(JSON.parse(storedFavorites).map((fav: FavoriteItem) => ({
           ...fav,
+          originalImage: fav.originalImage || '', // Ensure originalImage is at least an empty string
           createdAt: new Date(fav.createdAt)
         })));
       }
     } catch (error) {
-      console.error("Error loading from localStorage", error);
+      console.error("Error cargando desde localStorage", error);
       localStorage.removeItem('authUser');
       localStorage.removeItem('userFavorites');
-      // Clear redesign counts if auth load fails
       if (user) {
         localStorage.removeItem(`redesignCount_${user.id}`);
         localStorage.removeItem(`lastRedesignDate_${user.id}`);
@@ -89,9 +89,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []); // Initial load
+  }, []); 
 
-  // Effect to update redesign counts when user changes (e.g., logs in)
   useEffect(() => {
     if (user) {
       const today = getTodayDateString();
@@ -102,14 +101,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setDailyRedesignCount(parseInt(storedCount, 10));
         setLastRedesignTrackDate(today);
       } else {
-        // New day or new user, reset count
         setDailyRedesignCount(0);
         setLastRedesignTrackDate(today);
         localStorage.setItem(`redesignCount_${user.id}`, '0');
         localStorage.setItem(`lastRedesignDate_${user.id}`, today);
       }
     } else {
-      // No user, reset local state
       setDailyRedesignCount(0);
       setLastRedesignTrackDate(null);
     }
@@ -119,11 +116,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = useCallback(async (email: string, _pass: string) => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
-    const mockUser: User = { id: 'mock-user-id-' + email, email, name: email.split('@')[0] }; // Use email in ID for consistency
+    const mockUser: User = { id: 'mock-user-id-' + email, email, name: email.split('@')[0] };
     setUser(mockUser);
     localStorage.setItem('authUser', JSON.stringify(mockUser));
     
-    // Initialize/reset redesign counts for the new user
     const today = getTodayDateString();
     setDailyRedesignCount(0);
     setLastRedesignTrackDate(today);
@@ -143,7 +139,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setFavorites([]); 
     localStorage.setItem('userFavorites', JSON.stringify([]));
 
-    // Initialize/reset redesign counts for the new user
     const today = getTodayDateString();
     setDailyRedesignCount(0);
     setLastRedesignTrackDate(today);
@@ -155,27 +150,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [router]);
 
   const logout = useCallback(() => {
-    if (user) { // Clear user-specific data before clearing user object
+    if (user) { 
       localStorage.removeItem(`redesignCount_${user.id}`);
       localStorage.removeItem(`lastRedesignDate_${user.id}`);
     }
     setUser(null);
     localStorage.removeItem('authUser');
-    // Optionally clear global favorites: 
-    // setFavorites([]); 
-    // localStorage.removeItem('userFavorites');
     router.push('/auth/signin');
   }, [user, router]);
 
   const addFavorite = useCallback((item: Omit<FavoriteItem, 'id' | 'createdAt'>) => {
     setFavorites(prevFavorites => {
       const newFavorite: FavoriteItem = {
-        ...item,
+        originalImage: '', // Don't store full original image data URI
+        redesignedImage: item.redesignedImage,
+        title: item.title,
+        style: item.style,
         id: `fav-${Date.now()}`,
         createdAt: new Date(),
       };
       const updatedFavorites = [newFavorite, ...prevFavorites];
-      localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+      try {
+        localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites));
+      } catch (e) {
+        console.error("Error guardando favoritos en localStorage (posiblemente cuota excedida aún):", e);
+        // Potentially notify user or implement a more robust queue/trimming strategy here
+        // For now, we'll just log the error. If this still happens, redesignedImage is too big.
+        if (updatedFavorites.length > 1) { // Attempt to save without the newest if it failed
+            const trimmedFavorites = updatedFavorites.slice(1);
+             try {
+                localStorage.setItem('userFavorites', JSON.stringify(trimmedFavorites));
+                // TODO: Consider notifying user that the save failed due to space
+                return trimmedFavorites; // Return the state without the problematic item
+             } catch (e2) {
+                console.error("Error guardando favoritos recortados:", e2);
+             }
+        }
+        return prevFavorites; // Return previous state if all fails
+      }
       return updatedFavorites;
     });
   }, []);
@@ -192,7 +204,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return false;
     const today = getTodayDateString();
     if (lastRedesignTrackDate !== today) {
-      // If date changed, user has full quota, effectively resetting count for the new day logic in record.
       return true; 
     }
     return dailyRedesignCount < MAX_REDESIGNS_PER_DAY;
@@ -204,8 +215,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let newCount = dailyRedesignCount;
 
     if (lastRedesignTrackDate !== today) {
-      newCount = 1; // First redesign of the new day
-      setLastRedesignTrackDate(today); // Update track date
+      newCount = 1; 
+      setLastRedesignTrackDate(today); 
       localStorage.setItem(`lastRedesignDate_${user.id}`, today);
     } else {
       newCount = dailyRedesignCount + 1;
@@ -220,7 +231,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return 0;
     const today = getTodayDateString();
     if (lastRedesignTrackDate !== today) {
-      return MAX_REDESIGNS_PER_DAY; // Full quota if date is different
+      return MAX_REDESIGNS_PER_DAY; 
     }
     const remaining = MAX_REDESIGNS_PER_DAY - dailyRedesignCount;
     return remaining < 0 ? 0 : remaining;
