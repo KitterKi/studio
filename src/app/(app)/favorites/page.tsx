@@ -6,7 +6,7 @@ import type { FavoriteItem } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import DesignCard from '@/components/DesignCard';
 import { Button } from '@/components/ui/button';
-import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2, X, Edit3 } from 'lucide-react';
+import { Heart, Trash2, Share2, ExternalLink, Info, Search, Wand2, X, Edit3, Check } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
@@ -34,6 +34,11 @@ export default function FavoritesPage() {
   const [isLoadingSimilarItems, setIsLoadingSimilarItems] = useState(false);
   const [similarItems, setSimilarItems] = useState<IdentifiedItem[]>([]);
 
+  // State for inline editing
+  const [editingFavoriteId, setEditingFavoriteId] = useState<string | null>(null);
+  const [currentEditTitle, setCurrentEditTitle] = useState<string>('');
+
+
   if (authLoading) {
     return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Cargando favoritos..." size={16} /></div>;
   }
@@ -53,6 +58,8 @@ export default function FavoritesPage() {
   }
 
   const handleShareFavorite = (imageUrl: string, title: string) => {
+    if (editingFavoriteId) return; // Prevent sharing while editing title
+
     if (navigator.clipboard) {
       navigator.clipboard.writeText(`¡Mira este rediseño de habitación: ${title}! Imagen: ${imageUrl}`)
         .then(() => {
@@ -68,6 +75,8 @@ export default function FavoritesPage() {
   };
 
   const handleOpenFindItemsModal = async (favorite: FavoriteItem) => {
+    if (editingFavoriteId) return; // Prevent opening modal while editing title
+
     setSelectedFavorite(favorite);
     setIsModalOpen(true);
     setIsLoadingSimilarItems(true);
@@ -104,38 +113,30 @@ export default function FavoritesPage() {
     }
   };
 
-  const handleEditTitle = (favorite: FavoriteItem) => {
-    console.log('[FavoritesPage] handleEditTitle called for favorite ID:', favorite.id, 'Current title:', favorite.title);
+  const handleStartEdit = (favorite: FavoriteItem) => {
+    setEditingFavoriteId(favorite.id);
+    setCurrentEditTitle(favorite.title);
+  };
 
-    toast({
-        title: "Editando Nombre",
-        description: "Por favor, espera el diálogo del navegador.",
-        duration: 2000,
-    });
-
-    const newTitle = window.prompt("Ingresa el nuevo nombre para tu rediseño:", favorite.title);
-    console.log('[FavoritesPage] window.prompt returned:', newTitle);
-
-
-    if (newTitle === null) {
-      // User cancelled the prompt or browser suppressed it
-      console.log('[FavoritesPage] Prompt cancelled by user (or suppressed by browser).');
-      toast({
-        title: "Edición Cancelada",
-        description: "No se ingresó un nuevo nombre o el diálogo fue cancelado (posiblemente por el navegador).",
-      });
-      return;
-    }
-
-    if (newTitle.trim() !== "") {
-      console.log('[FavoritesPage] New title is valid, updating to:', newTitle.trim());
-      updateFavoriteTitle(favorite.id, newTitle.trim());
-      toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${newTitle.trim()}".` });
-    } else {
-      // newTitle is an empty string (e.g., user cleared the text and pressed OK)
-      console.log('[FavoritesPage] New title is an empty string.');
+  const handleSaveEdit = () => {
+    if (editingFavoriteId && currentEditTitle.trim() !== "") {
+      updateFavoriteTitle(editingFavoriteId, currentEditTitle.trim());
+      toast({ title: "Nombre Actualizado", description: `El rediseño ahora se llama "${currentEditTitle.trim()}".` });
+    } else if (editingFavoriteId) { // Title was cleared
       toast({ variant: "destructive", title: "Nombre Inválido", description: "El nombre no puede estar vacío."});
+      // Optionally, do not exit edit mode if title is invalid, allowing user to correct or cancel.
+      // For now, we exit edit mode as per original logic if prompt was used.
+      setEditingFavoriteId(null); 
+      setCurrentEditTitle('');
+      return; 
     }
+    setEditingFavoriteId(null);
+    setCurrentEditTitle('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingFavoriteId(null);
+    setCurrentEditTitle('');
   };
 
   return (
@@ -162,45 +163,75 @@ export default function FavoritesPage() {
                   likes={fav.likes}
                   comments={fav.comments}
                   isLikedByCurrentUser={fav.userHasLiked}
-                  onLikeClick={() => toggleUserLike(fav.id)}
+                  onLikeClick={() => !editingFavoriteId && toggleUserLike(fav.id)} // Prevent like while editing
                   dataAiHint="habitación rediseñada"
-                  onImageClick={() => handleOpenFindItemsModal(fav)}
-                  isImageClickable={true}
+                  onImageClick={() => editingFavoriteId !== fav.id && handleOpenFindItemsModal(fav)}
+                  isImageClickable={editingFavoriteId !== fav.id}
+                  
+                  isEditing={editingFavoriteId === fav.id}
+                  editTitleValue={editingFavoriteId === fav.id ? currentEditTitle : fav.title}
+                  onEditTitleChange={setCurrentEditTitle}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={handleCancelEdit}
                 />
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-2">
-                   <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                        console.log('EDIT BUTTON CLICKED directly on fav ID:', fav.id);
-                        handleEditTitle(fav);
-                      }
-                    }
-                    aria-label="Editar nombre"
-                    className="bg-background/80 hover:bg-accent text-foreground"
-                    title="Editar nombre"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={() => handleShareFavorite(fav.redesignedImage, fav.title || `Rediseño en ${fav.style}`)}
-                    aria-label="Compartir diseño"
-                    className="bg-primary/80 hover:bg-primary text-primary-foreground"
-                    title="Compartir diseño"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => removeFavorite(fav.id)}
-                    aria-label="Eliminar de favoritos"
-                    title="Eliminar de favoritos"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {editingFavoriteId === fav.id ? (
+                    <>
+                      <Button
+                        variant="default"
+                        size="icon"
+                        onClick={handleSaveEdit}
+                        aria-label="Guardar nombre"
+                        className="bg-green-500/90 hover:bg-green-600 text-white rounded-full w-8 h-8"
+                        title="Guardar nombre"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={handleCancelEdit}
+                        aria-label="Cancelar edición"
+                        className="bg-red-500/90 hover:bg-red-600 text-white rounded-full w-8 h-8"
+                        title="Cancelar edición"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleStartEdit(fav)}
+                        aria-label="Editar nombre"
+                        className="bg-background/80 hover:bg-accent text-foreground rounded-full w-8 h-8"
+                        title="Editar nombre"
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                       <Button
+                        variant="default"
+                        size="icon"
+                        onClick={() => handleShareFavorite(fav.redesignedImage, fav.title || `Rediseño en ${fav.style}`)}
+                        aria-label="Compartir diseño"
+                        className="bg-primary/80 hover:bg-primary text-primary-foreground rounded-full w-8 h-8"
+                        title="Compartir diseño"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => removeFavorite(fav.id)}
+                        aria-label="Eliminar de favoritos"
+                        className="rounded-full w-8 h-8"
+                        title="Eliminar de favoritos"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

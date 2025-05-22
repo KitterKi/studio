@@ -5,11 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, Heart, MoreHorizontal } from 'lucide-react'; // Removed Edit3 from here
+import { MessageCircle, Heart, MoreHorizontal, Edit3, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import React from 'react';
 import type { Comment } from '@/app/(app)/community/page';
+import { Input } from '@/components/ui/input'; // Added Input import
 
 export interface DesignCardProps {
   id: string;
@@ -28,7 +29,14 @@ export interface DesignCardProps {
   isLikedByCurrentUser?: boolean;
   onLikeClick?: (() => void) | null;
   onOpenComments?: () => void;
-  // onEditTitle?: () => void; // Removed prop
+  
+  // Inline editing props
+  isEditing?: boolean;
+  editTitleValue?: string;
+  onEditTitleChange?: (newTitle: string) => void;
+  // onStartEdit prop is no longer needed here as it's handled by overlay button in parent
+  onSaveEdit?: () => void;
+  onCancelEdit?: () => void;
 }
 
 export default function DesignCard({
@@ -48,7 +56,11 @@ export default function DesignCard({
   isLikedByCurrentUser = false,
   onLikeClick,
   onOpenComments,
-  // onEditTitle, // Removed prop
+  isEditing = false,
+  editTitleValue,
+  onEditTitleChange,
+  onSaveEdit,
+  onCancelEdit,
 }: DesignCardProps) {
 
   const displayCommentCount = commentsData ? commentsData.length : comments;
@@ -60,8 +72,6 @@ export default function DesignCard({
         return [parseInt(match[1], 10), parseInt(match[2], 10)];
       }
     }
-    // Default or fallback dimensions if parsing fails or URL is not placehold.co
-    // These are just aspect ratio guides if we can't parse, next/image with fill will handle actual rendering.
     return [600, 400];
   }, [imageUrl]);
 
@@ -71,15 +81,15 @@ export default function DesignCard({
         className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative break-inside-avoid-column"
       >
         <div
-          className={cn("w-full bg-muted/0", (isImageClickable || onOpenComments) && "cursor-pointer")} // Removed bg-muted
+          className={cn("w-full bg-muted/0", (isImageClickable || onOpenComments) && "cursor-pointer")}
           onClick={onOpenComments ? onOpenComments : (isImageClickable ? onImageClick : undefined)}
         >
           <Image
             src={imageUrl}
             alt={title || 'Diseño de usuario'}
-            width={imgWidth} // Use parsed or default width
-            height={imgHeight} // Use parsed or default height
-            className="object-cover w-full h-auto block" // w-full h-auto for responsiveness
+            width={imgWidth}
+            height={imgHeight}
+            className="object-cover w-full h-auto block"
             data-ai-hint={dataAiHint || "diseño de interiores"}
             priority={index < 4}
           />
@@ -138,9 +148,25 @@ export default function DesignCard({
   // Default variant (for Favorites page etc.)
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
-      <CardHeader className="p-4 flex justify-between items-center">
-        <CardTitle className="text-lg truncate">{title}</CardTitle>
-        {/* Removed Edit3 button from here */}
+      <CardHeader className="p-4 flex-grow-0">
+        {isEditing && onEditTitleChange ? (
+          <Input
+            type="text"
+            value={editTitleValue}
+            onChange={(e) => onEditTitleChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && onSaveEdit) {
+                e.preventDefault(); // Prevent form submission if any
+                onSaveEdit();
+              }
+              if (e.key === 'Escape' && onCancelEdit) onCancelEdit();
+            }}
+            autoFocus
+            className="text-lg font-semibold leading-none tracking-tight h-auto p-0 border-0 focus-visible:ring-0 shadow-none bg-transparent ring-offset-0 focus-visible:ring-offset-0"
+          />
+        ) : (
+          <CardTitle className="text-lg truncate">{title}</CardTitle>
+        )}
       </CardHeader>
       <CardContent
         className={cn("p-0 flex-grow", isImageClickable && "cursor-pointer")}
@@ -157,7 +183,7 @@ export default function DesignCard({
           />
         </div>
       </CardContent>
-      <CardFooter className="p-4 flex justify-between items-center bg-card">
+      <CardFooter className="p-4 flex justify-between items-center bg-card flex-grow-0">
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={userAvatarUrl || `https://placehold.co/40x40.png?text=${userName?.substring(0,1)}`} alt={userName || 'Avatar de usuario'} data-ai-hint="profile avatar" />
