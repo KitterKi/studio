@@ -74,6 +74,7 @@ const findSimilarItemsFlow = ai.defineFlow(
     outputSchema: FindSimilarItemsOutputSchema,
   },
   async (input) => {
+    console.log('[findSimilarItemsFlow] Flow initiated. Input data URI length:', input.imageDataUri?.length);
     try {
       console.log('[findSimilarItemsFlow] Attempting to call AI prompt...');
       const {output} = await prompt(input); // This is the call to the AI model
@@ -94,25 +95,40 @@ const findSimilarItemsFlow = ai.defineFlow(
         if (error.cause) {
             console.error("Error Cause:", error.cause);
         }
-        if (error.details) { // Specific to GoogleGenerativeAIError
-             console.error("Error Details (from Google AI):", error.details);
+        // Check if error.details exists and is an object, then stringify it.
+        // Useful for GoogleGenerativeAIError which might have complex 'details'.
+        if (error.details && typeof error.details === 'object') {
+             console.error("Error Details (from Google AI):", JSON.stringify(error.details, null, 2));
+        } else if (error.details) {
+             console.error("Error Details (from Google AI, primitive):", error.details);
         }
-        console.error("Full Error Object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+        
+        // Log the full error object in a more readable way, handling potential circular references
+        try {
+            const errorProperties = Object.getOwnPropertyNames(error);
+            const simplifiedError: Record<string, any> = {};
+            errorProperties.forEach(prop => {
+                simplifiedError[prop] = error[prop];
+            });
+            console.error("Full Error Object (simplified):", JSON.stringify(simplifiedError, null, 2));
+        } catch (e) {
+            console.error("Could not stringify the full error object due to circular references or other issues. Logging raw error object:", error);
+        }
         console.error("-----------------------------------------------------");
 
         let errorMessage = 'Error en el flujo de IA al buscar artículos.';
         if (error.message) {
-            // Simplificar mensaje de error para el cliente
             if (String(error.message).includes("fetch") || String(error.message).includes("502") || String(error.message).includes("503") || String(error.message).toLowerCase().includes("overloaded") || String(error.message).toLowerCase().includes("unavailable")) {
                 errorMessage = "El servicio de IA no está disponible o está experimentando problemas. Por favor, inténtalo de nuevo más tarde.";
             } else if (String(error.message).toLowerCase().includes("api key") || String(error.message).includes("401") || String(error.message).includes("403")) {
                 errorMessage = "Error de autenticación con el servicio de IA. Verifica la configuración.";
             } else {
-                errorMessage = "Ocurrió un error inesperado al procesar tu solicitud."; // Mensaje genérico para otros errores
+                errorMessage = `Ocurrió un error inesperado: ${error.message}`; 
             }
+        } else if (error.name) {
+            errorMessage = `Ocurrió un error: ${error.name}`;
         }
-        // Re-throw a new error with a potentially more user-friendly message
-        // The client-side toast will pick up this message.
+        
         throw new Error(errorMessage);
     }
   }
