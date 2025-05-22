@@ -1,18 +1,20 @@
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Manrope } from 'next/font/google'; // Cambiado de Inter a Manrope
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/AuthContext';
-import { APP_NAME } from '@/lib/constants'; // Import APP_NAME
+import { APP_NAME } from '@/lib/constants';
 
-const inter = Inter({
+// Configuración de la nueva fuente Manrope
+const manrope = Manrope({
   subsets: ['latin'],
-  variable: '--font-geist-sans',
+  variable: '--font-manrope', // Nueva variable CSS para Manrope
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: APP_NAME, // Use APP_NAME
+  title: APP_NAME,
   description: 'Rediseña tu habitación con IA',
 };
 
@@ -44,7 +46,8 @@ export default function RootLayout({
       <head>
         <InitializeTheme />
       </head>
-      <body className={`${inter.variable} antialiased flex flex-col h-full bg-background text-foreground`}>
+      {/* Aplicada la nueva variable de fuente */}
+      <body className={`${manrope.variable} font-sans antialiased flex flex-col h-full bg-background text-foreground`}>
         <AuthProvider>
           {children}
           <Toaster />

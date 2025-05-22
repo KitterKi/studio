@@ -4,16 +4,18 @@
 import DesignCard, { type DesignCardProps } from '@/components/DesignCard';
 import { useAuth } from '@/hooks/useAuth'; 
 
-// Adjusted MOCK_DESIGNS: removed likes, comments as they are not shown in communityFeed variant. Title kept for now as default variant might use it.
+// Adjusted MOCK_DESIGNS with more varied aspect ratios and descriptive hints
 const MOCK_DESIGNS: Omit<DesignCardProps, 'variant' | 'likes' | 'comments' | 'id' | 'onImageClick' | 'isImageClickable'>[] = [
-  { imageUrl: 'https://placehold.co/600x800.png', title: 'Transformación Moderna de Sala', userName: 'Alicia M.', userAvatarUrl: 'https://placehold.co/40x40.png?text=AM', dataAiHint: "sala moderna" },
-  { imageUrl: 'https://placehold.co/600x450.png', title: 'Oasis Rústico de Dormitorio', userName: 'Bob C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=BC', dataAiHint: "dormitorio rustico" },
-  { imageUrl: 'https://placehold.co/600x700.png', title: 'Concepto de Cocina Minimalista', userName: 'Carolina D.', userAvatarUrl: 'https://placehold.co/40x40.png?text=CD', dataAiHint: "cocina minimalista" },
-  { imageUrl: 'https://placehold.co/600x500.png', title: 'Retiro Bohemio en Balcón', userName: 'David C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=DC', dataAiHint: "balcon bohemio" },
-  { imageUrl: 'https://placehold.co/600x750.png', title: 'Oficina en Casa Industrial', userName: 'Eva H.', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', dataAiHint: "oficina industrial" },
-  { imageUrl: 'https://placehold.co/600x400.png', title: 'Baño Inspirado en la Costa', userName: 'Frank G.', userAvatarUrl: 'https://placehold.co/40x40.png?text=FG', dataAiHint: "baño costero" },
-  { imageUrl: 'https://placehold.co/600x600.png', title: 'Comedor Escandinavo', userName: 'Gloria P.', userAvatarUrl: 'https://placehold.co/40x40.png?text=GP', dataAiHint: "comedor escandinavo" },
-  { imageUrl: 'https://placehold.co/600x850.png', title: 'Terraza Japandi', userName: 'Hector L.', userAvatarUrl: 'https://placehold.co/40x40.png?text=HL', dataAiHint: "terraza japandi" },
+  { imageUrl: 'https://placehold.co/600x400.png', title: 'Sala Moderna Espaciosa', userName: 'Alicia M.', userAvatarUrl: 'https://placehold.co/40x40.png?text=AM', dataAiHint: "modern living room" },
+  { imageUrl: 'https://placehold.co/500x750.png', title: 'Dormitorio Rústico Acogedor', userName: 'Bob C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=BC', dataAiHint: "rustic bedroom" },
+  { imageUrl: 'https://placehold.co/700x500.png', title: 'Cocina Minimalista y Luminosa', userName: 'Carolina D.', userAvatarUrl: 'https://placehold.co/40x40.png?text=CD', dataAiHint: "minimalist kitchen" },
+  { imageUrl: 'https://placehold.co/450x600.png', title: 'Balcón Bohemio con Plantas', userName: 'David C.', userAvatarUrl: 'https://placehold.co/40x40.png?text=DC', dataAiHint: "bohemian balcony" },
+  { imageUrl: 'https://placehold.co/800x600.png', title: 'Oficina Industrial en Casa', userName: 'Eva H.', userAvatarUrl: 'https://placehold.co/40x40.png?text=EH', dataAiHint: "industrial home office" },
+  { imageUrl: 'https://placehold.co/600x450.png', title: 'Baño Costero Relajante', userName: 'Frank G.', userAvatarUrl: 'https://placehold.co/40x40.png?text=FG', dataAiHint: "coastal bathroom" },
+  { imageUrl: 'https://placehold.co/550x700.png', title: 'Comedor Escandinavo Simple', userName: 'Gloria P.', userAvatarUrl: 'https://placehold.co/40x40.png?text=GP', dataAiHint: "scandinavian dining" },
+  { imageUrl: 'https://placehold.co/750x550.png', title: 'Terraza Japandi Tranquila', userName: 'Hector L.', userAvatarUrl: 'https://placehold.co/40x40.png?text=HL', dataAiHint: "japandi terrace" },
+  { imageUrl: 'https://placehold.co/650x800.png', title: 'Estudio Art Deco Elegante', userName: 'Ines V.', userAvatarUrl: 'https://placehold.co/40x40.png?text=IV', dataAiHint: "art deco study" },
+  { imageUrl: 'https://placehold.co/500x500.png', title: 'Patio Maximalista Vibrante', userName: 'Juan K.', userAvatarUrl: 'https://placehold.co/40x40.png?text=JK', dataAiHint: "maximalist patio" },
 ];
 
 
@@ -32,9 +34,10 @@ export default function CommunityPage() {
       </div>
 
       {MOCK_DESIGNS.length > 0 ? (
-        <div className="gap-4 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 space-y-4 pb-4"> 
+        // Cambiado a un layout de grid de dos columnas en pantallas pequeñas y más en grandes
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4"> 
           {MOCK_DESIGNS.map((design, index) => (
-            <div key={`design-${index}`} className="break-inside-avoid">
+            <div key={`design-${index}`} className="break-inside-avoid"> {/* break-inside-avoid es más para masonry, pero no daña aquí */}
               <DesignCard
                 id={`design-${index}`}
                 imageUrl={design.imageUrl}
