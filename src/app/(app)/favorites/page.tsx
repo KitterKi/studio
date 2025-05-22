@@ -204,9 +204,7 @@ export default function FavoritesPage() {
                       <Search className="h-5 w-5 text-primary"/>
                       {item.itemName}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {item.itemDescription}
-                    </p>
+                    {/* Descripción eliminada de la UI */}
                     <Button
                       variant="default"
                       size="sm"
