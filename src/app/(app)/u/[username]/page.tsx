@@ -51,11 +51,10 @@ export default function UserProfilePage() {
   const { username, avatarUrl, postsCount, followingCount, bio, posts } = userProfileData;
 
   const handleToggleFollow = () => {
-    if (!loggedInUser) return; // Should not happen if button is enabled
+    if (!loggedInUser) return; 
 
-    toggleFollow(username); // Update context
+    toggleFollow(username); 
     
-    // Update local state for immediate UI feedback
     const newFollowingState = !isCurrentlyFollowing;
     setIsCurrentlyFollowing(newFollowingState);
     setDisplayFollowersCount(prevCount => newFollowingState ? prevCount + 1 : prevCount -1);
@@ -71,20 +70,18 @@ export default function UserProfilePage() {
     return name.substring(0, 2).toUpperCase();
   };
 
-  // Prevent hydration mismatch for initial follower count if loggedInUser modifies it
   useEffect(() => {
     if (userProfileData) {
         let initialCount = userProfileData.followersCount;
         if (loggedInUser && isFollowing(userProfileData.username) && !isCurrentlyFollowing) {
             // This case implies the user followed then refreshed, adjust initial display if needed
-            // but mostly relies on the main useEffect for consistency
         } else if (loggedInUser && !isFollowing(userProfileData.username) && isCurrentlyFollowing) {
             // User unfollowed then refreshed
         }
          setDisplayFollowersCount(initialCount + (isFollowing(userProfileData.username) && loggedInUser && loggedInUser.name !== usernameParam ? 1 : 0) - (!isFollowing(userProfileData.username) && loggedInUser && loggedInUser.name !== usernameParam && displayFollowersCount > userProfileData.followersCount ? 1 : 0) );
 
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- This effect is tricky due to initial state
+  // eslint-disable-next-line react-hooks/exhaustive-deps 
   }, [userProfileData?.username, loggedInUser?.id]);
 
 
@@ -102,7 +99,7 @@ export default function UserProfilePage() {
         <div className="flex flex-col items-center sm:items-start space-y-3 flex-grow">
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
             <h1 className="text-3xl font-light text-foreground truncate">{username}</h1>
-            {loggedInUser && loggedInUser.name !== username && (
+            {loggedInUser && loggedInUser.name !== username && ( // Ensure loggedInUser.name exists if checking against username
               <div className="flex gap-2">
                 <Button
                   variant={isCurrentlyFollowing ? "secondary" : "default"}
@@ -161,10 +158,15 @@ export default function UserProfilePage() {
         {posts.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-4 mt-6">
             {posts.map((post) => (
-              <div key={post.id} className="group relative aspect-square overflow-hidden cursor-pointer">
+              <Link 
+                href={`/community?openDesignId=${post.id}`}
+                key={post.id} 
+                className="group relative aspect-square overflow-hidden"
+                title={`Ver detalles de la publicación de ${username}`}
+              >
                 <Image
                   src={post.imageUrl}
-                  alt={`Publicación de ${username}`}
+                  alt={`Publicación de ${username}: ${post.id}`}
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -176,7 +178,7 @@ export default function UserProfilePage() {
                     <span className="flex items-center gap-1"><MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 fill-white" /> {post.comments}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (

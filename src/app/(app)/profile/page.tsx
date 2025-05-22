@@ -15,7 +15,7 @@ import { Wand2 } from 'lucide-react';
 
 
 export default function ProfilePage() {
-  const { user, isLoading, logout, favorites, followingCount } = useAuth(); // Added followingCount
+  const { user, isLoading, logout, favorites, followingCount } = useAuth(); 
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Cargando perfil..." size={16} /></div>;
@@ -41,9 +41,7 @@ export default function ProfilePage() {
     return 'U';
   }
 
-  // Mock stats for Instagram look - followers is still mock
   const mockFollowers = Math.floor(Math.random() * 1000) + 50;
-  // const mockFollowing = Math.floor(Math.random() * 500) + 20; // Replaced by actual followingCount
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-8">
@@ -73,7 +71,6 @@ export default function ProfilePage() {
           </div>
           <p className="text-muted-foreground text-center sm:text-left">{user.email}</p>
           
-          {/* Stats Section */}
           <div className="flex gap-4 sm:gap-6 pt-2 text-center sm:text-left">
             <div>
               <span className="font-semibold text-lg">{favorites.length}</span>
@@ -84,7 +81,7 @@ export default function ProfilePage() {
               <span className="text-muted-foreground ml-1">seguidores</span>
             </div>
             <div>
-              <span className="font-semibold text-lg">{followingCount.toLocaleString()}</span> {/* Changed to actual followingCount */}
+              <span className="font-semibold text-lg">{followingCount.toLocaleString()}</span> 
               <span className="text-muted-foreground ml-1">siguiendo</span>
             </div>
           </div>
@@ -110,7 +107,12 @@ export default function ProfilePage() {
         {favorites.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-4 mt-6">
             {favorites.map((fav) => (
-              <Link href="/favorites" key={fav.id} className="group relative aspect-square overflow-hidden" title={`Ver detalle de "${fav.title || 'Diseño'}" en Favoritos`}>
+              <Link 
+                href={`/community?openDesignId=${fav.id}`} 
+                key={fav.id} 
+                className="group relative aspect-square overflow-hidden" 
+                title={`Ver detalles de "${fav.title || 'Diseño'}"`}
+              >
                 <Image
                   src={fav.redesignedImage}
                   alt={fav.title || `Diseño ${fav.style}`}

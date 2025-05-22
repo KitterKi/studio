@@ -3,6 +3,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation'; // Added useRouter, useSearchParams
 import DesignCard, { type DesignCardProps as FullDesignCardProps } from '@/components/DesignCard';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -27,15 +28,12 @@ export interface Comment {
   text: string;
   userName: string;
   userAvatarUrl: string;
-  timestamp: number; // Store as Unix timestamp (ms)
+  timestamp: number; 
 }
 
-// Redefine Design type for this page, including commentsData
 interface CommunityDesign extends Omit<FullDesignCardProps, 'variant' | 'comments' | 'onImageClick' | 'isImageClickable' | 'onOpenComments' | 'commentsData'> {
   commentsData: Comment[];
-  // 'comments' prop will be derived dynamically as commentsData.length
 }
-
 
 const INITIAL_MOCK_DESIGNS_RAW: Omit<CommunityDesign, 'commentsData'>[] = [
   { id: 'comm-1', imageUrl: 'https://placehold.co/600x800.png', title: 'Sala de Estar Moderna y Espaciosa', userName: 'Alicia M.', userAvatarUrl: 'https://placehold.co/40x40.png?text=AM', dataAiHint: "living room", likes: 120, isLikedByCurrentUser: false },
@@ -63,11 +61,11 @@ const MOCK_COMMENTS_EXAMPLES: Omit<Comment, 'id' | 'timestamp'>[] = [
 
 const INITIAL_MOCK_DESIGNS: CommunityDesign[] = INITIAL_MOCK_DESIGNS_RAW.map((design, index) => ({
   ...design,
-  commentsData: index < 3 ? // Add some mock comments to the first few designs
+  commentsData: index < 3 ? 
     MOCK_COMMENTS_EXAMPLES.slice(0, (index % 3) + 1).map((comment, cIndex) => ({
       ...comment,
       id: `comment-${design.id}-${cIndex}`,
-      timestamp: Date.now() - (cIndex * 1000 * 60 * 5) // Stagger timestamps
+      timestamp: Date.now() - (cIndex * 1000 * 60 * 5) 
     }))
     : [],
 }));
@@ -84,6 +82,22 @@ export default function CommunityPage() {
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [commentingDesign, setCommentingDesign] = useState<CommunityDesign | null>(null);
   const [newCommentText, setNewCommentText] = useState('');
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const designIdToOpen = searchParams.get('openDesignId');
+    if (designIdToOpen) {
+      const designToSelect = designs.find(d => d.id === designIdToOpen);
+      if (designToSelect) {
+        handleOpenComments(designToSelect);
+        // Optional: Clear the query param after opening to prevent re-opening on refresh if modal is closed
+        // router.replace('/community', { scroll: false }); 
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, designs]); // Add designs to dependency array
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
@@ -284,4 +298,3 @@ export default function CommunityPage() {
     </>
   );
 }
-
