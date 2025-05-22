@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import RoomRedesignForm from '@/components/RoomRedesignForm';
 import RedesignPreview from '@/components/RedesignPreview';
-import { redesignRoom } from '@/ai/flows/redesign-room';
+// import { redesignRoom } from '@/ai/flows/redesign-room'; // AI call commented out
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -30,30 +30,30 @@ export default function StyleMyRoomPage() {
   const [allowRedesign, setAllowRedesign] = useState(false);
 
   useEffect(() => {
-    console.log('[StyleMyRoomPage] useEffect for allowRedesign triggered.');
+    // console.log('[StyleMyRoomPage] useEffect for allowRedesign triggered.');
     if(user){
         const can = canUserRedesign();
-        console.log('[StyleMyRoomPage] User exists. canUserRedesign():', can, 'Remaining today:', remainingRedesignsToday);
+        // console.log('[StyleMyRoomPage] User exists. canUserRedesign():', can, 'Remaining today:', remainingRedesignsToday);
         setAllowRedesign(can);
     } else {
-      console.log('[StyleMyRoomPage] No user. Setting allowRedesign to false.');
+      // console.log('[StyleMyRoomPage] No user. Setting allowRedesign to false.');
       setAllowRedesign(false);
     }
   }, [user, canUserRedesign, remainingRedesignsToday]);
 
 
   const handleRedesignSubmit = async (photoDataUri: string, style: string) => {
-    console.log('[StyleMyRoomPage] handleRedesignSubmit triggered with photo and style.');
-    console.log('[StyleMyRoomPage] Current user:', !!user, 'Current allowRedesign (state):', allowRedesign);
+    // console.log('[StyleMyRoomPage] handleRedesignSubmit triggered with photo and style.');
+    // console.log('[StyleMyRoomPage] Current user:', !!user, 'Current allowRedesign (state):', allowRedesign);
 
     if (!user) {
-      console.log('[StyleMyRoomPage] No user authenticated. Toasting and returning.');
+      // console.log('[StyleMyRoomPage] No user authenticated. Toasting and returning.');
       toast({ variant: "destructive", title: "No Has Iniciado Sesión", description: "Por favor, inicia sesión para rediseñar habitaciones." });
       return;
     }
 
     if (!canUserRedesign()) {
-      console.log('[StyleMyRoomPage] Redesign not allowed by canUserRedesign() from context. Toasting and returning.');
+      // console.log('[StyleMyRoomPage] Redesign not allowed by canUserRedesign() from context. Toasting and returning.');
       toast({
         variant: "destructive",
         title: "Límite Diario Alcanzado",
@@ -62,40 +62,45 @@ export default function StyleMyRoomPage() {
       return;
     }
 
-    console.log('[StyleMyRoomPage] Proceeding with redesign. Setting loading states...');
+    // console.log('[StyleMyRoomPage] Proceeding with redesign. Setting loading states...');
     setIsLoadingRedesign(true);
     setOriginalImage(photoDataUri);
     setRedesignedImage(null);
     setCurrentStyle(style);
 
     try {
-      console.log('[StyleMyRoomPage] Calling redesignRoom AI flow...');
-      const result = await redesignRoom({ photoDataUri, style });
-      console.log('[StyleMyRoomPage] redesignRoom AI flow result:', result);
+      // console.log('[StyleMyRoomPage] Calling MOCK redesignRoom AI flow...');
+      // Simulate AI call
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+      
+      const mockRedesignedPhotoDataUri = `https://placehold.co/800x600.png?text=Rediseño+Simulado+Estilo+${style.replace(/\s+/g, '+')}`;
+      // const result = await redesignRoom({ photoDataUri, style }); // Actual AI call commented out
 
-      if (result.redesignedPhotoDataUri) {
-        console.log('[StyleMyRoomPage] Redesign successful. Updating UI and recording attempt.');
-        setRedesignedImage(result.redesignedPhotoDataUri);
-        recordRedesignAttempt();
+      // console.log('[StyleMyRoomPage] MOCK redesignRoom AI flow result:', mockRedesignedPhotoDataUri);
+
+      if (mockRedesignedPhotoDataUri) {
+        // console.log('[StyleMyRoomPage] Redesign successful. Updating UI and recording attempt.');
+        setRedesignedImage(mockRedesignedPhotoDataUri);
+        recordRedesignAttempt(); // Still record attempt for daily limit
         const canStillRedesign = canUserRedesign();
-        console.log('[StyleMyRoomPage] After recording attempt, canUserRedesign():', canStillRedesign);
+        // console.log('[StyleMyRoomPage] After recording attempt, canUserRedesign():', canStillRedesign);
         setAllowRedesign(canStillRedesign);
         toast({
-          title: "¡Rediseño Completo!",
-          description: "Tu habitación ha sido rediseñada exitosamente.",
+          title: "¡Rediseño Simulado Completo!",
+          description: `Tu habitación ha sido rediseñada (simulación) en estilo ${style}.`,
         });
       } else {
-        console.error('[StyleMyRoomPage] AI did not return an image.');
+        // console.error('[StyleMyRoomPage] AI did not return an image.'); // Should not happen with mock
         toast({
           variant: "destructive",
-          title: "Falló el Rediseño",
-          description: "La IA no devolvió una imagen. Prueba con otra imagen o estilo.",
+          title: "Falló el Rediseño Simulado",
+          description: "La simulación de IA no devolvió una imagen.",
         });
         setRedesignedImage(null); 
       }
     } catch (error) {
-      console.error("[StyleMyRoomPage] Error during redesignRoom call or subsequent logic:", error);
-      let errorMessage = "Falló el rediseño de la habitación. Por favor, inténtalo de nuevo.";
+      // console.error("[StyleMyRoomPage] Error during MOCK redesignRoom call or subsequent logic:", error);
+      let errorMessage = "Falló el rediseño simulado de la habitación. Por favor, inténtalo de nuevo.";
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'string') {
@@ -103,21 +108,20 @@ export default function StyleMyRoomPage() {
       }
       toast({
         variant: "destructive",
-        title: "Falló el Rediseño",
+        title: "Falló el Rediseño Simulado",
         description: errorMessage,
       });
       setRedesignedImage(null);
     } finally {
-      console.log('[StyleMyRoomPage] In finally block, setting isLoadingRedesign to false.');
+      // console.log('[StyleMyRoomPage] In finally block, setting isLoadingRedesign to false.');
       setIsLoadingRedesign(false);
     }
   };
 
   const handleSaveFavorite = () => {
     if (originalImage && redesignedImage && currentStyle && user) {
-      // Pass only essential data; AuthContext will generate the title
       addFavorite({
-        originalImage, // originalImage is used in the context, will be set to '' there
+        originalImage, 
         redesignedImage,
         style: currentStyle,
       });
@@ -143,7 +147,7 @@ export default function StyleMyRoomPage() {
           Diseñador IA {APP_NAME}
         </h1>
         <p className="text-md text-muted-foreground lg:text-lg max-w-2xl mx-auto">
-          Transforma tu espacio: sube una foto, elige un estilo ¡y deja que la IA haga su magia!
+          Transforma tu espacio: sube una foto, elige un estilo ¡y deja que la IA (simulada) haga su magia!
         </p>
       </div>
 
@@ -160,7 +164,7 @@ export default function StyleMyRoomPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start max-w-6xl mx-auto">
-        <div className="md:sticky md:top-24">
+        <div className="md:sticky md:top-24 bg-card p-6 sm:p-8 rounded-xl shadow-xl">
           <RoomRedesignForm
             onSubmit={handleRedesignSubmit}
             isLoading={isLoadingRedesign}
