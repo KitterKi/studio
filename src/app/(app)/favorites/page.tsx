@@ -168,7 +168,7 @@ export default function FavoritesPage() {
             <DialogHeader>
               <DialogTitle>Encontrar Artículos Similares para "{selectedFavorite.title}"</DialogTitle>
               <DialogDescription>
-                La IA ha identificado estos artículos. Haz clic para buscarlos en Google Shopping. Los resultados se abrirán en una nueva pestaña.
+                Artículos identificados por la IA. Haz clic para buscar en Google Shopping (abrirá en nueva pestaña).
               </DialogDescription>
             </DialogHeader>
             
@@ -204,7 +204,6 @@ export default function FavoritesPage() {
                       <Search className="h-5 w-5 text-primary"/>
                       {item.itemName}
                     </h3>
-                    {/* Descripción eliminada de la UI */}
                     <Button
                       variant="default"
                       size="sm"
@@ -233,3 +232,4 @@ export default function FavoritesPage() {
     </>
   );
 }
+
