@@ -97,6 +97,7 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
               width={400}
               height={300}
               className="rounded-md object-contain mx-auto max-h-[150px] sm:max-h-[200px] w-auto"
+              data-ai-hint="room preview"
             />
           </div>
         )}
@@ -125,7 +126,7 @@ export default function RoomRedesignForm({ onSubmit, isLoading, isSubmitDisabled
         <Button 
           type="submit" 
           className="w-full" 
-          disabled={isLoading || !photoPreview || !selectedStyle || isSubmitDisabled}
+          disabled={isLoading || !photoPreview || !photoFile || !selectedStyle || isSubmitDisabled}
           size="lg"
         >
           {isLoading ? 'Generando...' : (isSubmitDisabled && !isLoading ? 'Límite Diario Alcanzado' : 'Generar Rediseño')}
