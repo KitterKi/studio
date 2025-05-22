@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Heart, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { APP_NAME } from '@/lib/constants'; // Importado APP_NAME
+import { APP_NAME } from '@/lib/constants';
 
 export default function StyleMyRoomPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -89,7 +89,7 @@ export default function StyleMyRoomPage() {
     if (originalImage && redesignedImage && currentStyle && user) {
       const favoriteTitle = `Mi Habitación ${currentStyle}`;
       addFavorite({
-        originalImage,
+        originalImage, // Aunque no se guarde en localStorage, se pasa aquí
         redesignedImage,
         title: favoriteTitle,
         style: currentStyle,
@@ -112,47 +112,47 @@ export default function StyleMyRoomPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+        <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
           Diseñador IA {APP_NAME}
         </h1>
-        <p className="mt-3 text-lg text-muted-foreground sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-          ¡Sube una foto, elige un estilo y deja que nuestra IA transforme tu espacio!
+        <p className="mt-2 text-base text-muted-foreground sm:mt-3 lg:text-lg">
+          Transforma tu espacio: sube una foto, elige un estilo ¡y deja que la IA haga su magia!
         </p>
       </div>
 
       {user && (
-        <Alert className="max-w-2xl mx-auto bg-accent/30 border-accent/50">
+        <Alert className="max-w-md mx-auto bg-accent/30 border-accent/50">
           <Info className="h-5 w-5 text-accent-foreground" />
-          <AlertTitle className="font-semibold text-accent-foreground">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
-          <AlertDescription className="text-accent-foreground/80">
+          <AlertTitle className="font-semibold text-accent-foreground text-sm">Rediseños Diarios Restantes: {remainingRedesignsToday}</AlertTitle>
+          <AlertDescription className="text-accent-foreground/80 text-xs">
             {remainingRedesignsToday > 0 
               ? `Puedes rediseñar ${remainingRedesignsToday} habitación${remainingRedesignsToday === 1 ? '' : 'es'} más hoy.`
-              : "¡Has alcanzado tu límite diario de rediseños. Vuelve mañana!"}
+              : "¡Has alcanzado tu límite diario de rediseños!"}
           </AlertDescription>
         </Alert>
       )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start max-w-7xl mx-auto">
+        <div className="lg:col-span-2 p-6 bg-card rounded-xl shadow-lg">
           <RoomRedesignForm 
             onSubmit={handleRedesignSubmit} 
             isLoading={isLoadingRedesign} 
             isSubmitDisabled={!allowRedesign || isLoadingRedesign}
           />
         </div>
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
           <RedesignPreview
             originalImageSrc={originalImage}
             redesignedImageSrc={redesignedImage}
             isLoading={isLoadingRedesign}
           />
           {user && redesignedImage && !isLoadingRedesign && (
-            <div className="text-center">
+            <div className="text-center pt-4">
               <Button 
                 onClick={handleSaveFavorite} 
                 disabled={isAlreadyFavorite}
                 size="lg"
-                className="w-full max-w-xs mx-auto"
+                className="w-full max-w-md mx-auto shadow-md hover:shadow-lg transition-shadow"
               >
                 <Heart className={`mr-2 h-5 w-5 ${isAlreadyFavorite ? 'fill-destructive text-destructive' : ''}`} />
                 {isAlreadyFavorite ? 'Guardado en Favoritos' : 'Guardar en Favoritos'}

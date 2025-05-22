@@ -1,6 +1,5 @@
 
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Image as ImageIcon, Sparkles } from 'lucide-react';
 
@@ -10,26 +9,21 @@ interface RedesignPreviewProps {
   isLoading: boolean;
 }
 
-const ImagePlaceholder = ({ text }: { text: string }) => (
-  <div className="aspect-video w-full bg-muted/50 rounded-lg flex flex-col items-center justify-center text-muted-foreground p-4 shadow-inner">
-    <ImageIcon className="h-12 w-12 mb-2" />
-    <p className="text-sm text-center">{text}</p>
+const ImagePlaceholder = ({ icon: Icon, text }: { icon: React.ElementType, text: string }) => (
+  <div className="aspect-video w-full bg-muted/30 rounded-lg flex flex-col items-center justify-center text-muted-foreground p-4 shadow-inner border border-dashed">
+    <Icon className="h-10 w-10 mb-3 text-muted-foreground/70" />
+    <p className="text-xs text-center">{text}</p>
   </div>
 );
 
 export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, isLoading }: RedesignPreviewProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card className="shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <ImageIcon className="h-5 w-5" />
-            Habitación Original
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium text-center text-muted-foreground mb-3">Original</h3>
+        <div className="rounded-xl overflow-hidden border bg-card shadow-lg">
           {originalImageSrc ? (
-            <div className="aspect-video relative w-full rounded-lg overflow-hidden border">
+            <div className="aspect-video relative w-full">
               <Image
                 src={originalImageSrc}
                 alt="Habitación original"
@@ -40,25 +34,20 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
               />
             </div>
           ) : (
-            <ImagePlaceholder text="Sube una foto de tu habitación para verla aquí." />
+            <ImagePlaceholder icon={ImageIcon} text="Sube una foto de tu habitación para verla aquí." />
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Habitación Rediseñada
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div>
+        <h3 className="text-lg font-medium text-center text-muted-foreground mb-3">Rediseño IA</h3>
+        <div className="rounded-xl overflow-hidden border bg-card shadow-lg">
           {isLoading ? (
-            <div className="aspect-video w-full flex items-center justify-center bg-muted/50 rounded-lg">
-              <LoadingSpinner size={16} text="La IA está haciendo su magia..." />
+            <div className="aspect-video w-full flex items-center justify-center bg-muted/30">
+              <LoadingSpinner size={12} text="La IA está haciendo su magia..." />
             </div>
           ) : redesignedImageSrc ? (
-            <div className="aspect-video relative w-full rounded-lg overflow-hidden border">
+            <div className="aspect-video relative w-full">
                <Image
                 src={redesignedImageSrc}
                 alt="Habitación rediseñada"
@@ -69,10 +58,10 @@ export default function RedesignPreview({ originalImageSrc, redesignedImageSrc, 
               />
             </div>
           ) : (
-            <ImagePlaceholder text="Tu habitación rediseñada por IA aparecerá aquí." />
+            <ImagePlaceholder icon={Sparkles} text="Tu habitación rediseñada por IA aparecerá aquí." />
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
