@@ -23,6 +23,7 @@ export type FindSimilarItemsInput = z.infer<typeof FindSimilarItemsInputSchema>;
 
 const IdentifiedItemSchema = z.object({
   itemName: z.string().describe('El nombre común del artículo identificado (ej., "Sofá", "Lámpara de pie", "Mesa de centro"). Manténlo conciso, 1-3 palabras, en español.'),
+  // itemDescription es opcional y no se muestra en la UI, pero puede ayudar a la IA a generar la consulta.
   itemDescription: z.string().optional().describe('Una breve descripción opcional del artículo, destacando sus características visuales clave relevantes para la búsqueda (ej., "Sofá de 3 cuerpos de terciopelo azul con patas doradas", "Lámpara de arco moderna con base de mármol", "Alfombra redonda de yute con patrón de espiga"). Esta descripción es para uso interno de la IA y puede no mostrarse. Apunta a 5-15 palabras, en español.'),
   suggestedSearchQuery: z.string().describe("Una consulta de búsqueda para Google Shopping, descriptiva y altamente efectiva (idealmente de 3 a 7 palabras) que un usuario usaría para encontrar este artículo específico o artículos muy similares. Debe ser en español. Incluye materiales clave, colores, estilo, y tipo de artículo. Por ejemplo: 'silla gamer ergonómica negra y roja', 'lámpara de pie trípode madera pantalla blanca', 'alfombra yute redonda estilo nórdico', 'mesa de centro redonda madera y metal negro industrial'.")
 });
@@ -35,8 +36,16 @@ const FindSimilarItemsOutputSchema = z.object({
 export type FindSimilarItemsOutput = z.infer<typeof FindSimilarItemsOutputSchema>;
 
 export async function findSimilarItems(input: FindSimilarItemsInput): Promise<FindSimilarItemsOutput> {
-  console.log('[findSimilarItemsFlow] Called with input data URI length:', input.imageDataUri.length);
-  return findSimilarItemsFlow(input);
+  console.log('[findSimilarItems function wrapper] Called with input data URI length:', input.imageDataUri?.length);
+  try {
+    const result = await findSimilarItemsFlow(input); // Call the actual flow
+    return result;
+  } catch (error: any) {
+    console.error("[findSimilarItems function wrapper] Error calling findSimilarItemsFlow:", error);
+    // Re-throw to be caught by the client-side component's catch block.
+    // Ensure a meaningful message is propagated.
+    throw new Error(error.message || 'Error al procesar la solicitud de búsqueda de artículos.');
+  }
 }
 
 const prompt = ai.definePrompt({
@@ -67,17 +76,44 @@ const findSimilarItemsFlow = ai.defineFlow(
   async (input) => {
     try {
       console.log('[findSimilarItemsFlow] Attempting to call AI prompt...');
-      const {output} = await prompt(input);
-      console.log('[findSimilarItemsFlow] AI prompt call successful. Output:', output);
+      const {output} = await prompt(input); // This is the call to the AI model
+      console.log('[findSimilarItemsFlow] AI prompt call successful. Output items count:', output?.items?.length);
+
       if (!output || !output.items) {
-        console.warn("[findSimilarItemsFlow] AI model returned successfully but found no distinct items or the output structure was unexpected. Output received:", output);
+        console.warn("[findSimilarItemsFlow] AI model returned successfully but found no distinct items or the output structure was unexpected. Output received:", JSON.stringify(output, null, 2));
+        // No lanzar error aquí, simplemente devolver items vacíos si la IA no encuentra nada.
         return { items: [] };
       }
       return output;
     } catch (error: any) {
-        console.error("[findSimilarItemsFlow] Error occurred while calling the AI model:", error.message || error);
-        // Re-throw the error so client-side can catch it and display a more specific message if possible.
-        throw new Error(error.message || 'Error en el flujo de IA al buscar artículos.');
+        console.error("-----------------------------------------------------");
+        console.error("[findSimilarItemsFlow - AI Call Error] An error occurred inside the AI flow.");
+        console.error("Error Name:", error.name);
+        console.error("Error Message:", error.message);
+        console.error("Error Stack:", error.stack);
+        if (error.cause) {
+            console.error("Error Cause:", error.cause);
+        }
+        if (error.details) { // Specific to GoogleGenerativeAIError
+             console.error("Error Details (from Google AI):", error.details);
+        }
+        console.error("Full Error Object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+        console.error("-----------------------------------------------------");
+
+        let errorMessage = 'Error en el flujo de IA al buscar artículos.';
+        if (error.message) {
+            // Simplificar mensaje de error para el cliente
+            if (String(error.message).includes("fetch") || String(error.message).includes("502") || String(error.message).includes("503") || String(error.message).toLowerCase().includes("overloaded") || String(error.message).toLowerCase().includes("unavailable")) {
+                errorMessage = "El servicio de IA no está disponible o está experimentando problemas. Por favor, inténtalo de nuevo más tarde.";
+            } else if (String(error.message).toLowerCase().includes("api key") || String(error.message).includes("401") || String(error.message).includes("403")) {
+                errorMessage = "Error de autenticación con el servicio de IA. Verifica la configuración.";
+            } else {
+                errorMessage = "Ocurrió un error inesperado al procesar tu solicitud."; // Mensaje genérico para otros errores
+            }
+        }
+        // Re-throw a new error with a potentially more user-friendly message
+        // The client-side toast will pick up this message.
+        throw new Error(errorMessage);
     }
   }
 );
