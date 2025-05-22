@@ -22,8 +22,8 @@ export interface DesignCardProps {
   isImageClickable?: boolean;
   variant?: 'default' | 'communityFeed';
   index?: number; 
-  isLikedByCurrentUser?: boolean; // Nueva propiedad
-  onLikeClick?: () => void; // Nueva propiedad para manejar el clic del "Me gusta"
+  isLikedByCurrentUser?: boolean;
+  onLikeClick?: () => void;
 }
 
 export default function DesignCard({
@@ -51,15 +51,19 @@ export default function DesignCard({
           return [parseInt(match[1], 10), parseInt(match[2], 10)];
         }
       }
+      // Default if parsing fails or not a placehold.co URL
       return [600, 400]; 
     }, [imageUrl]);
 
     return (
       <Card
-        className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative"
-        onClick={isImageClickable ? onImageClick : undefined}
+        className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 group relative break-inside-avoid-column"
+        // onClick is removed from the Card itself for communityFeed to allow independent button clicks
       >
-        <div className={cn("w-full", isImageClickable && "cursor-pointer")}>
+        <div 
+          className={cn("w-full", isImageClickable && "cursor-pointer")}
+          onClick={isImageClickable ? onImageClick : undefined}
+        >
           <Image
             src={imageUrl}
             alt={title || 'Diseño de usuario'}
@@ -71,7 +75,8 @@ export default function DesignCard({
           />
         </div>
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
-        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        
+        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Avatar className="h-7 w-7 border-2 border-white/60">
               <AvatarImage src={userAvatarUrl || `https://placehold.co/40x40.png?text=${userName?.substring(0,1)}`} alt={userName || 'Avatar de usuario'} data-ai-hint="profile avatar small"/>
@@ -79,15 +84,31 @@ export default function DesignCard({
             </Avatar>
             <span className="text-sm font-semibold text-white truncate">{userName}</span>
           </div>
+          {onLikeClick && ( // Only show like button if onLikeClick is provided
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 h-auto text-white hover:bg-white/20 flex items-center gap-1"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent card's onImageClick if any
+                onLikeClick();
+              }}
+              aria-pressed={isLikedByCurrentUser}
+              aria-label={isLikedByCurrentUser ? "Quitar me gusta" : "Dar me gusta"}
+            >
+              <Heart className={cn("h-4 w-4", isLikedByCurrentUser && "fill-red-500 text-red-500")} />
+              <span className="text-xs">{likes}</span>
+            </Button>
+          )}
         </div>
-        <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-white bg-black/40 hover:bg-black/60 h-8 w-8 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all duration-300 rounded-full" aria-label="Más opciones">
+        <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-white bg-black/40 hover:bg-black/60 h-8 w-8 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all duration-300 rounded-full" aria-label="Más opciones" onClick={(e) => e.stopPropagation()}>
           <MoreHorizontal className="h-5 w-5" />
         </Button>
       </Card>
     );
   }
 
-  // Default variant
+  // Default variant (for Favorites page etc.)
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
       <CardHeader className="p-4">
@@ -137,3 +158,5 @@ export default function DesignCard({
     </Card>
   );
 }
+
+    
